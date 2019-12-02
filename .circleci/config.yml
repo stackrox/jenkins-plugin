@@ -1,0 +1,34 @@
+version: 2.1
+
+jobs:
+  build:
+    docker:
+      - image: docker.io/stackrox/apollo-ci:jenkins-plugin-0.2.8-1-ga776a448ee
+        auth:
+          username: $DOCKER_IO_PULL_USERNAME
+          password: $DOCKER_IO_PULL_PASSWORD
+    working_directory: /home/circleci/jenkins-plugin
+    steps:
+      - checkout
+
+      - run:
+          name: Build and package the Jenkins plugin
+          command: |
+            cd stackrox-k8s-security-platform
+            mvn package
+            mvn hpi:hpi
+
+      - store_artifacts:
+          path: /home/circleci/jenkins-plugin/stackrox-k8s-security-platform/target/stackrox-k8s-security-platform.hpi
+          destination: artifacts
+
+
+workflows:
+  version: 2
+  build:
+    jobs:
+      - build:
+          context: docker-io-pull
+          filters:
+            tags:
+              only: /.*/
