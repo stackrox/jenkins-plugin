@@ -1,4 +1,4 @@
 <?jelly escape-by-default='true'?>
 <div>
-    TODO
+    This plugin provides vulnerability scanning and system policy evaluation on container images using the StackRox k8s Security Platform.
 </div>

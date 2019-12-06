@@ -15,7 +15,7 @@
         <jenkins.version>2.164.1</jenkins.version>
         <java.level>8</java.level>
     </properties>
-    <name>The StackRox Image Security Plugin</name>
+    <name>StackRox Image Security</name>
    <!--- TODO: Licensing
    <licenses>
         <license>
@@ -32,6 +32,37 @@
         <url>https://github.com/jenkinsci/${project.artifactId}-plugin</url>
     </scm>
     -->
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.5.10</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>javax.json</artifactId>
+            <version>1.1.4</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>19.0</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-validator</groupId>
+            <artifactId>commons-validator</artifactId>
+            <version>1.6</version>
+        </dependency>
+    </dependencies>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>commons-digester</groupId>
+                <artifactId>commons-digester</artifactId>
+                <version>2.1</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
     <repositories>
         <repository>
             <id>repo.jenkins-ci.org</id>
