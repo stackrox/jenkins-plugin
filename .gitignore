@@ -4,6 +4,7 @@
 .project
 .settings/
 target/
+work/
 
 # Log file
 *.log
@@ -26,4 +27,4 @@ target/
 hs_err_pid*
 
 #GoLand files
-.idea/*
+.idea/
