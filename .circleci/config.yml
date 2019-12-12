@@ -22,7 +22,7 @@ jobs:
           destination: artifacts
   provision-cluster-qa-tests:
    docker:
-      - image: docker.io/stackrox/apollo-ci:jenkins-plugin-0.2.8-1-ga776a448ee
+      - image: docker.io/stackrox/apollo-ci:0.2.8-2-g1e9382b6d6
         auth:
           username: $DOCKER_IO_PULL_USERNAME
           password: $DOCKER_IO_PULL_PASSWORD
