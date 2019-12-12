@@ -120,6 +120,8 @@ jobs:
         default: []
 
     steps:
+      - checkout
+      - setup_remote_docker
       - run:
           name: Deploy central to remote cluster
           command: |
