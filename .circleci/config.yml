@@ -1,5 +1,16 @@
 version: 2.1
 
+
+setupGoogleAppCreds: &setupGoogleAppCreds
+  run:
+    name: Setup GCloud Service Account
+    command: |
+      touch /tmp/gcp.json
+      chmod 0600 /tmp/gcp.json
+      echo "$GCLOUD_SERVICE_ACCOUNT_CIRCLECI_ROX" >/tmp/gcp.json
+      cci-export GOOGLE_APPLICATION_CREDENTIALS /tmp/gcp.json
+      gcloud auth activate-service-account --key-file /tmp/gcp.json
+      gcloud auth list
 jobs:
   build:
     docker:
@@ -32,6 +43,8 @@ jobs:
    working_directory: /home/circleci/jenkins-plugin
    steps:
     - checkout
+    - setup_remote_docker
+    - *setupGoogleAppCreds
     - provision-gke-cluster:
         cluster-id: qa-tests
         num-nodes: 2
@@ -54,7 +67,6 @@ workflows:
         
       
 commands:
-
   setup-gcp:
     parameters:
       docker-login:
