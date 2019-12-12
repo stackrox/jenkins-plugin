@@ -1,16 +1,11 @@
 version: 2.1
 
-
-setupGoogleAppCreds: &setupGoogleAppCreds
+buildLivenessCheck: &buildLivenessCheck
   run:
-    name: Setup GCloud Service Account
+    name: Ensure workflow is still live
     command: |
-      touch /tmp/gcp.json
-      chmod 0600 /tmp/gcp.json
-      echo "$GCLOUD_SERVICE_ACCOUNT_CIRCLECI_ROX" >/tmp/gcp.json
-      cci-export GOOGLE_APPLICATION_CREDENTIALS /tmp/gcp.json
-      gcloud auth activate-service-account --key-file /tmp/gcp.json
-      gcloud auth list
+      .circleci/check-workflow-live.sh
+
 jobs:
   build:
     docker:
@@ -44,7 +39,6 @@ jobs:
    steps:
     - checkout
     - setup_remote_docker
-    - *setupGoogleAppCreds
     - provision-gke-cluster:
         cluster-id: qa-tests
         num-nodes: 2
@@ -82,8 +76,6 @@ commands:
             <</ parameters.docker-login >>
             cci-export REGISTRY_USERNAME "$DOCKER_IO_PULL_USERNAME"
             cci-export REGISTRY_PASSWORD "$DOCKER_IO_PULL_PASSWORD"
-            cci-export MAIN_IMAGE_TAG "$(make --quiet tag)"
-            cci-export GOOGLE_APPLICATION_CREDENTIALS /tmp/gcp.json
             gcloud auth activate-service-account --key-file <(echo "$GCLOUD_SERVICE_ACCOUNT_CIRCLECI_ROX")
             gcloud auth list
             gcloud config set project stackrox-ci
@@ -144,6 +136,8 @@ commands:
           command: |
             gcloud container clusters delete "$CLUSTER_NAME" --async
           when: on_fail
+
+      - *buildLivenessCheck
 
       - persist_to_workspace:
           root: /home/circleci/jenkins-plugin/
