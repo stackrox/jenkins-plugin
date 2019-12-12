@@ -94,7 +94,7 @@ commands:
 
     steps:
       - setup-gcp:
-          docker-login: false
+          docker-login: true
       - run:
           name: Assign environment variables
           command: |
