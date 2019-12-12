@@ -218,6 +218,8 @@ workflows:
               only: /.*/z
       - deploy-stackrox:
           orchestrator-flavor: k8s
+          requires:
+            - provision-cluster-qa-tests
 
       
 commands:
