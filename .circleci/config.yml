@@ -6,6 +6,54 @@ buildLivenessCheck: &buildLivenessCheck
     command: |
       .circleci/check-workflow-live.sh
 
+setupClientTLSCerts: &setupClientTLSCerts
+  run:
+    name: Setup client auth TLS certificates
+    command: |
+      cert_dir="$(mktemp -d)"
+      ./tests/scripts/setup-certs.sh "$cert_dir" "Client Certificate User" "Client CA"
+
+      cci-export KEYSTORE_PATH "${cert_dir}/keystore.p12"
+      cci-export CLIENT_CA_PATH "${cert_dir}/ca.crt"
+
+waitForSensorK8s: &waitForSensorK8s
+  run:
+    name: Wait for the Sensor to be running K8s
+    command: |
+      ./scripts/ci/sensor-wait.sh
+
+waitForAPI: &waitForAPI
+  run:
+    name: Wait for the API server to be up
+    command: |
+      export API_HOSTNAME=localhost
+      export API_PORT=8000
+      if [[ "${LOAD_BALANCER}" == "lb" ]]; then
+        export API_HOSTNAME=$(./scripts/k8s/get-lb-ip.sh)
+        export API_PORT=443
+      fi
+      export METADATA_URL="https://${API_HOSTNAME}:${API_PORT}/v1/metadata"
+      echo "METADATA_URL is set to ${METADATA_URL}"
+      set +e
+      SUCCESS=0
+      for i in $(seq 1 25); do
+        metadata="$(curl -sk --connect-timeout 5 --max-time 10 "${METADATA_URL}")"
+        if [[ $? -eq 0 && "$(jq '.licenseStatus' -r \<<<"$metadata")" != "RESTARTING" ]]; then
+          SUCCESS=1
+          break
+        fi
+        sleep 5
+      done
+      if [[ "${SUCCESS}" == 0 ]]; then
+        kubectl -n stackrox get pod
+        echo "Failed to connect to Central"
+        exit 1
+      fi
+      cci-export API_HOSTNAME "$API_HOSTNAME"
+      cci-export API_PORT "$API_PORT"
+      cci-export API_ENDPOINT "${API_HOSTNAME}:${API_PORT}"
+
+
 jobs:
   build:
     docker:
@@ -131,6 +179,13 @@ commands:
                   echo "$CLUSTER_NAME" >>"${CONFIG_DIR}/name"
                   gcloud config get-value compute/zone >>"${CONFIG_DIR}/zone"
 
+      - deploy-stackrox:
+         orchestrator-flavor: k8s
+         validate-autoupgrade-label: true
+         post-central-deploy-steps:
+           - *setupClientTLSCerts
+           - setup-egress-proxies
+
       - run:
           name: Tear down cluster upon failure
           command: |
@@ -143,5 +198,127 @@ commands:
           root: /home/circleci/jenkins-plugin/
           paths:
             - .ci-clusters/<< parameters.cluster-id >>
+  deploy-stackrox:
+    parameters:
+      orchestrator-flavor:
+        type: string
+        default: k8s
+      require-cluster-admin:
+        type: boolean
+        default: false
+      validate-autoupgrade-label:
+        type: boolean
+        default: false
+      post-central-deploy-steps:
+        type: steps
+        default: []
 
+    steps:
+      - run:
+          name: Deploy central to remote cluster
+          command: |
+            deploy_dir="deploy/<< parameters.orchestrator-flavor >>"
+            "${deploy_dir}/central.sh"
 
+            source scripts/k8s/export-basic-auth-creds.sh "$deploy_dir"
+            cci-export ROX_USERNAME "$ROX_USERNAME"
+            cci-export ROX_PASSWORD "$ROX_PASSWORD"
+
+      - steps: << parameters.post-central-deploy-steps >>
+
+      - *waitForAPI
+
+      - run:
+          name: Snapshot Kubernetes Resources
+          command: |
+            <<# parameters.validate-autoupgrade-label >>
+            scripts/ci/sensorbundle-label/list-resources.sh >/tmp/k8s-resources-pre-sensor
+            <</ parameters.validate-autoupgrade-label >>
+            exit 0
+
+      - run:
+          name: Deploy Sensor
+          command: |
+            <<# parameters.require-cluster-admin >>
+            kubectl create clusterrolebinding temporary-admin --clusterrole=cluster-admin --user circleci-rox@stackrox-ci.iam.gserviceaccount.com
+            <</ parameters.require-cluster-admin >>
+
+            deploy/<< parameters.orchestrator-flavor >>/sensor.sh
+            <<# parameters.require-cluster-admin >>
+            kubectl delete clusterrolebinding temporary-admin
+            <</ parameters.require-cluster-admin >>
+
+      - run:
+          name: Validate Sensor bundle (upgrader)
+          command: |
+            kubectl proxy --port 28001 &
+            proxy_pid=$!
+            sleep 5
+            KUBECONFIG="$(pwd)/scripts/ci/kube-api-proxy/config.yml" \
+              bin/linux/upgrader \
+                -kube-config kubectl \
+                -local-bundle deploy/<< parameters.orchestrator-flavor >>/sensor-deploy \
+                -workflow validate-bundle
+            kill "$proxy_pid"
+
+      - *waitForSensorK8s
+
+      - run:
+          name: Verify all new resources have the auto-upgrade label
+          command: |
+            <<# parameters.validate-autoupgrade-label >>
+            {
+              scripts/ci/sensorbundle-label/list-resources.sh
+              cat /tmp/k8s-resources-pre-sensor
+            } | sort | uniq -u >/tmp/k8s-new-resources-post-sensor
+
+            scripts/ci/sensorbundle-label/list-resources.sh 'auto-upgrade.stackrox.io/component=sensor' \
+                >/tmp/k8s-sensor-labeled-resources
+
+            {
+              cat /tmp/k8s-new-resources-post-sensor
+              cat /tmp/k8s-sensor-labeled-resources
+              cat /tmp/k8s-sensor-labeled-resources
+              cat scripts/ci/sensorbundle-label/whitelist 2>/dev/null
+              cat scripts/ci/sensorbundle-label/whitelist 2>/dev/null
+            } | sort | uniq -u >/tmp/k8s-new-resources-unlabeled
+
+            if [[ -s /tmp/k8s-new-resources-unlabeled ]]; then
+              echo >&2 "The following resources were created by the sensor bundle, but don't carry the sensor bundle label:"
+              cat >&2 /tmp/k8s-new-resources-unlabeled
+              exit 1
+            fi
+            <</ parameters.validate-autoupgrade-label >>
+            exit 0
+
+  setup-egress-proxies:
+    steps:
+      - run:
+          name: Set up egress proxies (if desired)
+          command: |
+            if ! .circleci/pr_has_label.sh ci-rox-egress-proxies; then
+              echo "Not setting up egress proxies"
+              exit 0
+            fi
+
+            kubectl -n squid apply -R -f tests/proxy/deployment/ || true  # might fail because of SCC
+            configs=(tests/proxy/config/*.yaml)
+
+            selected_config="${configs[$((RANDOM % ${#configs[@]}))]}"
+            echo "Selected configuration file ${selected_config}"
+            kubectl -n stackrox apply -f "${selected_config}"
+
+            echo "Waiting for 3min for proxy config to be picked up"
+            for i in {1..180}; do
+              echo -n .
+              sleep 1
+            done
+            echo
+
+            if [[ "$CIRCLE_JOB" == "openshift-crio-tests" ]]; then
+              echo "Skipping egress isolation on CRI-O due to network policy issues."
+              exit 0
+            fi
+
+            echo "Isolating pods"
+            kubectl -n stackrox apply -R -f tests/proxy/netpol/
