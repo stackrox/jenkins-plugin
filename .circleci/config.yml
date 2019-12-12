@@ -10,7 +10,6 @@ jobs:
     working_directory: /home/circleci/jenkins-plugin
     steps:
       - checkout
-
       - run:
           name: Build and package the Jenkins plugin
           command: |
@@ -21,22 +20,18 @@ jobs:
       - store_artifacts:
           path: /home/circleci/jenkins-plugin/stackrox-k8s-security-platform/target/stackrox-k8s-security-platform.hpi
           destination: artifacts
-
-  prepare-environment-for-testing:
-    docker:
+  provision-cluster-qa-tests:
+   docker:
       - image: docker.io/stackrox/apollo-ci:jenkins-plugin-0.2.8-1-ga776a448ee
         auth:
           username: $DOCKER_IO_PULL_USERNAME
           password: $DOCKER_IO_PULL_PASSWORD
-    working_directory: /go/src/github.com/stackrox/rox
-    environment:
-      - GCP_IMAGE_TYPE: "COS"
-      - POD_SECURITY_POLICIES: "true"
-    steps:
-      - checkout
-      - provision-gke-cluster:
-          cluster-id: k8s-tests
-          num-nodes: 2
+   working_directory: /home/circleci/jenkins-plugin 
+   steps:
+    - provision-gke-cluster:
+        cluster-id: qa-tests
+        num-nodes: 2
+
 
 workflows:
   version: 2
@@ -47,21 +42,9 @@ workflows:
           filters:
             tags:
               only: /.*/z
-      - prepare-environment-for-testing:
-          context: docker-io-pull
-          filters:
-            tags:
-              only: /.*/z
-
-
-
-buildLivenessCheck: &buildLivenessCheck
-  run:
-    name: Ensure workflow is still live
-    command: |
-      .circleci/check-workflow-live.sh
-
-
+      - provision-cluster-qa-tests
+        
+      
 commands:
   setup-gcp:
     parameters:
@@ -78,13 +61,6 @@ commands:
             <</ parameters.docker-login >>
             cci-export REGISTRY_USERNAME "$DOCKER_IO_PULL_USERNAME"
             cci-export REGISTRY_PASSWORD "$DOCKER_IO_PULL_PASSWORD"
-            cci-export MAIN_IMAGE_TAG "$(make --quiet tag)"
-            cci-export GOOGLE_APPLICATION_CREDENTIALS /tmp/gcp.json
-            if .circleci/pr_has_label.sh ci-run-against-rhel; then
-              cci-export MAIN_IMAGE_REPO stackrox/main-rhel
-              cci-export COLLECTOR_IMAGE_REPO stackrox/collector-rhel
-              cci-export SCANNER_IMAGE "stackrox/scanner-rhel:$(cat "$(git rev-parse --show-toplevel)/LANGUAGE_SCANNER_VERSION")"
-              cci-export SCANNER_DB_IMAGE "stackrox/scanner-db-rhel:$(cat "$(git rev-parse --show-toplevel)/LANGUAGE_SCANNER_VERSION")"
             fi
             gcloud auth activate-service-account --key-file <(echo "$GCLOUD_SERVICE_ACCOUNT_CIRCLECI_ROX")
             gcloud auth list
@@ -135,12 +111,10 @@ commands:
       - run:
           name: Save cluster config
           command: |
-                  CONFIG_DIR="/go/src/github.com/stackrox/rox/.ci-clusters/<< parameters.cluster-id >>"
+                  CONFIG_DIR="/home/circleci/jenkins-plugin/.ci-clusters/<< parameters.cluster-id >>"
                   mkdir -p "$CONFIG_DIR"
                   echo "$CLUSTER_NAME" >>"${CONFIG_DIR}/name"
                   gcloud config get-value compute/zone >>"${CONFIG_DIR}/zone"
-
-      - *buildLivenessCheck
 
       - run:
           name: Tear down cluster upon failure
@@ -149,7 +123,7 @@ commands:
           when: on_fail
 
       - persist_to_workspace:
-          root: /go/src/github.com/stackrox/rox
+          root: /home/circleci/jenkins-plugin/
           paths:
             - .ci-clusters/<< parameters.cluster-id >>
 
