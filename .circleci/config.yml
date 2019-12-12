@@ -23,17 +23,7 @@ jobs:
           destination: artifacts
 
   prepare-environment-for-testing:
-    docker:
-      - image: docker.io/stackrox/apollo-ci:jenkins-plugin-0.2.8-1-ga776a448ee
-        auth:
-          username: $DOCKER_IO_PULL_USERNAME
-          password: $DOCKER_IO_PULL_PASSWORD
-    working_directory: /go/src/github.com/stackrox/rox
-    environment:
-      - GCP_IMAGE_TYPE: "COS"
-      - POD_SECURITY_POLICIES: "true"
     steps:
-      - checkout
       - provision-gke-cluster:
           cluster-id: k8s-tests
           num-nodes: 2
