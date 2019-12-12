@@ -22,6 +22,13 @@ waitForSensorK8s: &waitForSensorK8s
     command: |
       ./scripts/ci/sensor-wait.sh
 
+deleteClusterk8s: &deleteClusterk8s
+  run:
+    name: Tear down cluster upon failure
+    command: |
+      gcloud container clusters delete "$CLUSTER_NAME" --async
+      when: on_fail
+
 waitForAPI: &waitForAPI
   run:
     name: Wait for the API server to be up
@@ -91,114 +98,12 @@ jobs:
         cluster-id: qa-tests
         num-nodes: 2
 
-
-workflows:
-  version: 2
-  build:
-    jobs:
-      - build:
-          context: docker-io-pull
-          filters:
-            tags:
-              only: /.*/z
-      - provision-cluster-qa-tests:
-          context: docker-io-pull
-          filters:
-            tags:
-              only: /.*/z
-        
-      
-commands:
-  setup-gcp:
-    parameters:
-      docker-login:
-        type: boolean
-        default: true
-
-    steps:
-      - run:
-          name: Setup deployment env
-          command: |
-            <<# parameters.docker-login >>
-            docker login -u "$DOCKER_IO_PULL_USERNAME" -p "$DOCKER_IO_PULL_PASSWORD"
-            <</ parameters.docker-login >>
-            cci-export REGISTRY_USERNAME "$DOCKER_IO_PULL_USERNAME"
-            cci-export REGISTRY_PASSWORD "$DOCKER_IO_PULL_PASSWORD"
-            gcloud auth activate-service-account --key-file <(echo "$GCLOUD_SERVICE_ACCOUNT_CIRCLECI_ROX")
-            gcloud auth list
-            gcloud config set project stackrox-ci
-            gcloud config set compute/region us-central1
-            gcloud config unset compute/zone
-            gcloud config set core/disable_prompts True
-
-  create-gke:
-    parameters:
-      wait:
-        type: boolean
-        default: true
-
-    steps:
-      - run:
-          name: Create GKE cluster
-          command: |
-            source .circleci/create-cluster.sh && create-cluster
-            <<# parameters.wait >>
-            wait-for-cluster
-            <</ parameters.wait >>
-
-  provision-gke-cluster:
-    parameters:
-      cluster-id:
-        type: string
-      num-nodes:
-        type: integer
-        default: 3
-
-    steps:
-      - setup-gcp:
-          docker-login: false
-      - run:
-          name: Assign environment variables
-          command: |
-            CLUSTER_NAME="rox-ci-<< parameters.cluster-id >>-${CIRCLE_BUILD_NUM}"
-            cci-export CLUSTER_NAME "$CLUSTER_NAME"
-            echo "Assigned cluster name is $CLUSTER_NAME"
-
-            NUM_NODES="<< parameters.num-nodes >>"
-            cci-export NUM_NODES "$NUM_NODES"
-            echo "Number of nodes for cluster is $NUM_NODES"
-
-      - create-gke:
-          wait: false
-
-      - run:
-          name: Save cluster config
-          command: |
-                  CONFIG_DIR="/home/circleci/jenkins-plugin/.ci-clusters/<< parameters.cluster-id >>"
-                  mkdir -p "$CONFIG_DIR"
-                  echo "$CLUSTER_NAME" >>"${CONFIG_DIR}/name"
-                  gcloud config get-value compute/zone >>"${CONFIG_DIR}/zone"
-
-      - deploy-stackrox:
-         orchestrator-flavor: k8s
-         validate-autoupgrade-label: true
-         post-central-deploy-steps:
-           - *setupClientTLSCerts
-           - setup-egress-proxies
-
-      - run:
-          name: Tear down cluster upon failure
-          command: |
-            gcloud container clusters delete "$CLUSTER_NAME" --async
-          when: on_fail
-
-      - *buildLivenessCheck
-
-      - persist_to_workspace:
-          root: /home/circleci/jenkins-plugin/
-          paths:
-            - .ci-clusters/<< parameters.cluster-id >>
   deploy-stackrox:
+    docker:
+      - image: docker.io/stackrox/apollo-ci:jenkins-plugin-0.2.8-1-ga776a448ee
+        auth:
+          username: $DOCKER_IO_PULL_USERNAME
+          password: $DOCKER_IO_PULL_PASSWORD
     parameters:
       orchestrator-flavor:
         type: string
@@ -290,6 +195,109 @@ commands:
             fi
             <</ parameters.validate-autoupgrade-label >>
             exit 0
+
+      - *setupClientTLSCerts
+      - setup-egress-proxies
+      - *deleteClusterk8s
+
+
+workflows:
+  version: 2
+  build:
+    jobs:
+      - build:
+          context: docker-io-pull
+          filters:
+            tags:
+              only: /.*/z
+      - provision-cluster-qa-tests:
+          context: docker-io-pull
+          filters:
+            tags:
+              only: /.*/z
+      - deploy-stackrox:
+          orchestrator-flavor: k8s
+
+      
+commands:
+  setup-gcp:
+    parameters:
+      docker-login:
+        type: boolean
+        default: true
+
+    steps:
+      - run:
+          name: Setup deployment env
+          command: |
+            <<# parameters.docker-login >>
+            docker login -u "$DOCKER_IO_PULL_USERNAME" -p "$DOCKER_IO_PULL_PASSWORD"
+            <</ parameters.docker-login >>
+            cci-export REGISTRY_USERNAME "$DOCKER_IO_PULL_USERNAME"
+            cci-export REGISTRY_PASSWORD "$DOCKER_IO_PULL_PASSWORD"
+            gcloud auth activate-service-account --key-file <(echo "$GCLOUD_SERVICE_ACCOUNT_CIRCLECI_ROX")
+            gcloud auth list
+            gcloud config set project stackrox-ci
+            gcloud config set compute/region us-central1
+            gcloud config unset compute/zone
+            gcloud config set core/disable_prompts True
+
+  create-gke:
+    parameters:
+      wait:
+        type: boolean
+        default: true
+
+    steps:
+      - run:
+          name: Create GKE cluster
+          command: |
+            source .circleci/create-cluster.sh && create-cluster
+            <<# parameters.wait >>
+            wait-for-cluster
+            <</ parameters.wait >>
+
+  provision-gke-cluster:
+    parameters:
+      cluster-id:
+        type: string
+      num-nodes:
+        type: integer
+        default: 3
+
+    steps:
+      - setup-gcp:
+          docker-login: false
+      - run:
+          name: Assign environment variables
+          command: |
+            CLUSTER_NAME="rox-ci-<< parameters.cluster-id >>-${CIRCLE_BUILD_NUM}"
+            cci-export CLUSTER_NAME "$CLUSTER_NAME"
+            echo "Assigned cluster name is $CLUSTER_NAME"
+
+            NUM_NODES="<< parameters.num-nodes >>"
+            cci-export NUM_NODES "$NUM_NODES"
+            echo "Number of nodes for cluster is $NUM_NODES"
+
+      - create-gke:
+          wait: false
+
+      - run:
+          name: Save cluster config
+          command: |
+                  CONFIG_DIR="/home/circleci/jenkins-plugin/.ci-clusters/<< parameters.cluster-id >>"
+                  mkdir -p "$CONFIG_DIR"
+                  echo "$CLUSTER_NAME" >>"${CONFIG_DIR}/name"
+                  gcloud config get-value compute/zone >>"${CONFIG_DIR}/zone"
+
+
+      - *buildLivenessCheck
+
+      - persist_to_workspace:
+          root: /home/circleci/jenkins-plugin/
+          paths:
+            - .ci-clusters/<< parameters.cluster-id >>
+
 
   setup-egress-proxies:
     steps:
