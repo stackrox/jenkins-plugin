@@ -70,7 +70,8 @@ commands:
             <</ parameters.docker-login >>
             cci-export REGISTRY_USERNAME "$DOCKER_IO_PULL_USERNAME"
             cci-export REGISTRY_PASSWORD "$DOCKER_IO_PULL_PASSWORD"
-            fi
+            cci-export MAIN_IMAGE_TAG "$(make --quiet tag)"
+            cci-export GOOGLE_APPLICATION_CREDENTIALS /tmp/gcp.json
             gcloud auth activate-service-account --key-file <(echo "$GCLOUD_SERVICE_ACCOUNT_CIRCLECI_ROX")
             gcloud auth list
             gcloud config set project stackrox-ci
