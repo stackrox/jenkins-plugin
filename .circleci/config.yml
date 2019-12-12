@@ -26,8 +26,12 @@ jobs:
         auth:
           username: $DOCKER_IO_PULL_USERNAME
           password: $DOCKER_IO_PULL_PASSWORD
-   working_directory: /home/circleci/jenkins-plugin 
+   environment:
+     - GCP_IMAGE_TYPE: "COS"
+     - POD_SECURITY_POLICIES: "true"
+   working_directory: /home/circleci/jenkins-plugin
    steps:
+    - checkout
     - provision-gke-cluster:
         cluster-id: qa-tests
         num-nodes: 2
@@ -42,10 +46,15 @@ workflows:
           filters:
             tags:
               only: /.*/z
-      - provision-cluster-qa-tests
+      - provision-cluster-qa-tests:
+          context: docker-io-pull
+          filters:
+            tags:
+              only: /.*/z
         
       
 commands:
+
   setup-gcp:
     parameters:
       docker-login:
@@ -105,6 +114,7 @@ commands:
             NUM_NODES="<< parameters.num-nodes >>"
             cci-export NUM_NODES "$NUM_NODES"
             echo "Number of nodes for cluster is $NUM_NODES"
+
       - create-gke:
           wait: false
 
