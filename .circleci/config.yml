@@ -104,7 +104,7 @@ jobs:
         auth:
           username: $DOCKER_IO_PULL_USERNAME
           password: $DOCKER_IO_PULL_PASSWORD
-    working_directory: /home/circleci/jenkins-plugin/rox
+    working_directory: /home/circleci/jenkins-plugin
     parameters:
       orchestrator-flavor:
         type: string
