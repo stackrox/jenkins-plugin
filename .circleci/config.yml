@@ -130,24 +130,21 @@ jobs:
         default: []
 
     steps:
-      - run:
-          name: Check out rox repo
-          command: |
-            git clone git@github.com:stackrox/rox.git .
-      - setup_remote_docker
       - attach_workspace:
-          at: /home/circleci/rox
+          at: /home/circleci/jenkins-plugin
+      - run:
+          name:
+          command: |
+            docker run  -i --rm stackrox/main:3.0.36.x-1-gc7c0c7af8e central generate k8s pvc > bundle.zip
+            unzip bundle.zip
+      - setup_remote_docker
       - attach-gke-cluster:
           cluster-id: qa-tests
       - run:
           name: Deploy central to remote cluster
           command: |
-            deploy_dir="deploy/<< parameters.orchestrator-flavor >>"
-            "${deploy_dir}/central.sh"
-
-            source "scripts/k8s/export-basic-auth-creds.sh "$deploy_dir"
-            cci-export ROX_USERNAME "$ROX_USERNAME"
-            cci-export ROX_PASSWORD "$ROX_PASSWORD"
+            central/scripts/setup.sh
+            kubectl create -R -f central
 
       - steps: << parameters.post-central-deploy-steps >>
 
@@ -187,35 +184,6 @@ jobs:
             kill "$proxy_pid"
 
       - *waitForSensorK8s
-
-      - run:
-          name: Verify all new resources have the auto-upgrade label
-          command: |
-            <<# parameters.validate-autoupgrade-label >>
-            {
-              scripts/ci/sensorbundle-label/list-resources.sh
-              cat /tmp/k8s-resources-pre-sensor
-            } | sort | uniq -u >/tmp/k8s-new-resources-post-sensor
-
-            scripts/ci/sensorbundle-label/list-resources.sh 'auto-upgrade.stackrox.io/component=sensor' \
-                >/tmp/k8s-sensor-labeled-resources
-
-            {
-              cat /tmp/k8s-new-resources-post-sensor
-              cat /tmp/k8s-sensor-labeled-resources
-              cat /tmp/k8s-sensor-labeled-resources
-              cat scripts/ci/sensorbundle-label/whitelist 2>/dev/null
-              cat scripts/ci/sensorbundle-label/whitelist 2>/dev/null
-            } | sort | uniq -u >/tmp/k8s-new-resources-unlabeled
-
-            if [[ -s /tmp/k8s-new-resources-unlabeled ]]; then
-              echo >&2 "The following resources were created by the sensor bundle, but don't carry the sensor bundle label:"
-              cat >&2 /tmp/k8s-new-resources-unlabeled
-              exit 1
-            fi
-            <</ parameters.validate-autoupgrade-label >>
-            exit 0
-
       - *setupClientTLSCerts
       - setup-egress-proxies
       - *deleteClusterk8s
