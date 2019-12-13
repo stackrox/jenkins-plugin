@@ -38,21 +38,6 @@ deleteClusterk8s: &deleteClusterk8s
       gcloud container clusters delete "$CLUSTER_NAME" --async
       when: on_fail
 
-checkOutRoxRepo: &checkOutRoxRepo
-  - add_ssh_keys:
-      fingerprints:
-        - "7f:08:58:1e:80:80:6e:66:99:9a:37:cb:e9:96:0b:40"
-
-        - run:
-            name: Add SSH key of github.com
-            command: |
-              ssh-keyscan -H github.com >> ~/.ssh/known_hosts
-
-        - run:
-            name: Check out collector source code
-            command: |
-              git clone git@github.com:stackrox/rox.git .
-
 
 waitForAPI: &waitForAPI
   run:
@@ -145,7 +130,19 @@ jobs:
         default: []
 
     steps:
-      - *checkOutRoxRepo
+      - add_ssh_keys:
+          fingerprints:
+            - "7f:08:58:1e:80:80:6e:66:99:9a:37:cb:e9:96:0b:40"
+
+      - run:
+          name: Add SSH key of github.com
+          command: |
+            ssh-keyscan -H github.com >> ~/.ssh/known_hosts
+
+      - run:
+          name: Check out collector source code
+          command: |
+            git clone git@github.com:stackrox/rox.git .
       - setup_remote_docker
       - attach_workspace:
           at: /home/circleci/rox
