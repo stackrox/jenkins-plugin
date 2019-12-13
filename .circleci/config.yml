@@ -58,7 +58,7 @@ jobs:
     - checkout
     - setup_remote_docker
     - provision-gke-cluster:
-        cluster-id: jenkins-plugin-${CIRCLE_BUILD_NUM}
+        cluster-id: qa-tests
         num-nodes: 2
 
   deploy-stackrox:
@@ -67,7 +67,6 @@ jobs:
         auth:
           username: $DOCKER_IO_PULL_USERNAME
           password: $DOCKER_IO_PULL_PASSWORD
-    working_directory: /home/circleci/jenkins-plugin
     parameters:
       orchestrator-flavor:
         type: string
@@ -87,7 +86,7 @@ jobs:
           at: /home/circleci/jenkins-plugin/
       - setup_remote_docker
       - attach-gke-cluster:
-            cluster-id: jenkins-plugin-${CIRCLE_BUILD_NUM}
+            cluster-id: qa-tests
       - run:
           name:
           command: |
@@ -175,7 +174,7 @@ commands:
       - run:
           name: Assign environment variables
           command: |
-            CLUSTER_NAME="rox-jenkins-plugin-ci-<< parameters.cluster-id >>-${CIRCLE_BUILD_NUM}"
+            CLUSTER_NAME="rox-jenkins-<< parameters.cluster-id >>-${CIRCLE_BUILD_NUM}"
             cci-export CLUSTER_NAME "$CLUSTER_NAME"
             echo "Assigned cluster name is $CLUSTER_NAME"
 
