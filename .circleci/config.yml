@@ -137,6 +137,8 @@ jobs:
       - run:
           name: Add SSH key of github.com
           command: |
+            touch ~/.ssh/known_hosts
+            chmod 0600 ~/.ssh/known_hosts
             ssh-keyscan -H github.com >> ~/.ssh/known_hosts
 
       - run:
