@@ -353,7 +353,7 @@ commands:
       - run:
           name: Restore config for << parameters.cluster-id >> cluster
           command: |
-            CONFIG_DIR="/go/src/github.com/stackrox/rox/.ci-clusters/<< parameters.cluster-id >>"
+            CONFIG_DIR="/home/circleci/jenkins-plugin/rox/.ci-clusters/<< parameters.cluster-id >>"
             CLUSTER_NAME="$(cat "${CONFIG_DIR}/name")"
             [[ -n "$CLUSTER_NAME" ]]
             ZONE="$(cat "${CONFIG_DIR}/zone")"
