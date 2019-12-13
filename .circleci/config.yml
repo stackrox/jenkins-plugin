@@ -1,5 +1,14 @@
 version: 2.1
 
+runOnAllTags: &runOnAllTags
+  filters:
+    tags:
+      only: /.*/
+
+runOnAllTagsWithDockerIOPullCtx: &runOnAllTagsWithDockerIOPullCtx
+  <<: *runOnAllTags
+  context: docker-io-pull
+
 buildLivenessCheck: &buildLivenessCheck
   run:
     name: Ensure workflow is still live
@@ -122,13 +131,17 @@ jobs:
     steps:
       - checkout
       - setup_remote_docker
+      - attach_workspace:
+          at: /home/circleci/jenkins-plugin
+      - attach-gke-cluster:
+          cluster-id: qa-tests
       - run:
           name: Deploy central to remote cluster
           command: |
             deploy_dir="deploy/<< parameters.orchestrator-flavor >>"
             "${deploy_dir}/central.sh"
 
-            source scripts/k8s/export-basic-auth-creds.sh "$deploy_dir"
+            source "scripts/k8s/export-basic-auth-creds.sh "$deploy_dir"
             cci-export ROX_USERNAME "$ROX_USERNAME"
             cci-export ROX_PASSWORD "$ROX_PASSWORD"
 
@@ -209,20 +222,11 @@ workflows:
   build:
     jobs:
       - build:
-          context: docker-io-pull
-          filters:
-            tags:
-              only: /.*/z
+          <<: *runOnAllTagsWithDockerIOPullCtx
       - provision-cluster-qa-tests:
-          context: docker-io-pull
-          filters:
-            tags:
-              only: /.*/z
+          <<: *runOnAllTagsWithDockerIOPullCtx
       - deploy-stackrox:
-          context: docker-io-pull
-          filters:
-              tags:
-                only: /.*/z
+          <<: *runOnAllTagsWithDockerIOPullCtx
           orchestrator-flavor: k8s
           requires:
             - provision-cluster-qa-tests
@@ -339,3 +343,29 @@ commands:
 
             echo "Isolating pods"
             kubectl -n stackrox apply -R -f tests/proxy/netpol/
+
+  attach-gke-cluster:
+    parameters:
+      cluster-id:
+        type: string
+
+    steps:
+      - run:
+          name: Restore config for << parameters.cluster-id >> cluster
+          command: |
+            CONFIG_DIR="/go/src/github.com/stackrox/rox/.ci-clusters/<< parameters.cluster-id >>"
+            CLUSTER_NAME="$(cat "${CONFIG_DIR}/name")"
+            [[ -n "$CLUSTER_NAME" ]]
+            ZONE="$(cat "${CONFIG_DIR}/zone")"
+            [[ -n "$ZONE" ]]
+            gcloud config set compute/zone "$ZONE"
+            cmd=(gcloud container clusters get-credentials --project stackrox-ci --zone "$ZONE" "$CLUSTER_NAME")
+            "${cmd[@]}"
+            echo "Restored config for cluster ${CLUSTER_NAME}"
+            cci-export CLUSTER_NAME "$CLUSTER_NAME"
+            echo
+            echo "Run the following command to attach to the cluster:"
+            echo
+            printf " %q" "${cmd[@]}"
+            echo
+
