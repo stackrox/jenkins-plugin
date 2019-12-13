@@ -58,7 +58,7 @@ jobs:
     - checkout
     - setup_remote_docker
     - provision-gke-cluster:
-        cluster-id: qa-tests
+        cluster-id: qa-tests-jenkins-plugin-${CIRCLE_BUILD_NUM}
         num-nodes: 2
 
   deploy-stackrox:
@@ -84,10 +84,10 @@ jobs:
 
     steps:
       - attach_workspace:
-          at: /home/circleci/jenkins-plugin
+          at: /home/circleci/jenkins-plugin/
       - setup_remote_docker
       - attach-gke-cluster:
-            cluster-id: qa-tests
+            cluster-id: qa-tests-jenkins-plugin-${CIRCLE_BUILD_NUM}
       - run:
           name:
           command: |
