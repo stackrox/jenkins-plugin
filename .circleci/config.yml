@@ -92,6 +92,7 @@ jobs:
       - run:
           name:
           command: |
+            docker login -u "$DOCKER_IO_PULL_USERNAME" -p "$DOCKER_IO_PULL_PASSWORD"
             docker run  -i --rm docker.io/stackrox/main:3.0.35.x-65-gb392aca31f central generate k8s pvc > bundle.zip
             unzip bundle.zip
       - run:
