@@ -92,7 +92,7 @@ jobs:
       - run:
           name:
           command: |
-            docker run  -i --rm stackrox/main:3.0.36.x-1-gc7c0c7af8e central generate k8s pvc > bundle.zip
+            docker run  -i --rm docker.io/stackrox/main:3.0.35.x-65-gb392aca31f central generate k8s pvc > bundle.zip
             unzip bundle.zip
       - run:
           name: Deploy central to remote cluster
