@@ -97,7 +97,7 @@ jobs:
             cci-export REGISTRY_PASSWORD "$DOCKER_IO_PULL_PASSWORD"
             cci-export MAIN_IMAGE_TAG "$(make --quiet tag)"
             cci-export GOOGLE_APPLICATION_CREDENTIALS /tmp/gcp.json
-            docker run  -i --rm docker.io/stackrox/main:3.0.35.x-65-gb392aca31f central generate k8s pvc > bundle.zip
+            docker run  -i --rm docker.io/stackrox/main:3.0.36.x-8-g80b8b34105 central generate k8s pvc > bundle.zip
             unzip bundle.zip
       - run:
           name: Deploy central to remote cluster
