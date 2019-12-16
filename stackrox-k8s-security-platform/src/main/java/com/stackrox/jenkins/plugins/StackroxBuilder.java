@@ -24,6 +24,7 @@ import net.sf.json.JSONObject;
 import org.apache.commons.validator.routines.UrlValidator;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHeaders;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -59,6 +60,7 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
     private String caCertPEM;
 
 
+    private CloseableHttpClient httpClient;
     private RunConfig runConfig;
     private List<ImageCheckResults> results;
 
@@ -127,81 +129,81 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
     public void perform(Run<?, ?> run, FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException {
     //TODO: Process pass/fail build step while handling exceptions
         runConfig = new RunConfig(run, workspace, launcher, listener);
+        try {
+            //TODO: pass enable tls
+            httpClient = HttpClientUtils.Get();
+        } catch (Exception e) {
+            throw new IOException(String.format("Error creating client, exiting..."));
+        }
         results = Lists.newArrayList();
 
         for (String name: runConfig.getImageNames()) {
             processImage(name);
         }
+
         generateReport();
 
         cleanupJenkinsWorkspace();
+
+        if (httpClient != null) {
+            httpClient.close();
+        }
     }
 
     // Runs an image scan and the build time policy checks on the image
-    private void processImage (String imageName) {
+    private void processImage(String imageName) {
         runConfig.getLog().println(String.format("Checking image %s...", imageName));
 
-        List<CVE> cves = getImageScanResults(imageName);
+        try {
+            List<CVE> cves = getImageScanResults(imageName);
+            List<ViolatedPolicy> violatedPolicies = getPolicyViolations(imageName);
+            results.add(new ImageCheckResults(imageName, cves, violatedPolicies));
+        } catch (IOException e) {
+            runConfig.getLog().println(String.format("Error processing image %s: %s", imageName, e.getMessage()));
+        }
 
-        List<ViolatedPolicy> violatedPolicies = getPolicyViolations(imageName);
-
-        results.add(new ImageCheckResults(imageName, cves, violatedPolicies));
 
     }
 
-    private List<ViolatedPolicy> getPolicyViolations(String imageName) {
+    private List<ViolatedPolicy> getPolicyViolations(String imageName) throws IOException {
         List<ViolatedPolicy> violatedPolicies = Lists.newArrayList();
-        try {
-            JsonObject detectionResult = runBuildTimeDetection(imageName);
-            JsonArray alerts = detectionResult.getJsonArray("alerts");
 
-            for (int i = 0; i < alerts.size(); i++) {
-                JsonObject policy = alerts.getJsonObject(i).getJsonObject("policy");
-                violatedPolicies.add(new ViolatedPolicy(
-                         policy.getString("name"),
-                         policy.getString("description"),
-                         policy.getInt("severity"),
-                         policy.getJsonArray("enforcementActions").contains(ViolatedPolicy.BUILD_TIME_ENFORCEMENT) ? true : false));
-            }
-        } catch (Exception e) {
-            return null;
+        JsonObject detectionResult = runBuildTimeDetection(imageName);
+        JsonArray alerts = detectionResult.getJsonArray("alerts");
+
+        for (int i = 0; i < alerts.size(); i++) {
+            JsonObject policy = alerts.getJsonObject(i).getJsonObject("policy");
+            violatedPolicies.add(new ViolatedPolicy(
+                     policy.getString("name"),
+                     policy.getString("description"),
+                     policy.getInt("severity"),
+                     policy.getJsonArray("enforcementActions").contains(ViolatedPolicy.BUILD_TIME_ENFORCEMENT) ? true : false));
         }
+
         return violatedPolicies;
     }
     private JsonObject runBuildTimeDetection(String imageName) throws IOException {
-        //TODO: Cache HTTPClient in the class and reuse? also retry and timeout settings
-        CloseableHttpClient httpClient = null;
         CloseableHttpResponse response = null;
         HttpPost detectionRequest = null;
 
         try {
-            try {
-                //TODO: pass enable tls
-                httpClient = HttpClientUtils.Get();
-            } catch (Exception e) {
-                return null;
-            }
 
-            detectionRequest = new HttpPost(Joiner.on("/").join(portalAddress, "v1", "detect", "build"));
+            detectionRequest = new HttpPost(Joiner.on("/").join(portalAddress, "v1/detect/build"));
             detectionRequest.setHeader(HttpHeaders.ACCEPT, ContentType.APPLICATION_JSON.toString());
             detectionRequest.setHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.toString());
             detectionRequest.addHeader(HttpHeaders.AUTHORIZATION, Joiner.on(" ").join("Bearer", apiToken));
-
             detectionRequest.setEntity(new StringEntity(
                     Json.createObjectBuilder().add("imageName", imageName).build().toString(),
                     Charsets.UTF_8));
 
-
-            response = httpClient.execute(detectionRequest);
-
+            response = this.httpClient.execute(detectionRequest);
             int statusCode = response.getStatusLine().getStatusCode();
 
             HttpEntity entity = response.getEntity();
 
             if (statusCode != HttpURLConnection.HTTP_OK || entity == null) {
-                return null;
+                throw new IOException(String.format("Build time policy evaluation with status code: %d", statusCode));
             }
-
             JsonReader reader = Json.createReader(new InputStreamReader(entity.getContent()));
             JsonObject object = reader.readObject();
             EntityUtils.consume(entity);
@@ -214,75 +216,57 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
             if (response != null) {
                 response.close();
             }
-            if (httpClient != null) {
-                httpClient.close();
-            }
         }
     }
-    private List<CVE> getImageScanResults(String imageName) {
+    private List<CVE> getImageScanResults(String imageName) throws IOException {
         List<CVE> cves = Lists.newArrayList();
-        try {
-            JsonObject scanResult = runImageScan(imageName);
 
-            JsonArray components = scanResult.getJsonArray("components");
-            for (int i = 0; i < components.size(); i++) {
-                JsonObject component = components.getJsonObject(i);
-                JsonArray componentCves = component.getJsonArray("vulns");
-                for (int cveIndex = 0; cveIndex < componentCves.size(); cveIndex++) {
-                    JsonObject cve = componentCves.getJsonObject(cveIndex);
+        JsonObject scanResult = runImageScan(imageName);
 
-                    CVE cveToAdd = CVE.CVEBuilder.newInstance()
-                            .withId(cve.getString("cve"))
-                            .withCvssScore((float) cve.getJsonNumber("cvss").doubleValue())
-                            .withScoreType(cve.getString("scoreVersion"))
-                            .withPublishDate(cve.getString("publishedOn"))
-                            .withLink(cve.getString("link"))
-                            .inPackage(component.getString("name"))
-                            .inVersion(component.getString("version"))
-                            .build();
-                    cves.add(cveToAdd);
-                }
+        JsonArray components = scanResult.getJsonArray("components");
+        for (int i = 0; i < components.size(); i++) {
+            JsonObject component = components.getJsonObject(i);
+            JsonArray componentCves = component.getJsonArray("vulns");
+            for (int cveIndex = 0; cveIndex < componentCves.size(); cveIndex++) {
+                JsonObject cve = componentCves.getJsonObject(cveIndex);
+
+                CVE cveToAdd = CVE.Builder.newInstance()
+                        .withId(cve.getString("cve"))
+                        .withCvssScore((float) cve.getJsonNumber("cvss").doubleValue())
+                        .withScoreType(cve.getString("scoreVersion"))
+                        .withPublishDate(cve.getString("publishedOn"))
+                        .withLink(cve.getString("link"))
+                        .inPackage(component.getString("name"))
+                        .inVersion(component.getString("version"))
+                        .build();
+                cves.add(cveToAdd);
             }
-        } catch (Exception e) {
-            return null;
         }
+
         return cves;
     }
 
     private JsonObject runImageScan(String imageName) throws IOException {
-        //TODO: Cache HTTPClient in the  reclass and reuse? also retry and timeout settings
-        CloseableHttpClient httpClient = null;
         CloseableHttpResponse response = null;
         HttpPost imageScanRequest = null;
 
         try {
-            try {
-                //TODO: pass enable tls
-                httpClient = HttpClientUtils.Get();
-            } catch (Exception e) {
-                return null;
-            }
-
-            imageScanRequest = new HttpPost(Joiner.on("/").join(portalAddress, "v1", "images", "scan"));
+            imageScanRequest = new HttpPost(Joiner.on("/").join(portalAddress, "v1/images/scan"));
             imageScanRequest.setHeader(HttpHeaders.ACCEPT, ContentType.APPLICATION_JSON.toString());
             imageScanRequest.setHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.toString());
             imageScanRequest.addHeader(HttpHeaders.AUTHORIZATION, Joiner.on(" ").join("Bearer", apiToken));
-
             imageScanRequest.setEntity(new StringEntity(
                     Json.createObjectBuilder().add("imageName", imageName).add("force", true).build().toString(),
                     Charsets.UTF_8));
 
-
             response = httpClient.execute(imageScanRequest);
-
             int statusCode = response.getStatusLine().getStatusCode();
 
             HttpEntity entity = response.getEntity();
 
             if (statusCode != HttpURLConnection.HTTP_OK || entity == null) {
-                return null;
+                throw new IOException(String.format("Image scan request failed with status code: %d", statusCode));
             }
-
             JsonReader reader = Json.createReader(new InputStreamReader(entity.getContent()));
             JsonObject object = reader.readObject();
             EntityUtils.consume(entity);
@@ -294,9 +278,6 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
             }
             if (response != null) {
                 response.close();
-            }
-            if (httpClient != null) {
-                httpClient.close();
             }
         }
     }
@@ -310,11 +291,11 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
             log.println(String.format("************ %s *************", result.getImageName()));
             log.println("CVE Report");
             for (CVE cve : result.getCves()) {
-                log.println(cve.getId());
+                log.println(String.format("CVE: %s, %s, %s, %s, %b", cve.getId(), cve.getCvssScore(), cve.getPackageName(), cve.getPackageVersion(), cve.isFixable()));
             }
             log.println("Violated Policies");
             for (ViolatedPolicy policy : result.getViolatedPolicies()) {
-                log.println(policy.getName());
+                log.println(String.format("Violated policy: %s, %s, %b", policy.getName(), policy.getSeverity(), policy.isEnforced()));
             }
         }
     }
@@ -335,7 +316,6 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
     public DescriptorImpl getDescriptor() {
         return (DescriptorImpl) super.getDescriptor();
     }
-
 
     @Extension
     public static final class DescriptorImpl extends BuildStepDescriptor<Builder> {
@@ -397,6 +377,7 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
         }
 
         private boolean checkRoxAuthStatus(final String portalAddress, final String apiToken) throws IOException {
+            // Cannot use the cached HttpClient here since this is before the perform step.
             CloseableHttpClient httpClient = null;
             CloseableHttpResponse response = null;
             HttpGet authStatusRequest = null;
@@ -409,7 +390,7 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
                     return false;
                 }
 
-                authStatusRequest = new HttpGet(Joiner.on("/").join(portalAddress, "v1", "auth", "status"));
+                authStatusRequest = new HttpGet(Joiner.on("/").join(portalAddress, "v1/auth/status"));
                 authStatusRequest.addHeader("Accept", "application/json");
                 authStatusRequest.addHeader("Authorization", Joiner.on(" ").join("Bearer", apiToken));
 

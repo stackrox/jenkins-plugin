@@ -6,9 +6,9 @@ import java.util.List;
 @SuppressWarnings("unused")
 public class ImageCheckResults {
 
-    private String imageName;
-    private List<CVE> cves;
-    private List<ViolatedPolicy> violatedPolicies;
+    private final String imageName;
+    private final List<CVE> cves;
+    private final List<ViolatedPolicy> violatedPolicies;
 
     public ImageCheckResults(String imageName, List<CVE> cves, List<ViolatedPolicy> violatedPolicies) {
         this.imageName = imageName;

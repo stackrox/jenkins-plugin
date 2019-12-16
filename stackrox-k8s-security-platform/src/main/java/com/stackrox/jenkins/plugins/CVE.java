@@ -1,17 +1,14 @@
 package com.stackrox.jenkins.plugins;
 
-
-import java.sql.Date;
-import java.text.SimpleDateFormat;
-import java.time.Instant;
-
 public class CVE {
-   // CVE ID | CVSS Score | Publish date | Package name and version | Fixable | CVE Link
-
     private final String id;
     private final float cvssScore;
     private final String scoreType;
     private final String publishDate;
+    private final String packageName;
+    private final String packageVersion;
+    private final boolean fixable;
+    private final String link;
 
     public String getId() {
         return id;
@@ -45,12 +42,7 @@ public class CVE {
         return link;
     }
 
-    private final String packageName;
-    private final String packageVersion;
-    private final boolean fixable;
-    private final String link;
-
-    public CVE (CVEBuilder builder) {
+    private CVE(Builder builder) {
         this.id = builder.id;
         this.cvssScore = builder.cvssScore;
         this.scoreType = builder.scoreType;
@@ -62,7 +54,7 @@ public class CVE {
 
     }
 
-    public static class CVEBuilder {
+    public static class Builder {
         private String id;
         private float cvssScore;
         private String scoreType;
@@ -72,49 +64,49 @@ public class CVE {
         private boolean fixable;
         private String link;
 
-        private CVEBuilder() {
+        private Builder() {
         }
 
-       public static CVEBuilder newInstance() {
-           return new CVEBuilder();
-       }
+        public static Builder newInstance() {
+           return new Builder();
+        }
 
-        public CVEBuilder withId(String id)
+        public Builder withId(String id)
         {
             this.id = id;
             return this;
         }
-        public CVEBuilder withCvssScore(float cvssScore)
+        public Builder withCvssScore(float cvssScore)
         {
             this.cvssScore = cvssScore;
             return this;
         }
-        public CVEBuilder withScoreType(String scoreType)
+        public Builder withScoreType(String scoreType)
         {
             this.scoreType = scoreType;
             return this;
         }
-        public CVEBuilder withPublishDate(String timestamp)
+        public Builder withPublishDate(String timestamp)
         {
             this.publishDate = timestamp;
             return this;
         }
-        public CVEBuilder inPackage(String packageName)
+        public Builder inPackage(String packageName)
         {
             this.packageName = packageName;
             return this;
         }
-        public CVEBuilder inVersion(String packageVersion)
+        public Builder inVersion(String packageVersion)
         {
             this.packageVersion = packageVersion;
             return this;
         }
-        public CVEBuilder withLink(String link)
+        public Builder withLink(String link)
         {
             this.link = link;
             return this;
         }
-        public CVEBuilder isFixable(boolean fixable) {
+        public Builder isFixable(boolean fixable) {
             this.fixable = fixable;
             return this;
         }
@@ -123,10 +115,5 @@ public class CVE {
         {
             return new CVE(this);
         }
-
-
     }
-
-
-
 }
