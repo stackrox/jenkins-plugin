@@ -1,8 +1,10 @@
 package com.stackrox.jenkins.plugins;
 
 import com.google.common.base.CharMatcher;
+import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -14,14 +16,19 @@ import hudson.tasks.Builder;
 import hudson.util.FormValidation;
 import hudson.util.Secret;
 import javax.json.Json;
+import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 import jenkins.tasks.SimpleBuildStep;
 import net.sf.json.JSONObject;
 import org.apache.commons.validator.routines.UrlValidator;
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpHeaders;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -31,8 +38,11 @@ import org.kohsuke.stapler.StaplerRequest;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintStream;
 import java.net.HttpURLConnection;
 import java.nio.file.Files;
+
+import java.util.List;
 
 public class StackroxBuilder extends Builder implements SimpleBuildStep {
 
@@ -50,7 +60,8 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
 
 
     private RunConfig runConfig;
-    
+    private List<ImageCheckResults> results;
+
     @DataBoundSetter
     public void setPortalAddress(String portalAddress) {
         this.portalAddress = CharMatcher.is('/').trimTrailingFrom(portalAddress);
@@ -114,8 +125,9 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
     //TODO: Add console log for the plugin
     @Override
     public void perform(Run<?, ?> run, FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException {
-
+    //TODO: Process pass/fail build step while handling exceptions
         runConfig = new RunConfig(run, workspace, launcher, listener);
+        results = Lists.newArrayList();
 
         for (String name: runConfig.getImageNames()) {
             processImage(name);
@@ -128,12 +140,183 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
     // Runs an image scan and the build time policy checks on the image
     private void processImage (String imageName) {
         runConfig.getLog().println(String.format("Checking image %s...", imageName));
-        //TODO run image scan + policy checks and store results
+
+        List<CVE> cves = getImageScanResults(imageName);
+
+        List<ViolatedPolicy> violatedPolicies = getPolicyViolations(imageName);
+
+        results.add(new ImageCheckResults(imageName, cves, violatedPolicies));
+
+    }
+
+    private List<ViolatedPolicy> getPolicyViolations(String imageName) {
+        List<ViolatedPolicy> violatedPolicies = Lists.newArrayList();
+        try {
+            JsonObject detectionResult = runBuildTimeDetection(imageName);
+            JsonArray alerts = detectionResult.getJsonArray("alerts");
+
+            for (int i = 0; i < alerts.size(); i++) {
+                JsonObject policy = alerts.getJsonObject(i).getJsonObject("policy");
+                violatedPolicies.add(new ViolatedPolicy(
+                         policy.getString("name"),
+                         policy.getString("description"),
+                         policy.getInt("severity"),
+                         policy.getJsonArray("enforcementActions").contains(ViolatedPolicy.BUILD_TIME_ENFORCEMENT) ? true : false));
+            }
+        } catch (Exception e) {
+            return null;
+        }
+        return violatedPolicies;
+    }
+    private JsonObject runBuildTimeDetection(String imageName) throws IOException {
+        //TODO: Cache HTTPClient in the class and reuse? also retry and timeout settings
+        CloseableHttpClient httpClient = null;
+        CloseableHttpResponse response = null;
+        HttpPost detectionRequest = null;
+
+        try {
+            try {
+                //TODO: pass enable tls
+                httpClient = HttpClientUtils.Get();
+            } catch (Exception e) {
+                return null;
+            }
+
+            detectionRequest = new HttpPost(Joiner.on("/").join(portalAddress, "v1", "detect", "build"));
+            detectionRequest.setHeader(HttpHeaders.ACCEPT, ContentType.APPLICATION_JSON.toString());
+            detectionRequest.setHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.toString());
+            detectionRequest.addHeader(HttpHeaders.AUTHORIZATION, Joiner.on(" ").join("Bearer", apiToken));
+
+            detectionRequest.setEntity(new StringEntity(
+                    Json.createObjectBuilder().add("imageName", imageName).build().toString(),
+                    Charsets.UTF_8));
+
+
+            response = httpClient.execute(detectionRequest);
+
+            int statusCode = response.getStatusLine().getStatusCode();
+
+            HttpEntity entity = response.getEntity();
+
+            if (statusCode != HttpURLConnection.HTTP_OK || entity == null) {
+                return null;
+            }
+
+            JsonReader reader = Json.createReader(new InputStreamReader(entity.getContent()));
+            JsonObject object = reader.readObject();
+            EntityUtils.consume(entity);
+            return object;
+
+        } finally {
+            if (detectionRequest != null) {
+                detectionRequest.releaseConnection();
+            }
+            if (response != null) {
+                response.close();
+            }
+            if (httpClient != null) {
+                httpClient.close();
+            }
+        }
+    }
+    private List<CVE> getImageScanResults(String imageName) {
+        List<CVE> cves = Lists.newArrayList();
+        try {
+            JsonObject scanResult = runImageScan(imageName);
+
+            JsonArray components = scanResult.getJsonArray("components");
+            for (int i = 0; i < components.size(); i++) {
+                JsonObject component = components.getJsonObject(i);
+                JsonArray componentCves = component.getJsonArray("vulns");
+                for (int cveIndex = 0; cveIndex < componentCves.size(); cveIndex++) {
+                    JsonObject cve = componentCves.getJsonObject(cveIndex);
+
+                    CVE cveToAdd = CVE.CVEBuilder.newInstance()
+                            .withId(cve.getString("cve"))
+                            .withCvssScore((float) cve.getJsonNumber("cvss").doubleValue())
+                            .withScoreType(cve.getString("scoreVersion"))
+                            .withPublishDate(cve.getString("publishedOn"))
+                            .withLink(cve.getString("link"))
+                            .inPackage(component.getString("name"))
+                            .inVersion(component.getString("version"))
+                            .build();
+                    cves.add(cveToAdd);
+                }
+            }
+        } catch (Exception e) {
+            return null;
+        }
+        return cves;
+    }
+
+    private JsonObject runImageScan(String imageName) throws IOException {
+        //TODO: Cache HTTPClient in the  reclass and reuse? also retry and timeout settings
+        CloseableHttpClient httpClient = null;
+        CloseableHttpResponse response = null;
+        HttpPost imageScanRequest = null;
+
+        try {
+            try {
+                //TODO: pass enable tls
+                httpClient = HttpClientUtils.Get();
+            } catch (Exception e) {
+                return null;
+            }
+
+            imageScanRequest = new HttpPost(Joiner.on("/").join(portalAddress, "v1", "images", "scan"));
+            imageScanRequest.setHeader(HttpHeaders.ACCEPT, ContentType.APPLICATION_JSON.toString());
+            imageScanRequest.setHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.toString());
+            imageScanRequest.addHeader(HttpHeaders.AUTHORIZATION, Joiner.on(" ").join("Bearer", apiToken));
+
+            imageScanRequest.setEntity(new StringEntity(
+                    Json.createObjectBuilder().add("imageName", imageName).add("force", true).build().toString(),
+                    Charsets.UTF_8));
+
+
+            response = httpClient.execute(imageScanRequest);
+
+            int statusCode = response.getStatusLine().getStatusCode();
+
+            HttpEntity entity = response.getEntity();
+
+            if (statusCode != HttpURLConnection.HTTP_OK || entity == null) {
+                return null;
+            }
+
+            JsonReader reader = Json.createReader(new InputStreamReader(entity.getContent()));
+            JsonObject object = reader.readObject();
+            EntityUtils.consume(entity);
+            return object.getJsonObject("scan");
+
+        } finally {
+            if (imageScanRequest != null) {
+                imageScanRequest.releaseConnection();
+            }
+            if (response != null) {
+                response.close();
+            }
+            if (httpClient != null) {
+                httpClient.close();
+            }
+        }
     }
 
     private void generateReport() {
         runConfig.getLog().println(String.format("Generating report..."));
-        //TODO: chew on image scan results for all images and generate Jenkins report to persist in build
+        PrintStream log = runConfig.getLog();
+
+        //TODO: Generate report
+        for (ImageCheckResults result : results) {
+            log.println(String.format("************ %s *************", result.getImageName()));
+            log.println("CVE Report");
+            for (CVE cve : result.getCves()) {
+                log.println(cve.getId());
+            }
+            log.println("Violated Policies");
+            for (ViolatedPolicy policy : result.getViolatedPolicies()) {
+                log.println(policy.getName());
+            }
+        }
     }
 
     private void cleanupJenkinsWorkspace() {
