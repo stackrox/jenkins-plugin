@@ -1,0 +1,8 @@
+{
+  "restrictions": {
+    "allowOffline": true,
+    "maxNodes": 50,
+    "buildFlavors": ["development"],
+    "noDeploymentEnvironmentRestriction": true
+  }
+}

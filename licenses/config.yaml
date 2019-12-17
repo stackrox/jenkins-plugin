@@ -1,0 +1,60 @@
+generators:
+- name: qa
+  key:
+    keyResourceId: "projects/stackrox-dev/locations/global/keyRings/licensing-qa/cryptoKeys/qa-license-signer/cryptoKeyVersions/1"
+  limit:
+    maxDuration: 1382400000000000
+    allowOffline: true
+    allowNoNodeLimit: true
+    allowNoBuildFlavorRestriction: true
+    deploymentEnvironments:
+      - gcp/ultra-current-825
+      - azure/66c57ff5-f49f-4510-ae04-e26d3ad2ee63
+      - aws/051999192406
+      - aws/880732477823  # k@stackrox.com
+      - aws/522993616158  # rhama@stackrox.com
+      - aws/598979716678  # akshat@stackrox.com
+- name: ci
+  key:
+    keyResourceId: "projects/stackrox-dev/locations/global/keyRings/licensing-ci/cryptoKeys/ci-license-signer/cryptoKeyVersions/1"
+  limit:
+    maxDuration: 21600000000000
+    allowOffline: true
+    maxNodeLimit: 10
+    allowNoBuildFlavorRestriction: true
+    deploymentEnvironments:
+      - gcp/stackrox-ci
+      - aws/051999192406
+- name: dev
+  key:
+    keyResourceId: "projects/stackrox-dev/locations/us-west2/keyRings/licensing-dev/cryptoKeys/dev-license/cryptoKeyVersions/4"
+  limit:
+    maxDuration: 2592000000000000
+    allowOffline: true
+    maxNodeLimit: 50
+    buildFlavors:
+      - development
+    allowNoDeploymentEnvironmentRestriction: true
+- name: demo
+  key:
+    keyResourceId: "projects/stackrox-dev/locations/global/keyRings/licensing-demos/cryptoKeys/demo-license-signer/cryptoKeyVersions/1"
+  limit:
+    maxDuration: 2592000000000000
+    allowOffline: true
+    maxNodeLimit: 50
+    allowNoBuildFlavorRestriction: true
+    deploymentEnvironments:
+      - gcp/ultra-current-825
+      - azure/66c57ff5-f49f-4510-ae04-e26d3ad2ee63
+      - aws/051999192406
+- name: prod
+  key:
+    keyResourceId: "projects/stackrox-licensing/locations/global/keyRings/production-key-ring/cryptoKeys/production-key/cryptoKeyVersions/1"
+  limit:
+    earliestNotValidBefore: "2018-05-01T00:00:00Z"
+    latestNotValidAfter: "2023-04-30T00:00:00Z"
+    allowOffline: true
+    maxDuration: 94780800000000000
+    allowNoNodeLimit: true
+    allowNoBuildFlavorRestriction: true
+    allowNoDeploymentEnvironmentRestriction: true
