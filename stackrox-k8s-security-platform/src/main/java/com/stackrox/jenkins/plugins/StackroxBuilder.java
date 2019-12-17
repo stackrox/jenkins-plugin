@@ -5,6 +5,7 @@ import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
+import hudson.AbortException;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -24,7 +25,6 @@ import net.sf.json.JSONObject;
 import org.apache.commons.validator.routines.UrlValidator;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHeaders;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -42,11 +42,9 @@ import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.net.HttpURLConnection;
 import java.nio.file.Files;
-
 import java.util.List;
 
 public class StackroxBuilder extends Builder implements SimpleBuildStep {
-
 
     private static final boolean DEFAULT_FAIL_ON_POLICY_EVAL_FAILURE = true;
     private static final boolean DEFAULT_FAIL_ON_CRITICAL_PLUGIN_ERROR = true;
@@ -59,14 +57,27 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
     private boolean enableTLSVerification = DEFAULT_ENABLE_TLS_VERIFICATION;
     private String caCertPEM;
 
-
     private CloseableHttpClient httpClient;
     private RunConfig runConfig;
     private List<ImageCheckResults> results;
 
+    @DataBoundConstructor
+    public StackroxBuilder(OptionalTLSConfig tlsConfig) {
+        this.caCertPEM = (tlsConfig != null) ? tlsConfig.caCertPEM : null;
+        this.enableTLSVerification = tlsConfig != null;
+    }
+
+    public String getPortalAddress() {
+        return this.portalAddress;
+    }
+
     @DataBoundSetter
     public void setPortalAddress(String portalAddress) {
         this.portalAddress = CharMatcher.is('/').trimTrailingFrom(portalAddress);
+    }
+
+    public Secret getApiToken() {
+        return this.apiToken;
     }
 
     @DataBoundSetter
@@ -74,30 +85,22 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
         this.apiToken = Secret.fromString(apiToken);
     }
 
+    public boolean isFailOnPolicyEvalFailure() {
+        return this.failOnPolicyEvalFailure;
+    }
+
     @DataBoundSetter
     public void setFailOnPolicyEvalFailure(boolean failOnPolicyEvalFailure) {
         this.failOnPolicyEvalFailure = failOnPolicyEvalFailure;
     }
 
+    public boolean isFailOnCriticalPluginError() {
+        return this.failOnCriticalPluginError;
+    }
+
     @DataBoundSetter
     public void setFailOnCriticalPluginError(boolean failOnCriticalPluginError) {
         this.failOnCriticalPluginError = failOnCriticalPluginError;
-    }
-
-    public String getPortalAddress() {
-        return this.portalAddress;
-    }
-
-    public Secret getApiToken() {
-        return this.apiToken;
-    }
-
-    public boolean isFailOnPolicyEvalFailure() {
-        return this.failOnPolicyEvalFailure;
-    }
-
-    public boolean isFailOnCriticalPluginError() {
-        return this.failOnCriticalPluginError;
     }
 
     public boolean isEnableTLSVerification() {
@@ -108,36 +111,20 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
         return caCertPEM;
     }
 
-    public static class OptionalTLSConfig {
-        private String caCertPEM;
-
-        @DataBoundConstructor
-        public OptionalTLSConfig(String caCertPEM) {
-            this.caCertPEM = caCertPEM;
-        }
-
-    }
-
-    @DataBoundConstructor
-    public StackroxBuilder(OptionalTLSConfig tlsConfig) {
-        this.caCertPEM = (tlsConfig != null) ? tlsConfig.caCertPEM : null;
-        this.enableTLSVerification = (tlsConfig != null) ? true : false;
-    }
-
     //TODO: Add console log for the plugin
     @Override
     public void perform(Run<?, ?> run, FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException {
-    //TODO: Process pass/fail build step while handling exceptions
+        //TODO: Process pass/fail build step while handling exceptions
         runConfig = new RunConfig(run, workspace, launcher, listener);
         try {
             //TODO: pass enable tls
             httpClient = HttpClientUtils.Get();
         } catch (Exception e) {
-            throw new IOException(String.format("Error creating client, exiting..."));
+            throw new AbortException(String.format("Fatal error creating client: %s. Aborting ...", e.getMessage()));
         }
         results = Lists.newArrayList();
 
-        for (String name: runConfig.getImageNames()) {
+        for (String name : runConfig.getImageNames()) {
             processImage(name);
         }
 
@@ -162,7 +149,6 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
             runConfig.getLog().println(String.format("Error processing image %s: %s", imageName, e.getMessage()));
         }
 
-
     }
 
     private List<ViolatedPolicy> getPolicyViolations(String imageName) throws IOException {
@@ -174,14 +160,15 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
         for (int i = 0; i < alerts.size(); i++) {
             JsonObject policy = alerts.getJsonObject(i).getJsonObject("policy");
             violatedPolicies.add(new ViolatedPolicy(
-                     policy.getString("name"),
-                     policy.getString("description"),
-                     policy.getInt("severity"),
-                     policy.getJsonArray("enforcementActions").contains(ViolatedPolicy.BUILD_TIME_ENFORCEMENT) ? true : false));
+                    policy.getString("name"),
+                    policy.getString("description"),
+                    policy.getInt("severity"),
+                    policy.getJsonArray("enforcementActions").contains(ViolatedPolicy.BUILD_TIME_ENFORCEMENT)));
         }
 
         return violatedPolicies;
     }
+
     private JsonObject runBuildTimeDetection(String imageName) throws IOException {
         CloseableHttpResponse response = null;
         HttpPost detectionRequest = null;
@@ -218,6 +205,7 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
             }
         }
     }
+
     private List<CVE> getImageScanResults(String imageName) throws IOException {
         List<CVE> cves = Lists.newArrayList();
 
@@ -317,6 +305,16 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
         return (DescriptorImpl) super.getDescriptor();
     }
 
+    public static class OptionalTLSConfig {
+        private String caCertPEM;
+
+        @DataBoundConstructor
+        public OptionalTLSConfig(String caCertPEM) {
+            this.caCertPEM = caCertPEM;
+        }
+
+    }
+
     @Extension
     public static final class DescriptorImpl extends BuildStepDescriptor<Builder> {
 
@@ -407,7 +405,7 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
                 JsonReader reader = Json.createReader(new InputStreamReader(entity.getContent()));
                 JsonObject object = reader.readObject();
                 EntityUtils.consume(entity);
-                return Strings.isNullOrEmpty(object.getString("userId")) ? false : true;
+                return !Strings.isNullOrEmpty(object.getString("userId"));
 
             } finally {
                 if (authStatusRequest != null) {

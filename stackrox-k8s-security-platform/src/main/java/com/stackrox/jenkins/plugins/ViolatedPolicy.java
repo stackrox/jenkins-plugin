@@ -16,7 +16,7 @@ public class ViolatedPolicy {
     private Severity severity;
     private boolean enforced;
 
-    public ViolatedPolicy (String name, String description, int severity, boolean enforced) {
+    public ViolatedPolicy(String name, String description, int severity, boolean enforced) {
         this.name = name;
         this.description = description;
         switch (severity) {
@@ -54,6 +54,5 @@ public class ViolatedPolicy {
     public boolean isEnforced() {
         return enforced;
     }
-
 
 }

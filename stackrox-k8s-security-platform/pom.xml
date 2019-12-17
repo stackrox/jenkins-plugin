@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plugin</artifactId>
         <version>3.50</version>
-        <relativePath />
+        <relativePath/>
     </parent>
     <groupId>com.stackrox.jenkins.plugins</groupId>
     <artifactId>stackrox-k8s-security-platform</artifactId>
@@ -16,14 +17,14 @@
         <java.level>8</java.level>
     </properties>
     <name>StackRox Image Security</name>
-   <!--- TODO: Licensing
-   <licenses>
-        <license>
-            <name>MIT License</name>
-            <url>https://opensource.org/licenses/MIT</url>
-        </license>
-    </licenses>
-    -->
+    <!--- TODO: Licensing
+    <licenses>
+         <license>
+             <name>MIT License</name>
+             <url>https://opensource.org/licenses/MIT</url>
+         </license>
+     </licenses>
+     -->
     <!-- Assuming you want to host on @jenkinsci:
     <url>https://github.com/jenkinsci/${project.artifactId}-plugin</url>
     <scm>

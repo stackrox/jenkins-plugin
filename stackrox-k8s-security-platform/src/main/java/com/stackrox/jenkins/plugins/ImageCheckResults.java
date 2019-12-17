@@ -1,6 +1,5 @@
 package com.stackrox.jenkins.plugins;
 
-import net.sf.json.JSONObject;
 import java.util.List;
 
 @SuppressWarnings("unused")

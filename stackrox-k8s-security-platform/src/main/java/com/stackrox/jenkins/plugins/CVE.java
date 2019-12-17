@@ -68,51 +68,50 @@ public class CVE {
         }
 
         public static Builder newInstance() {
-           return new Builder();
+            return new Builder();
         }
 
-        public Builder withId(String id)
-        {
+        public Builder withId(String id) {
             this.id = id;
             return this;
         }
-        public Builder withCvssScore(float cvssScore)
-        {
+
+        public Builder withCvssScore(float cvssScore) {
             this.cvssScore = cvssScore;
             return this;
         }
-        public Builder withScoreType(String scoreType)
-        {
+
+        public Builder withScoreType(String scoreType) {
             this.scoreType = scoreType;
             return this;
         }
-        public Builder withPublishDate(String timestamp)
-        {
+
+        public Builder withPublishDate(String timestamp) {
             this.publishDate = timestamp;
             return this;
         }
-        public Builder inPackage(String packageName)
-        {
+
+        public Builder inPackage(String packageName) {
             this.packageName = packageName;
             return this;
         }
-        public Builder inVersion(String packageVersion)
-        {
+
+        public Builder inVersion(String packageVersion) {
             this.packageVersion = packageVersion;
             return this;
         }
-        public Builder withLink(String link)
-        {
+
+        public Builder withLink(String link) {
             this.link = link;
             return this;
         }
+
         public Builder isFixable(boolean fixable) {
             this.fixable = fixable;
             return this;
         }
 
-        public CVE build()
-        {
+        public CVE build() {
             return new CVE(this);
         }
     }
