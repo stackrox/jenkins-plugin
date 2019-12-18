@@ -56,7 +56,8 @@ jobs:
      - POD_SECURITY_POLICIES: "true"
    working_directory: /home/circleci/jenkins-plugin
    steps:
-    - checkout
+    - attach_workspace:
+         at: /home/circleci/jenkins-plugin/
     - setup_remote_docker
     - provision-gke-cluster:
         cluster-id: qa-tests
@@ -91,7 +92,7 @@ jobs:
       - attach-gke-cluster:
             cluster-id: qa-tests
       - run:
-          name: Get Rox-ctl binary
+          name: Get Roxctl binary
           command: |
             docker login -u "$DOCKER_IO_PULL_USERNAME" -p "$DOCKER_IO_PULL_PASSWORD"
             cci-export REGISTRY_USERNAME "$DOCKER_IO_PULL_USERNAME"
@@ -119,7 +120,6 @@ jobs:
       - run:
           name: Creating License Key
           command: |
-            cd /home/circleci/jenkins-plugin/
             ROX_LICENSE_KEY="$(./licenses/qa.sh --not-valid-after +6h)"
             cci-export ROX_LICENSE_KEY "$ROX_LICENSE_KEY"
 
