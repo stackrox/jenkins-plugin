@@ -56,8 +56,7 @@ jobs:
      - POD_SECURITY_POLICIES: "true"
    working_directory: /home/circleci/jenkins-plugin
    steps:
-    - attach_workspace:
-         at: /home/circleci/jenkins-plugin/
+    - checkout
     - setup_remote_docker
     - provision-gke-cluster:
         cluster-id: qa-tests
@@ -91,6 +90,7 @@ jobs:
       - setup_remote_docker
       - attach-gke-cluster:
             cluster-id: qa-tests
+      - checkout
       - run:
           name: Get Roxctl binary
           command: |
