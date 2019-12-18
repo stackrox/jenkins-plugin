@@ -119,7 +119,7 @@ jobs:
       - run:
           name: Creating License Key
           command: |
-            ls -lrt
+            cd /home/circleci/jenkins-plugin/
             ROX_LICENSE_KEY="$(./licenses/qa.sh --not-valid-after +6h)"
             cci-export ROX_LICENSE_KEY "$ROX_LICENSE_KEY"
 
