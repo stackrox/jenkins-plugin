@@ -99,8 +99,9 @@ jobs:
       - run:
           name: Get Rox-ctl binary
           command: |
-            <<# parameters.docker-login >>
             docker login -u "$DOCKER_IO_PULL_USERNAME" -p "$DOCKER_IO_PULL_PASSWORD"
+            cci-export REGISTRY_USERNAME "$DOCKER_IO_PULL_USERNAME"
+            cci-export REGISTRY_PASSWORD "$DOCKER_IO_PULL_PASSWORD"
             containerId=$(docker create stackrox/main:3.0.35.0)
             docker cp $containerId:/assets/downloads/cli/roxctl-linux ./roxctl
       - run:
