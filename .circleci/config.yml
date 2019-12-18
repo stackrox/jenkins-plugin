@@ -28,6 +28,7 @@ setupLicense: &setupLicense
     name: Creating License Key
     command: |
         ROX_LICENSE_KEY="$(licenses/ci.sh)"
+        cci-export ROX_LICENSE_KEY "$ROX_LICENSE_KEY"
 
 
 jobs:
@@ -96,41 +97,41 @@ jobs:
       - attach-gke-cluster:
             cluster-id: qa-tests
       - run:
-          name:
+          name: Get Rox-ctl binary
           command: |
-            docker login -u "$DOCKER_IO_PULL_USERNAME" -p "$DOCKER_IO_PULL_PASSWORD"
-            cci-export REGISTRY_USERNAME "$DOCKER_IO_PULL_USERNAME"
-            cci-export REGISTRY_PASSWORD "$DOCKER_IO_PULL_PASSWORD"
-            cci-export MAIN_IMAGE_TAG "$(make --quiet tag)"
-            cci-export GOOGLE_APPLICATION_CREDENTIALS /tmp/gcp.json
-            docker run  -i --rm docker.io/stackrox/main:3.0.35.0 central generate k8s pvc > bundle.zip
-            unzip bundle.zip
+            containerId=$(docker create stackrox/main:3.0.35.0)
+            docker cp $containerId:/assets/downloads/cli/roxctl-linux ./roxctl
+      - run:
+          name: Generate centrol bundle
+          command: |
+            ./roxctl central generate k8s pvc --main-image docker.io/stackrox/main:3.0.35.0
+            export ROX_PASSWORD=$(cat central-bundle/password)
+            cci-export ROX_USERNAME "admin"
+            cci-export ROX_PASSWORD "$ROX_PASSWORD"
       - run:
           name: Deploy central to remote cluster
           command: |
-            central/scripts/setup.sh
-            kubectl create -R -f central
+            central-bundle/central/scripts/setup.sh
+            kubectl create -R -f central-bundle/central
 
       - run:
           name: Deploy scanner to remote cluster
           command:  |
-            scanner/scripts/setup.sh
-            kubectl create -R -f scanner
+            central-bundle/scanner/scripts/setup.sh
+            kubectl create -R -f central-bundle/scanner
 
       - *setupLicense
 
       - run:
           name: Add license key to central
           command: |
-              ./roxctl-darwin central license add--license="${ROX_LICENSE_KEY}"
+            ./roxctl central license add--license="${ROX_LICENSE_KEY}"
 
       - run:
           name: Deploy sensor the remote cluster
           command: |
             export API_HOSTNAME=localhost
             export API_PORT=8000
-            containerId=$(docker create stackrox/main:3.0.35.0 )
-            docker cp $containerId:/assets/downloads/cli/roxctl-linux ./roxctl
             ./roxctl sensor generate k8s --name remote01
                                                      --collection-method kernel-module
                                                      --collector-image stackrox/collector
