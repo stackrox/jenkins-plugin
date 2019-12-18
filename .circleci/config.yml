@@ -27,9 +27,8 @@ setupLicense: &setupLicense
   run:
     name: Creating License Key
     command: |
-        ROX_LICENSE_KEY="$(licenses/ci.sh)"
+        ROX_LICENSE_KEY="$(licenses/qa.sh --not-valid-after +6h)"
         cci-export ROX_LICENSE_KEY "$ROX_LICENSE_KEY"
-
 
 jobs:
   build:
