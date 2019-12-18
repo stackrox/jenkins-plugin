@@ -23,12 +23,6 @@ deleteClusterk8s: &deleteClusterk8s
       gcloud container clusters delete "$CLUSTER_NAME" --async
     when: on_fail
 
-setupLicense: &setupLicense
-  run:
-    name: Creating License Key
-    command: |
-        ROX_LICENSE_KEY="$(licenses/qa.sh --not-valid-after +6h)"
-        cci-export ROX_LICENSE_KEY "$ROX_LICENSE_KEY"
 
 jobs:
   build:
@@ -43,6 +37,7 @@ jobs:
       - run:
           name: Build and package the Jenkins plugin
           command: |
+            ls -lrt
             cd stackrox-k8s-security-platform
             mvn package
             mvn hpi:hpi
@@ -104,7 +99,7 @@ jobs:
             containerId=$(docker create stackrox/main:3.0.35.0)
             docker cp $containerId:/assets/downloads/cli/roxctl-linux ./roxctl
       - run:
-          name: Generate centrol bundle
+          name: Generate central bundle
           command: |
             ./roxctl central generate k8s pvc --main-image docker.io/stackrox/main:3.0.35.0
             export ROX_PASSWORD=$(cat central-bundle/password)
@@ -121,7 +116,12 @@ jobs:
           command:  |
             kubectl create -R -f central-bundle/scanner
 
-      - *setupLicense
+      - run:
+          name: Creating License Key
+          command: |
+            ls -lrt
+            ROX_LICENSE_KEY="$(./licenses/qa.sh --not-valid-after +6h)"
+            cci-export ROX_LICENSE_KEY "$ROX_LICENSE_KEY"
 
       - run:
           name: Add license key to central
