@@ -172,6 +172,8 @@ jobs:
             central-bundle/scanner/scripts/setup.sh
             kubectl create -R -f central-bundle/scanner
 
+      - *connectToCentral
+
       - *waitForAPI
 
       - *setupGoogleAppCreds
@@ -181,8 +183,6 @@ jobs:
          command: |
            export ROX_LICENSE_KEY="$(./licenses/ci.sh --not-valid-after +6h)"
            cci-export ROX_LICENSE_KEY $ROX_LICENSE_KEY
-
-      - *connectToCentral
 
       - run:
          name: Add license key to central
