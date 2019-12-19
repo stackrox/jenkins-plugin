@@ -145,21 +145,22 @@ jobs:
       - run:
          name: Creating License Key
          command: |
-           ROX_LICENSE_KEY="$(./licenses/ci.sh --not-valid-after +6h)"
-           cci-export ROX_LICENSE_KEY "$ROX_LICENSE_KEY"
+           export ROX_LICENSE_KEY="$(./licenses/ci.sh --not-valid-after +6h)"
+           echo $ROX_LICENSE_KEY
 
       - *connectToCentral
 
       - run:
          name: Add license key to central
          command: |
-           ./roxctl central license add --license="${ROX_LICENCE_KEY}" -e localhost:8000
+           export API_HOSTNAME=localhost
+           export API_PORT=8000
+           cci-export API_HOSTNAME
+           ./roxctl central license add --license="${ROX_LICENSE_KEY}" -e "${API_HOSTNAME}:${API_PORT}"
 
       - run:
           name: Deploy sensor the remote cluster
           command: |
-            export API_HOSTNAME=localhost
-            export API_PORT=8000
             ./roxctl sensor generate k8s --name remote01
                                                      --collection-method kernel-module
                                                      --collector-image stackrox/collector
