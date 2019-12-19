@@ -128,7 +128,7 @@ jobs:
          command: |
             export ROX_LICENCE_KEY="CoIBCiRmNjYwMTEyOS1lMjE0LTQxZTctOTIzNC01ZDQzMmFhZDRhMzISKDI5NzQwZDVhNDQ0ODQ2YjgwM2Q4NDY1MmM1MTkwNGQ3NzA2OTUxYjgaDAiIg+vvBRComLKpASITYWtzaGF0QHN0YWNrcm94LmNvbSoNQWtzaGF0IE1pc2hyYRqtAQoMCIeD6+8FENi/s+UCEgwIh4+A8AUQ2L+z5QIgATABQAFKFWdjcC91bHRyYS1jdXJyZW50LTgyNUoqYXp1cmUvNjZjNTdmZjUtZjQ5Zi00NTEwLWFlMDQtZTI2ZDNhZDJlZTYzShBhd3MvMDUxOTk5MTkyNDA2ShBhd3MvODgwNzMyNDc3ODIzShBhd3MvNTIyOTkzNjE2MTU4ShBhd3MvNTk4OTc5NzE2Njc4.MEQCIESEM8pOZ3leRZde2mm9wxOiazXuvL6227FReynNmgWOAiB+uAMkrOWoTic+o+UhHjID1GEg/v6p2b8aWuZqHTm6/Q"
             ./roxctl central license add --license=$ROX_LICENCE_KEY -e localhost:8000
-       - run:
+      - run:
           name: Deploy sensor the remote cluster
           command: |
             export API_HOSTNAME=localhost
