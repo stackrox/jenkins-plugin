@@ -126,7 +126,7 @@ jobs:
           name: Generate central bundle
           command: |
             ./roxctl central generate k8s pvc --main-image docker.io/stackrox/main:3.0.35.0
-                                              --scanner-image docker.io/stackrox/scanne:2.0.1
+                                              --scanner-image docker.io/stackrox/scanner:2.0.1
                                               --scanner-db-image docker.io/stackrox/scanner-db:2.0.1
             export ROX_PASSWORD=$(cat central-bundle/password)
             cci-export ROX_USERNAME "admin"
