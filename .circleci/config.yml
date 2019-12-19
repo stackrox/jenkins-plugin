@@ -140,6 +140,7 @@ jobs:
       - attach-gke-cluster:
             cluster-id: qa-tests
       - checkout
+      - *connectToCentral
       - run:
           name: Get Roxctl binary
           command: |
@@ -171,8 +172,6 @@ jobs:
           command:  |
             central-bundle/scanner/scripts/setup.sh
             kubectl create -R -f central-bundle/scanner
-
-      - *connectToCentral
 
       - *waitForAPI
 
