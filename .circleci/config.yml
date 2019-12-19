@@ -15,6 +15,18 @@ buildLivenessCheck: &buildLivenessCheck
     command: |
       .circleci/check-workflow-live.sh
 
+
+setupGoogleAppCreds: &setupGoogleAppCreds
+  run:
+    name: Setup GCloud Service Account
+    command: |
+      touch /tmp/gcp.json
+      chmod 0600 /tmp/gcp.json
+      echo "$GCLOUD_SERVICE_ACCOUNT_CIRCLECI_ROX" >/tmp/gcp.json
+      cci-export GOOGLE_APPLICATION_CREDENTIALS /tmp/gcp.json
+      gcloud auth activate-service-account --key-file /tmp/gcp.json
+      gcloud auth list
+
 connectToCentral: &connectToCentral
   run:
     name: Connect to monitoring via port-forward on 9443
@@ -128,19 +140,20 @@ jobs:
           command:  |
             kubectl create -R -f central-bundle/scanner
 
-      #- run:
-      #    name: Creating License Key
-      #    command: |
-      #      ROX_LICENSE_KEY="$(./licenses/qa.sh --not-valid-after +6h)"
-      #     #cci-export ROX_LICENSE_KEY "$ROX_LICENSE_KEY"
+      - *setupGoogleAppCreds
+
+      - run:
+         name: Creating License Key
+         command: |
+           ROX_LICENSE_KEY="$(./licenses/ci.sh --not-valid-after +6h)"
+           cci-export ROX_LICENSE_KEY "$ROX_LICENSE_KEY"
 
       - *connectToCentral
 
       - run:
          name: Add license key to central
          command: |
-            export ROX_LICENCE_KEY="CoIBCiRmNjYwMTEyOS1lMjE0LTQxZTctOTIzNC01ZDQzMmFhZDRhMzISKDI5NzQwZDVhNDQ0ODQ2YjgwM2Q4NDY1MmM1MTkwNGQ3NzA2OTUxYjgaDAiIg+vvBRComLKpASITYWtzaGF0QHN0YWNrcm94LmNvbSoNQWtzaGF0IE1pc2hyYRqtAQoMCIeD6+8FENi/s+UCEgwIh4+A8AUQ2L+z5QIgATABQAFKFWdjcC91bHRyYS1jdXJyZW50LTgyNUoqYXp1cmUvNjZjNTdmZjUtZjQ5Zi00NTEwLWFlMDQtZTI2ZDNhZDJlZTYzShBhd3MvMDUxOTk5MTkyNDA2ShBhd3MvODgwNzMyNDc3ODIzShBhd3MvNTIyOTkzNjE2MTU4ShBhd3MvNTk4OTc5NzE2Njc4.MEQCIESEM8pOZ3leRZde2mm9wxOiazXuvL6227FReynNmgWOAiB+uAMkrOWoTic+o+UhHjID1GEg/v6p2b8aWuZqHTm6/Q"
-            ./roxctl central license add --license=$ROX_LICENCE_KEY -e localhost:8000
+           ./roxctl central license add --license="${ROX_LICENCE_KEY}" -e localhost:8000
 
       - run:
           name: Deploy sensor the remote cluster
@@ -151,7 +164,7 @@ jobs:
                                                      --collection-method kernel-module
                                                      --collector-image stackrox/collector
                                                      --image docker.io/stackrox/main:3.0.35.0
-                                                     -e localhost:8000  -p $ROX_PASSWORD
+                                                     -e "${API_HOSTNAME}:${API_PORT}"  -p "${ROX_PASSWORD}"
 
 
             ./remote01/sensor.sh
