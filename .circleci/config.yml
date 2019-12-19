@@ -126,9 +126,12 @@ jobs:
           name: Generate central bundle
           command: |
             ./roxctl central generate k8s pvc --main-image docker.io/stackrox/main:3.0.35.0
+                                              --scanner-image docker.io/stackrox/scanne:2.0.1
+                                              --scanner-db-image docker.io/stackrox/scanner-db:2.0.1
             export ROX_PASSWORD=$(cat central-bundle/password)
             cci-export ROX_USERNAME "admin"
             cci-export ROX_PASSWORD $ROX_PASSWORD
+
       - run:
           name: Deploy central to remote cluster
           command: |
@@ -138,6 +141,7 @@ jobs:
       - run:
           name: Deploy scanner to remote cluster
           command:  |
+            central-bundle/scanner/scripts/setup.sh
             kubectl create -R -f central-bundle/scanner
 
       - *setupGoogleAppCreds
@@ -159,7 +163,7 @@ jobs:
            cci-export API_PORT $API_PORT
            ./roxctl central license add --license="${ROX_LICENSE_KEY}"
                                         -e "${API_HOSTNAME}:${API_PORT}"
-                                        --insecure-skip-tls-verify
+
 
       - run:
           name: Deploy sensor the remote cluster
@@ -168,10 +172,12 @@ jobs:
                                                      --collection-method kernel-module
                                                      --collector-image stackrox/collector
                                                      --image docker.io/stackrox/main:3.0.35.0
-                                                     -e "${API_HOSTNAME}:${API_PORT}"  -p "${ROX_PASSWORD}" --insecure-skip-tls-verify
+                                                     -e "${API_HOSTNAME}:${API_PORT}"
+                                                     -p "${ROX_PASSWORD}"
 
 
-            ./remote01/sensor.sh
+
+            ./sensor-remote/sensor.sh
             docker rm ${containerId}
 
       - *deleteClusterk8s
