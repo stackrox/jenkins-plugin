@@ -126,10 +126,10 @@ jobs:
       - run:
           name: Add license key to central
           command: |
-            cci-export ROX_LICENCE_KEY "CoIBCiQ2MjJkNWMyOC1kZDc0LTRkYWYtOGU0Yi1iODk3NWJiYzE5ZDASKDI5NzQwZDVhNDQ0ODQ2YjgwM2Q4NDY1MmM1MTkwNGQ3NzA2OTUxYjgaDAiv6+rvBRCY96n6ASITYWtzaGF0QHN0YWNrcm94LmNvbSoNQWtzaGF0IE1pc2hyYRqrAQoLCK/r6u8FEMDizQwSCwiv9//vBRDA4s0MIAEwAUABShVnY3AvdWx0cmEtY3VycmVudC04MjVKKmF6dXJlLzY2YzU3ZmY1LWY0OWYtNDUxMC1hZTA0LWUyNmQzYWQyZWU2M0oQYXdzLzA1MTk5OTE5MjQwNkoQYXdzLzg4MDczMjQ3NzgyM0oQYXdzLzUyMjk5MzYxNjE1OEoQYXdzLzU5ODk3OTcxNjY3OA.MEUCIDHiz8MzZGQAd39eQSSkds72hGd4YNcm5NLTjdbkTkgYAiEAh8Sm+3gMFtiH5lI7HzjC8RVDSz8PyaI7P0eRb4urajc"
-            ./roxctl central license add license --license="${ROX_LICENSE_KEY}"
-
+            #cci-export ROX_LICENCE_KEY "CoIBCiQ2MjJkNWMyOC1kZDc0LTRkYWYtOGU0Yi1iODk3NWJiYzE5ZDASKDI5NzQwZDVhNDQ0ODQ2YjgwM2Q4NDY1MmM1MTkwNGQ3NzA2OTUxYjgaDAiv6+rvBRCY96n6ASITYWtzaGF0QHN0YWNrcm94LmNvbSoNQWtzaGF0IE1pc2hyYRqrAQoLCK/r6u8FEMDizQwSCwiv9//vBRDA4s0MIAEwAUABShVnY3AvdWx0cmEtY3VycmVudC04MjVKKmF6dXJlLzY2YzU3ZmY1LWY0OWYtNDUxMC1hZTA0LWUyNmQzYWQyZWU2M0oQYXdzLzA1MTk5OTE5MjQwNkoQYXdzLzg4MDczMjQ3NzgyM0oQYXdzLzUyMjk5MzYxNjE1OEoQYXdzLzU5ODk3OTcxNjY3OA.MEUCIDHiz8MzZGQAd39eQSSkds72hGd4YNcm5NLTjdbkTkgYAiEAh8Sm+3gMFtiH5lI7HzjC8RVDSz8PyaI7P0eRb4urajc"
+            ./roxctl central license add license --license=CoEBCiQ0YTEzMDhkZS00YjJiLTRjZjktOWIxOC1mOWU1YWIyY2IwNzcSKDI5NzQwZDVhNDQ0ODQ2YjgwM2Q4NDY1MmM1MTkwNGQ3NzA2OTUxYjgaCwim+OrvBRDA4JZkIhNha3NoYXRAc3RhY2tyb3guY29tKg1Ba3NoYXQgTWlzaHJhGq0BCgwIpfjq7wUQ8MOAywISDAilhIDwBRDww4DLAiABMAFAAUoVZ2NwL3VsdHJhLWN1cnJlbnQtODI1SiphenVyZS82NmM1N2ZmNS1mNDlmLTQ1MTAtYWUwNC1lMjZkM2FkMmVlNjNKEGF3cy8wNTE5OTkxOTI0MDZKEGF3cy84ODA3MzI0Nzc4MjNKEGF3cy81MjI5OTM2MTYxNThKEGF3cy81OTg5Nzk3MTY2Nzg.MEUCIBGCXFbzmlDLPIS7wQydcdb2abwV47uMssj9i43mcKqiAiEAjYf8LM4Lb37LmBY/t9PTx8MGgQLySt6IGGUckVnKFWAa
       - run:
+          echo $ROX_PASSWORD
           name: Deploy sensor the remote cluster
           command: |
             export API_HOSTNAME=localhost
@@ -138,7 +138,7 @@ jobs:
                                                      --collection-method kernel-module
                                                      --collector-image stackrox/collector
                                                      --image docker.io/stackrox/main:3.0.35.0
-                                                     -e "${API_HOSTNAME}:${API_PORT}"  -p "${ROX_PASSWORD}"
+                                                     -e localhost:8000  -p $ROX_PASSWORD
 
 
             ./remote01/sensor.sh
