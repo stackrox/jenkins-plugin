@@ -1,41 +1,19 @@
 package com.stackrox.jenkins.plugins;
 
+import javax.print.attribute.standard.Severity;
+
 public class ViolatedPolicy {
     public static int BUILD_TIME_ENFORCEMENT = 4;
 
-    public enum Severity {
-        UNKNOWN,
-        LOW,
-        MEDIUM,
-        HIGH,
-        CRITICAL,
-    }
-
     private String name;
     private String description;
-    private Severity severity;
+    private String severity;
     private boolean enforced;
 
-    public ViolatedPolicy(String name, String description, int severity, boolean enforced) {
+    public ViolatedPolicy(String name, String description, String severity, boolean enforced) {
         this.name = name;
         this.description = description;
-        switch (severity) {
-            case 1:
-                this.severity = Severity.LOW;
-                break;
-            case 2:
-                this.severity = Severity.MEDIUM;
-                break;
-            case 3:
-                this.severity = Severity.HIGH;
-                break;
-            case 4:
-                this.severity = Severity.CRITICAL;
-                break;
-            default:
-                this.severity = Severity.UNKNOWN;
-                break;
-        }
+        this.severity = severity;
         this.enforced = enforced;
     }
 
@@ -47,7 +25,7 @@ public class ViolatedPolicy {
         return description;
     }
 
-    public Severity getSeverity() {
+    public String getSeverity() {
         return severity;
     }
 

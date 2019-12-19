@@ -148,7 +148,6 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
         } catch (IOException e) {
             runConfig.getLog().println(String.format("Error processing image %s: %s", imageName, e.getMessage()));
         }
-
     }
 
     private List<ViolatedPolicy> getPolicyViolations(String imageName) throws IOException {
@@ -162,7 +161,7 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
             violatedPolicies.add(new ViolatedPolicy(
                     policy.getString("name"),
                     policy.getString("description"),
-                    policy.getInt("severity"),
+                    policy.getString("severity"),
                     policy.getJsonArray("enforcementActions").contains(ViolatedPolicy.BUILD_TIME_ENFORCEMENT)));
         }
 
@@ -174,7 +173,6 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
         HttpPost detectionRequest = null;
 
         try {
-
             detectionRequest = new HttpPost(Joiner.on("/").join(portalAddress, "v1/detect/build"));
             detectionRequest.setHeader(HttpHeaders.ACCEPT, ContentType.APPLICATION_JSON.toString());
             detectionRequest.setHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.toString());
@@ -189,7 +187,8 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
             HttpEntity entity = response.getEntity();
 
             if (statusCode != HttpURLConnection.HTTP_OK || entity == null) {
-                throw new IOException(String.format("Build time policy evaluation with status code: %d", statusCode));
+                throw new IOException(String.format("Failed build time detection request. Status code: %d. Reason: %s.",
+                        statusCode, response.getStatusLine().getReasonPhrase()));
             }
             JsonReader reader = Json.createReader(new InputStreamReader(entity.getContent()));
             JsonObject object = reader.readObject();
@@ -253,7 +252,8 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
             HttpEntity entity = response.getEntity();
 
             if (statusCode != HttpURLConnection.HTTP_OK || entity == null) {
-                throw new IOException(String.format("Image scan request failed with status code: %d", statusCode));
+                throw new IOException(String.format("Failed image scan request. Status code: %d. Reason: %s",
+                        statusCode, response.getStatusLine().getReasonPhrase()));
             }
             JsonReader reader = Json.createReader(new InputStreamReader(entity.getContent()));
             JsonObject object = reader.readObject();

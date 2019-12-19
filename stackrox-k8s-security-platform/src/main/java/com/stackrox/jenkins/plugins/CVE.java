@@ -51,7 +51,6 @@ public class CVE {
         this.packageVersion = builder.packageVersion;
         this.fixable = builder.fixable;
         this.link = builder.link;
-
     }
 
     public static class Builder {
