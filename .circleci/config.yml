@@ -16,33 +16,6 @@ buildLivenessCheck: &buildLivenessCheck
       .circleci/check-workflow-live.sh
 
 
-waitForAPI: &waitForAPI
-  run:
-    name: Wait for the API server to be up
-    command: |
-      export API_HOSTNAME=localhost
-      export API_PORT=8000
-      export METADATA_URL="https://${API_HOSTNAME}:${API_PORT}/v1/metadata"
-      echo "METADATA_URL is set to ${METADATA_URL}"
-      set +e
-      SUCCESS=0
-      for i in $(seq 1 25); do
-        metadata="$(curl -sk --connect-timeout 5 --max-time 10 "${METADATA_URL}")"
-        if [[ $? -eq 0 && "$(jq '.licenseStatus' -r \<<<"$metadata")" != "RESTARTING" ]]; then
-          SUCCESS=1
-          break
-        fi
-        sleep 5
-      done
-      if [[ "${SUCCESS}" == 0 ]]; then
-        kubectl -n stackrox get pod
-        echo "Failed to connect to Central"
-        exit 1
-      fi
-      cci-export API_HOSTNAME "$API_HOSTNAME"
-      cci-export API_PORT "$API_PORT"
-      cci-export API_ENDPOINT "${API_HOSTNAME}:${API_PORT}"
-
 setupGoogleAppCreds: &setupGoogleAppCreds
   run:
     name: Setup GCloud Service Account
@@ -185,23 +158,15 @@ jobs:
 
       - *connectToCentral
 
-      #- *waitForAPI
-
-
-
-      #- run:
-      #   name: Add license key to central
-      #   command: |
-      #     ./roxctl central license add \
-      #              --license="${ROX_LICENSE_KEY}" \
-      #              -e "${API_HOSTNAME}:${API_PORT}" \
-      #              --insecure-skip-tls-verify \
-
 
       - run:
           name: Deploy sensor the remote cluster
           command: |
-            ./roxctl sensor generate k8s --name remote01 \
+            export API_HOSTNAME=localhost
+            export API_PORT=8000
+            cci-export API_HOSTNAME $API_HOSTNAME
+            cci-export API_PORT $API_PORT
+            ./roxctl sensor generate k8s --name remote \
                                          --collection-method kernel-module \
                                          --collector-image stackrox/collector \
                                          --image docker.io/stackrox/main:3.0.35.0 \
