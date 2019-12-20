@@ -20,6 +20,7 @@ import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
+import javax.json.JsonValue;
 import jenkins.tasks.SimpleBuildStep;
 import net.sf.json.JSONObject;
 import org.apache.commons.validator.routines.UrlValidator;
@@ -158,11 +159,20 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
 
         for (int i = 0; i < alerts.size(); i++) {
             JsonObject policy = alerts.getJsonObject(i).getJsonObject("policy");
+
+            boolean isEnforced = false;
+            JsonArray actions = policy.getJsonArray("enforcementActions");
+            for (JsonValue action : actions) {
+                if (action.toString().equals(ViolatedPolicy.BUILD_TIME_ENFORCEMENT)) {
+                    isEnforced = true;
+                    break;
+                }
+            }
             violatedPolicies.add(new ViolatedPolicy(
                     policy.getString("name"),
                     policy.getString("description"),
                     policy.getString("severity"),
-                    policy.getJsonArray("enforcementActions").contains(ViolatedPolicy.BUILD_TIME_ENFORCEMENT)));
+                    isEnforced));
         }
 
         return violatedPolicies;
@@ -187,14 +197,13 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
             HttpEntity entity = response.getEntity();
 
             if (statusCode != HttpURLConnection.HTTP_OK || entity == null) {
-                throw new IOException(String.format("Failed build time detection request. Status code: %d. Reason: %s.",
-                        statusCode, response.getStatusLine().getReasonPhrase()));
+                throw new IOException(String.format("Failed build time detection request. Status code: %d.",
+                        statusCode));
             }
             JsonReader reader = Json.createReader(new InputStreamReader(entity.getContent()));
             JsonObject object = reader.readObject();
             EntityUtils.consume(entity);
             return object;
-
         } finally {
             if (detectionRequest != null) {
                 detectionRequest.releaseConnection();
@@ -216,7 +225,6 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
             JsonArray componentCves = component.getJsonArray("vulns");
             for (int cveIndex = 0; cveIndex < componentCves.size(); cveIndex++) {
                 JsonObject cve = componentCves.getJsonObject(cveIndex);
-
                 CVE cveToAdd = CVE.Builder.newInstance()
                         .withId(cve.getString("cve"))
                         .withCvssScore((float) cve.getJsonNumber("cvss").doubleValue())
@@ -252,8 +260,7 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
             HttpEntity entity = response.getEntity();
 
             if (statusCode != HttpURLConnection.HTTP_OK || entity == null) {
-                throw new IOException(String.format("Failed image scan request. Status code: %d. Reason: %s",
-                        statusCode, response.getStatusLine().getReasonPhrase()));
+                throw new IOException(String.format("Failed image scan request. Status code: %d.", statusCode));
             }
             JsonReader reader = Json.createReader(new InputStreamReader(entity.getContent()));
             JsonObject object = reader.readObject();

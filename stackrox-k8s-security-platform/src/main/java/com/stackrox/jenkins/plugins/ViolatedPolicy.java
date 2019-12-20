@@ -1,9 +1,7 @@
 package com.stackrox.jenkins.plugins;
 
-import javax.print.attribute.standard.Severity;
-
 public class ViolatedPolicy {
-    public static int BUILD_TIME_ENFORCEMENT = 4;
+    public static String BUILD_TIME_ENFORCEMENT = "FAIL_BUILD_ENFORCEMENT";
 
     private String name;
     private String description;
