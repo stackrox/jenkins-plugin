@@ -205,13 +205,12 @@ jobs:
             central-bundle/central/scripts/setup.sh
             kubectl create -R -f central-bundle/central
 
-      - steps: << parameters.post-central-deploy-steps >>
-
       - run:
           name: Deploy scanner to remote cluster
           command:  |
             central-bundle/scanner/scripts/setup.sh
             kubectl create -R -f central-bundle/scanner
+            sleep 60
 
       - steps: << parameters.post-central-deploy-steps >>
 
