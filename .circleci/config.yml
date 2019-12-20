@@ -148,10 +148,21 @@ jobs:
             cci-export REGISTRY_PASSWORD "$DOCKER_IO_PULL_PASSWORD"
             containerId=$(docker create stackrox/main:3.0.35.0)
             docker cp $containerId:/assets/downloads/cli/roxctl-linux ./roxctl
+
+      - *setupGoogleAppCreds
+
+      - run:
+          name: Creating License Key
+          command: |
+            export ROX_LICENSE_KEY="$(./licenses/ci.sh --not-valid-after +6h)"
+            echo $ROX_LICENSE_KEY >> /tmp/data.lic
+            cci-export ROX_LICENSE_KEY $ROX_LICENSE_KEY
+
       - run:
           name: Generate central bundle
           command: |
             ./roxctl central generate k8s pvc \
+                --license /tmp/data.lic \
                 --main-image docker.io/stackrox/main:3.0.35.0 \
                 --scanner-image docker.io/stackrox/scanner:2.0.1 \
                 --scanner-db-image docker.io/stackrox/scanner-db:2.0.1 \
@@ -174,23 +185,17 @@ jobs:
 
       - *connectToCentral
 
-      - *waitForAPI
+      #- *waitForAPI
 
-      - *setupGoogleAppCreds
 
-      - run:
-         name: Creating License Key
-         command: |
-           export ROX_LICENSE_KEY="$(./licenses/ci.sh --not-valid-after +6h)"
-           cci-export ROX_LICENSE_KEY $ROX_LICENSE_KEY
 
-      - run:
-         name: Add license key to central
-         command: |
-           ./roxctl central license add \
-                    --license="${ROX_LICENSE_KEY}" \
-                    -e "${API_HOSTNAME}:${API_PORT}" \
-                    --insecure-skip-tls-verify \
+      #- run:
+      #   name: Add license key to central
+      #   command: |
+      #     ./roxctl central license add \
+      #              --license="${ROX_LICENSE_KEY}" \
+      #              -e "${API_HOSTNAME}:${API_PORT}" \
+      #              --insecure-skip-tls-verify \
 
 
       - run:
