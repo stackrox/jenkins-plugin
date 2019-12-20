@@ -157,8 +157,8 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
         JsonObject detectionResult = runBuildTimeDetection(imageName);
         JsonArray alerts = detectionResult.getJsonArray("alerts");
 
-        for (int i = 0; i < alerts.size(); i++) {
-            JsonObject policy = alerts.getJsonObject(i).getJsonObject("policy");
+        for (JsonObject alert : alerts.getValuesAs(JsonObject.class)) {
+            JsonObject policy = alert.getJsonObject("policy");
 
             boolean isEnforced = false;
             JsonArray actions = policy.getJsonArray("enforcementActions");
@@ -197,12 +197,13 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
             HttpEntity entity = response.getEntity();
 
             if (statusCode != HttpURLConnection.HTTP_OK || entity == null) {
-                throw new IOException(String.format("Failed build time detection request. Status code: %d.",
-                        statusCode));
+                throw new IOException( String.format("Failed build time detection request. Status code: %d. Error: %s",
+                        entity.toString(), String.valueOf(entity)));
             }
             JsonReader reader = Json.createReader(new InputStreamReader(entity.getContent()));
             JsonObject object = reader.readObject();
             EntityUtils.consume(entity);
+
             return object;
         } finally {
             if (detectionRequest != null) {
@@ -220,11 +221,9 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
         JsonObject scanResult = runImageScan(imageName);
 
         JsonArray components = scanResult.getJsonArray("components");
-        for (int i = 0; i < components.size(); i++) {
-            JsonObject component = components.getJsonObject(i);
+        for (JsonObject component : components.getValuesAs(JsonObject.class)) {
             JsonArray componentCves = component.getJsonArray("vulns");
-            for (int cveIndex = 0; cveIndex < componentCves.size(); cveIndex++) {
-                JsonObject cve = componentCves.getJsonObject(cveIndex);
+            for (JsonObject cve : componentCves.getValuesAs(JsonObject.class)) {
                 CVE cveToAdd = CVE.Builder.newInstance()
                         .withId(cve.getString("cve"))
                         .withCvssScore((float) cve.getJsonNumber("cvss").doubleValue())
@@ -260,13 +259,13 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
             HttpEntity entity = response.getEntity();
 
             if (statusCode != HttpURLConnection.HTTP_OK || entity == null) {
-                throw new IOException(String.format("Failed image scan request. Status code: %d.", statusCode));
+                throw new IOException(String.format("Failed image scan request. Status code: %d. Error: %s", statusCode, String.valueOf(entity)));
             }
+
             JsonReader reader = Json.createReader(new InputStreamReader(entity.getContent()));
             JsonObject object = reader.readObject();
             EntityUtils.consume(entity);
             return object.getJsonObject("scan");
-
         } finally {
             if (imageScanRequest != null) {
                 imageScanRequest.releaseConnection();
