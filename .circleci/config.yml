@@ -222,12 +222,12 @@ jobs:
       - run:
           name: Deploy sensor the remote cluster
           command: |
-            ./roxctl sensor generate k8s --name remote \
+            ./roxctl sensor generate k8s --name remote-new \
                                          --collection-method kernel-module \
                                          --collector-image stackrox/collector \
                                          --image docker.io/stackrox/main:3.0.35.0 \
                                          -e "${API_HOSTNAME}:${API_PORT}" -p "${ROX_PASSWORD}" \
-            ./sensor-remote/sensor.sh
+            ./sensor-remote-new/sensor.sh
             docker rm ${containerId}
 
       - *deleteClusterk8s
