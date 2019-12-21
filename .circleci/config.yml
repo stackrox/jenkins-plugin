@@ -222,12 +222,15 @@ jobs:
       - run:
           name: Deploy sensor the remote cluster
           command: |
+            kubectl create clusterrolebinding temporary-admin --clusterrole=cluster-admin --user circleci-rox@stackrox-ci.iam.gserviceaccount.com
             ./roxctl sensor generate k8s --name remote-new \
                                          --collection-method kernel-module \
                                          --collector-image stackrox/collector \
                                          --image docker.io/stackrox/main:3.0.35.0 \
                                          -e "${API_HOSTNAME}:${API_PORT}" -p "${ROX_PASSWORD}" \
+
             ./sensor-remote-new/sensor.sh
+            kubectl delete clusterrolebinding temporary-admin
             docker rm ${containerId}
 
       - *deleteClusterk8s
