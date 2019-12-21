@@ -50,7 +50,6 @@ public class RunConfig {
         return envVars;
     }
 
-
     public FilePath getJenkinsWorkspace() {
         return jenkinsWorkspace;
     }
