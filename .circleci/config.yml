@@ -180,7 +180,10 @@ jobs:
           name: Creating License Key
           command: |
             export ROX_LICENSE_KEY="$(./licenses/ci.sh --not-valid-after +6h)"
+            touch /tmp/data.lic
+            chmod 0600 /tmp/data.lic
             echo $ROX_LICENSE_KEY >> /tmp/data.lic
+            cat /tmp/data.lic
             cci-export ROX_LICENSE_KEY $ROX_LICENSE_KEY
 
       - *setupDefaultTLSCerts
