@@ -16,6 +16,14 @@ buildLivenessCheck: &buildLivenessCheck
       .circleci/check-workflow-live.sh
 
 
+getCentralLogs: &getCentralLogs
+  run:
+    name: Get central logs
+    command: |
+      export podname=$(kubectl get pods -n stackrox | grep central | awk '{print $1}')
+      ks logs $podname
+    when: on_fail
+
 waitForAPI: &waitForAPI
   run:
     name: Wait for the API server to be up
@@ -56,7 +64,7 @@ setupGoogleAppCreds: &setupGoogleAppCreds
 
 connectToCentral: &connectToCentral
   run:
-    name: Connect to monitoring via port-forward on 443
+    name: Connect to central via port-forward on 443
     command: |
       set +e
       nohup kubectl -n 'stackrox' port-forward service/central '8000:443' 1>/dev/null 2>&1 &
@@ -95,7 +103,7 @@ deleteClusterk8s: &deleteClusterk8s
     name: Tear down cluster upon failure
     command: |
       gcloud container clusters delete "$CLUSTER_NAME" --async
-    when: on_fail
+    when: always
 
 
 jobs:
@@ -236,7 +244,9 @@ jobs:
             kubectl delete clusterrolebinding temporary-admin
             docker rm ${containerId}
 
+      - *getCentralLogs
       - *deleteClusterk8s
+
 
 
 workflows:
