@@ -21,7 +21,7 @@ getCentralLogs: &getCentralLogs
     name: Get central logs
     command: |
       export podname=$(kubectl get pods -n stackrox | grep central | awk '{print $1}')
-      kubectl logs $podname
+      kubectl logs $podname -n stackrox
     when: on_fail
 
 waitForAPI: &waitForAPI
