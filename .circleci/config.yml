@@ -203,6 +203,7 @@ jobs:
             ./roxctl central generate k8s pvc \
               --license /tmp/data.lic \
               --main-image "${IMAGE_NAME}" \
+            sleep 20
             export ROX_PASSWORD=$(cat central-bundle/password)
             cci-export ROX_USERNAME "admin"
             cci-export ROX_PASSWORD $ROX_PASSWORD
