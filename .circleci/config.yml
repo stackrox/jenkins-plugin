@@ -174,12 +174,13 @@ jobs:
             cluster-id: qa-tests
       - checkout
       - run:
-          name: Get Roxctl binary
+          name: Get Roxctl binary and set the image name
           command: |
+            cci-export IMAGE_NAME "docker.io/stackrox/main:3.0.35.x-0-g6b2f8395c4"
             docker login -u "$DOCKER_IO_PULL_USERNAME" -p "$DOCKER_IO_PULL_PASSWORD"
             cci-export REGISTRY_USERNAME "$DOCKER_IO_PULL_USERNAME"
             cci-export REGISTRY_PASSWORD "$DOCKER_IO_PULL_PASSWORD"
-            containerId=$(docker create stackrox/main:3.0.35.0)
+            containerId=$(docker create "${IMAGE_NAME}")
             docker cp $containerId:/assets/downloads/cli/roxctl-linux ./roxctl
 
       - *setupGoogleAppCreds
@@ -200,14 +201,12 @@ jobs:
           name: Generate central bundle
           command: |
             ./roxctl central generate k8s pvc \
-                --license /tmp/data.lic \
-                --main-image docker.io/stackrox/main:3.0.35.0 \
-                --scanner-image docker.io/stackrox/scanner:2.0.1 \
-                --scanner-db-image docker.io/stackrox/scanner-db:2.0.1 \
-
+              --license /tmp/data.lic \
+              --main-image "${IMAGE_NAME}" \
             export ROX_PASSWORD=$(cat central-bundle/password)
             cci-export ROX_USERNAME "admin"
             cci-export ROX_PASSWORD $ROX_PASSWORD
+
 
 
       - run:
@@ -237,7 +236,7 @@ jobs:
             ./roxctl sensor generate k8s --name remote-new \
                                          --collection-method kernel-module \
                                          --collector-image stackrox/collector \
-                                         --image docker.io/stackrox/main:3.0.35.0 \
+                                         --image "${IMAGE_NAME}" \
                                          -e "${API_HOSTNAME}:${API_PORT}" -p "${ROX_PASSWORD}" \
 
             ./sensor-remote-new/sensor.sh
