@@ -182,6 +182,7 @@ jobs:
             cci-export REGISTRY_PASSWORD "$DOCKER_IO_PULL_PASSWORD"
             containerId=$(docker create "${IMAGE_NAME}")
             docker cp $containerId:/assets/downloads/cli/roxctl-linux ./roxctl
+            docker rm ${containerId}
 
       - *setupGoogleAppCreds
 
@@ -242,7 +243,7 @@ jobs:
 
             ./sensor-remote-new/sensor.sh
             kubectl delete clusterrolebinding temporary-admin
-            docker rm ${containerId}
+            kubectl get pods -n stackrox 
 
       - *getCentralLogs
       - *deleteClusterk8s
