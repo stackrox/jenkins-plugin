@@ -23,7 +23,7 @@ jenkinsDeployment: &jenkinsDeployment
     command: |
       kubectl create namespace qa
       kubectl apply -f jenkins/JenkinsAppDeployment.yaml
-      kubectl apply -f jenkins/jenkinsservice.yml
+      kubectl apply -f jenkins/jenkinsService.yml
       jenkinspod=`kubectl get pods -n qa | grep jenkins | awk '{print $1}'`
       cci-export JENKINS_POD $jenkinspod
       cci-export JENKINS_PORT "8080"
