@@ -21,6 +21,7 @@ jenkinsDeployment: &jenkinsDeployment
   run:
     name: Jenkins Deployment and copy the .hpi file
     command: |
+      kubectl create namespace qa
       kubectl apply -f jenkins/JenkinsAppDeployment.yaml
       kubectl apply -f jenkins/jenkinservice.yml
       jenkinspod=`kubectl get pods -n qa | grep jenkins | awk '{print $1}'`
