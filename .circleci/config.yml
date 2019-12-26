@@ -23,18 +23,19 @@ jenkinsDeployment: &jenkinsDeployment
     command: |
       kubectl create namespace qa
       kubectl apply -f jenkins/JenkinsAppDeployment.yaml
-      kubectl apply -f jenkins/jenkinservice.yml
+      kubectl apply -f jenkins/jenkinsservice.yml
       jenkinspod=`kubectl get pods -n qa | grep jenkins | awk '{print $1}'`
       cci-export JENKINS_POD $jenkinspod
       cci-export JENKINS_PORT "8080"
       kubectl cp /home/circleci/jenkins-plugin/stackrox-k8s-security-platform/target/stackrox-k8s-security-platform.hpi \
-              $var:/var/jenkins_home/plugins/ \
+              $JENKINS_POD:/var/jenkins_home/plugins/ \
       jenkinssvc=`kubectl get svc -n qa | grep jenkins | awk '{print $4}'`
       cci-export JENKINS_SVC jenkinssvc
       echo Jenkins svc is running on "${JENKINS_SVC}"
       echo restarting jenkins
-      curl -XPOST http://"${JENKINS_SVC}":8080/restart
+      curl -XPOST http://"${JENKINS_SVC}:${JENKINS_PORT}"/restart
       sleep 20
+      kubectl get svc -n qa
 
 
 setupGoogleAppCreds: &setupGoogleAppCreds
