@@ -24,14 +24,15 @@ jenkinsDeployment: &jenkinsDeployment
       kubectl create namespace qa
       kubectl apply -f jenkins/JenkinsAppDeployment.yaml
       kubectl apply -f jenkins/JenkinsService.yaml
+      kubectl apply -f jenkins/centralService.yaml
       sleep 30
-      export JENKINSPOD=`kubectl get pods -n qa | grep jenkins | awk '{print $1}'`
+      export JENKINSPOD=$(kubectl get pods -n qa | grep jenkins | awk '{print $1}')
       cci-export JENKINS_POD $JENKINSPOD
       cci-export JENKINS_PORT "8080"
       kubectl cp /home/circleci/jenkins-plugin/stackrox-k8s-security-platform/target/stackrox-k8s-security-platform.hpi \
               $JENKINS_POD:/var/jenkins_home/plugins/ \
       sleep 10
-      export JENKINSSVC=`kubectl get svc -n qa | grep jenkins | awk '{print $4}'`
+      export JENKINSSVC=$(kubectl get svc -n qa | grep jenkins | awk '{print $4}')
       cci-export JENKINS_SVC $JENKINSSVC
       echo Jenkins svc is running on "${JENKINS_SVC}"
       echo restarting jenkins
