@@ -1,0 +1,56 @@
+syntax = "proto3";
+
+option go_package = "storage";
+option java_package = "io.stackrox.proto.storage";
+
+package storage;
+
+message LoginNotice {
+    bool enabled = 1;
+    string text  = 2;
+}
+
+message BannerConfig {
+    enum Size {
+        UNSET  = 0;
+        SMALL  = 1;
+        MEDIUM = 2;
+        LARGE  = 3;
+    }
+
+    bool   enabled          = 1;
+    string text             = 2;
+    Size   size             = 3;
+    string color            = 4;
+    string background_color = 5;
+}
+
+message PublicConfig {
+    LoginNotice login_notice = 1;
+    BannerConfig header      = 2;
+    BannerConfig footer      = 3;
+}
+
+message AlertRetentionConfig {
+    int32 resolved_deploy_retention_duration_days = 1;
+    int32 deleted_runtime_retention_duration_days = 2;
+    int32 all_runtime_retention_duration_days = 3;
+
+}
+
+// next available tag: 4
+message PrivateConfig {
+    oneof alert_retention {
+        // will be deprecated after migration is ready
+        int32 DEPRECATED_alert_retention_duration_days = 1;
+        AlertRetentionConfig alert_config   = 3;
+    }
+    int32 image_retention_duration_days = 2;
+
+}
+
+
+message Config {
+    PublicConfig public_config = 1;
+    PrivateConfig private_config = 2;
+}

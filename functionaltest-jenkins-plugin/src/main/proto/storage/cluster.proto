@@ -1,0 +1,172 @@
+syntax = "proto3";
+
+option go_package = "storage";
+option java_package = "io.stackrox.proto.storage";
+
+import "google/protobuf/timestamp.proto";
+
+package storage;
+
+enum ClusterType {
+    GENERIC_CLUSTER          = 0;
+    KUBERNETES_CLUSTER       = 1;
+    OPENSHIFT_CLUSTER        = 2;
+    reserved 3;
+    reserved 4;
+}
+
+message GoogleProviderMetadata {
+    string project      = 1;
+    string cluster_name = 2;
+}
+
+message AWSProviderMetadata {
+    string account_id = 1;
+}
+
+message AzureProviderMetadata {
+    string subscription_id = 1;
+}
+
+message ProviderMetadata {
+    string region = 1;
+    string zone   = 2;
+
+    oneof Provider {
+        GoogleProviderMetadata google = 3;
+        AWSProviderMetadata aws       = 4;
+        AzureProviderMetadata azure   = 5;
+    }
+
+    bool verified = 15;
+}
+
+message OrchestratorMetadata {
+    string                    version      = 1;
+    google.protobuf.Timestamp build_date   = 2;
+    repeated string           api_versions = 3;
+}
+
+enum CollectionMethod {
+    UNSET_COLLECTION = 0;
+    NO_COLLECTION    = 1;
+    KERNEL_MODULE    = 2;
+    EBPF             = 3;
+}
+
+message AdmissionControllerConfig {
+    bool                  enabled                              = 1;
+    int32                 timeout_seconds                      = 2;
+    bool                  scan_inline                          = 3;
+    bool                  disableBypass                        = 4;
+}
+
+message TolerationsConfig {
+        bool  disabled                              = 1;
+}
+
+message DynamicClusterConfig {
+    AdmissionControllerConfig admission_controller_config = 1;
+    string registry_override = 2;
+}
+
+message Cluster {
+    string                    id                               = 1 ;
+    string                    name                             = 2 ;
+    ClusterType               type                             = 3;
+    string                    main_image                       = 4;
+    string                    collector_image                  = 16;
+    string                    central_api_endpoint             = 5;
+    reserved                                                     6;
+    bool                      runtime_support                  = 7 ;
+    string                    monitoring_endpoint              = 8;
+    CollectionMethod          collection_method                = 17;
+
+    reserved                                                     9,10,11;
+
+    ProviderMetadata          DEPRECATED_provider_metadata     = 12;
+    bool                      admission_controller             = 13;
+    OrchestratorMetadata      DEPRECATED_orchestrator_metadata = 14;
+
+    ClusterStatus             status                           = 15;
+    DynamicClusterConfig      dynamic_config                   = 18;
+    TolerationsConfig         tolerations_config               = 19;
+    int64                     priority                         = 20;
+}
+
+message ClusterStatus {
+    string                    sensor_version        = 1;
+    google.protobuf.Timestamp last_contact          = 2;
+    ProviderMetadata          provider_metadata     = 3;
+    OrchestratorMetadata      orchestrator_metadata = 4;
+    ClusterUpgradeStatus      upgrade_status        = 5;
+}
+
+message ClusterUpgradeStatus {
+    enum Upgradability {
+        UNSET                   = 0;
+        UP_TO_DATE              = 1;
+        MANUAL_UPGRADE_REQUIRED = 2;
+        AUTO_UPGRADE_POSSIBLE   = 3;
+        // SENSOR_VERSION_HIGHER occurs when we detect that the sensor
+        // is running a newer version than this Central. This is unexpected,
+        // but can occur depending on the patches a customer does.
+        // In this case, we will NOT automatically "upgrade" the sensor,
+        // since that would be a downgrade, even if the autoupgrade setting is
+        // on. The user will be allowed to manually trigger the upgrade, but they are
+        // strongly discouraged from doing so without upgrading Central first, since this
+        // is an unsupported configuration.
+        SENSOR_VERSION_HIGHER   = 4;
+    }
+
+    Upgradability   upgradability                = 1;
+    string          upgradability_status_reason  = 2;
+
+    message UpgradeProcessStatus {
+        bool active = 1;
+
+        string id                              = 2;
+        string target_version                  = 3;
+        string upgrader_image                  = 4;
+        google.protobuf.Timestamp initiated_at = 5;
+        UpgradeProgress progress               = 6;
+    }
+
+    // The progress of the current or most recent upgrade, if any,
+    // Note that we don't store any historical data -- the moment
+    // a new upgrade attempt is triggered, we overwrite
+    // information from the previous attempt.
+    UpgradeProcessStatus most_recent_process = 3;
+}
+
+message UpgradeProgress {
+    enum UpgradeState {
+        UPGRADE_INITIALIZING          = 0;
+
+        // In-progress states.
+        UPGRADER_LAUNCHING            = 1;
+        UPGRADER_LAUNCHED             = 2;
+        PRE_FLIGHT_CHECKS_COMPLETE    = 3;
+        UPGRADE_OPERATIONS_DONE       = 4;
+
+
+        // The success state.
+        // PLEASE NUMBER ALL IN-PROGRESS STATES ABOVE THIS
+        // AND ALL ERROR STATES BELOW THIS.
+        UPGRADE_COMPLETE              = 10;
+
+
+        // Error states.
+        UPGRADE_INITIALIZATION_ERROR  = 11;
+        PRE_FLIGHT_CHECKS_FAILED      = 12;
+        UPGRADE_ERROR_ROLLING_BACK    = 13;
+        UPGRADE_ERROR_ROLLED_BACK     = 14;
+        UPGRADE_ERROR_ROLLBACK_FAILED = 15;
+        UPGRADE_ERROR_UNKNOWN         = 16;
+        UPGRADE_TIMED_OUT             = 17;
+    }
+
+    UpgradeState upgrade_state         = 1;
+    string       upgrade_status_detail = 2;
+    google.protobuf.Timestamp since    = 3;
+}

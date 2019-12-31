@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="ImageScanningTest" tests="1" skipped="0" failures="1" errors="0" timestamp="2019-12-26T23:26:34" hostname="akshat.local" time="0.899">
+  <properties/>
+  <testcase name="image scanning test with the docker image" classname="ImageScanningTest" time="0.899">
+    <failure message="Condition failed with Exception:&#10;&#10;svc.getJenkinsSvc()&#10;|   |&#10;|   groovy.lang.MissingPropertyException: No such property: namespace for class: Service&#10;Service@7c7cb177&#10;" type="org.spockframework.runtime.ConditionFailedWithExceptionError">Condition failed with Exception:
+
+svc.getJenkinsSvc()
+|   |
+|   groovy.lang.MissingPropertyException: No such property: namespace for class: Service
+Service@7c7cb177
+
+	at ImageScanningTest.image scanning test with the docker image(ImageScanningTest.groovy:20)
+Caused by: groovy.lang.MissingPropertyException: No such property: namespace for class: Service
+	at Service.getJenkinsSvc(Service.groovy:77)
+	... 1 more
+</failure>
+  </testcase>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
