@@ -7,26 +7,16 @@ import com.google.gson.JsonElement
 class Alert {
 
     public String id
-
-     public Policy policy
-
-     LifecycleStages lifecyleStages
-
-     Object Deployment
-
-     Violation[] violations
-
-     public Object ProcessViolation
-
-     EnforcementAction enforcementaction
-
-     public String Time
-
-     public String FirstOccurred
-
-     public String State
-
-     public String SnoozeTill
+    public Policy policy
+    LifecycleStages lifecyleStages
+    Object Deployment
+    Violation[] violations
+    public Object ProcessViolation
+    EnforcementAction enforcementaction
+    public String Time
+    public String FirstOccurred
+    public String State
+    public String SnoozeTill
 
 }
 

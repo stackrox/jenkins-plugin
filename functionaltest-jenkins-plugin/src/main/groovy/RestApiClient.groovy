@@ -9,11 +9,8 @@ import com.jayway.restassured.response.Response
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
-
 class RestApiClient {
-
     public Gson gson
-
     RestApiClient() {
         gson = new Gson();
     }

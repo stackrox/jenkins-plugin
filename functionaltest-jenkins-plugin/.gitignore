@@ -1,0 +1,12 @@
+.gradle
+/build/
+/buildSrc/build/
+gradle
+gradlew
+gradlew.bat
+qa-tests-backend.iml
+/out/
+/.project
+/bin/
+/classes/
+/src/main/proto/
