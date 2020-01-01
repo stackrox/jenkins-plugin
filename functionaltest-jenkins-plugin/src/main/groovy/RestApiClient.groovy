@@ -38,13 +38,13 @@ class RestApiClient {
         File file = new File("src/main/resources/config-vuln-management.xml")
         FileInputStream fileInputStream = new FileInputStream(file)
         byte [] bytes = fileInputStream.bytes
-         given().relaxedHTTPSValidation()
-                                   .content(bytes)
-                                   .contentType("text/xml")
-                                   .when()
-                                   .post(url)
-                                   .then()
-                                   .statusCode(200)
+        given().relaxedHTTPSValidation()
+            .content(bytes)
+            .contentType("text/xml")
+            .when()
+            .post(url)
+            .then()
+            .statusCode(200)
 
         return jobName
     }
@@ -52,9 +52,9 @@ class RestApiClient {
     static void startJenkinsBuild(String job, String loadBalancer ) {
         def url = "http://${loadBalancer}:8080/job/${job}/build"
         given().relaxedHTTPSValidation()
-                .when()
-                .post(url)
-                .then().statusCode(201)
+            .when()
+            .post(url)
+            .then().statusCode(201)
 
     }
 
