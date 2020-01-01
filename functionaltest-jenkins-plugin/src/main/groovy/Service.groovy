@@ -25,6 +25,4 @@ class Service {
         }
         return loadBalancerIP
     }
-
-
 }

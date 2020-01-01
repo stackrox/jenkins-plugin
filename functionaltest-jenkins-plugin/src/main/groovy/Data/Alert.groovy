@@ -30,7 +30,6 @@ class Component {
     public String Version
 }
 
-
 class Whitelist {
     public String Name
     public Deployment Deployment

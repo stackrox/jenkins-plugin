@@ -6,6 +6,7 @@ class ImageScanningTest extends BaseSpecification {
 
     def "image scanning test with the docker image" () {
         given:
+        "a repo with images in the scanner repo"
 
         when:
         def imageName = "docker.io/stackrox/collector:2.5.9-latest"
@@ -30,6 +31,4 @@ class ImageScanningTest extends BaseSpecification {
         String status = restApiClient.getJenkinsBuildStatus(jobName, 60, LoadBalancer )
         assert status == "SUCCESS"
     }
-
-
 }

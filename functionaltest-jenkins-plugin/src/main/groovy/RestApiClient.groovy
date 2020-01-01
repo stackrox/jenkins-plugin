@@ -20,12 +20,11 @@ class RestApiClient {
     }
 
     protected Alert[] getAlerts(String imageName, Object requestObj) {
-        gson = new Gson()
         String url = Constants.baseurl + Constants.buildDetect
         def encodedpassword = "Basic " + DataUtil.base64Encode(common.Constants.cluserUserName+":"+common.Constants.clusterPassword)
         Response response =  CreateRequestSpecification("Authorization", encodedpassword)
-        .body(gson.toJson(requestObj))
-        .post(url)
+                             .body(gson.toJson(requestObj))
+                             .post(url)
         JSONParser parser = new JSONParser();
         JSONObject jsonObject = (JSONObject) parser.parse(response.asString())
         Alert[] alerts = gson.fromJson(jsonObject.get("alerts").toString(), Alert[])
