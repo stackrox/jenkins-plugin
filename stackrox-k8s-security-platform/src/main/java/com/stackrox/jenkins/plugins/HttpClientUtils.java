@@ -33,9 +33,9 @@ public class HttpClientUtils {
         SSLConnectionSocketFactory connectionFactory = new SSLConnectionSocketFactory(sslContext);
 
         RequestConfig requestConfig = RequestConfig.custom()
-                .setConnectTimeout(60 * 1000) //1 minute
-                .setConnectionRequestTimeout(60 * 1000) //1 minute
-                .setSocketTimeout(10 * 60 * 1000) //10 minutes
+                .setConnectTimeout(60 * 1000) // 1 minute
+                .setConnectionRequestTimeout(60 * 1000) // 1 minute
+                .setSocketTimeout(10 * 60 * 1000) // 10 minutes
                 .build();
 
         return HttpClients
