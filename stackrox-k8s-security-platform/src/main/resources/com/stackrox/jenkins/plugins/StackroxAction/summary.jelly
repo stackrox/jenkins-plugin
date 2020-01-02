@@ -1,0 +1,6 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:t="/lib/hudson">
+    <t:summary href="stackrox-image-security-results" icon="/plugin/stackrox-k8s-security-platform/images/sr-logo.png">
+        <a href="stackrox-image-security-results"></a>
+    </t:summary>
+</j:jelly>

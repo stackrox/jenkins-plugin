@@ -12,6 +12,7 @@ import hudson.Launcher;
 import hudson.model.AbstractProject;
 import hudson.model.Run;
 import hudson.model.TaskListener;
+import hudson.tasks.ArtifactArchiver;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.util.FormValidation;
@@ -37,11 +38,14 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.net.HttpURLConnection;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.List;
 
@@ -61,6 +65,7 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
     private CloseableHttpClient httpClient;
     private RunConfig runConfig;
     private List<ImageCheckResults> results;
+    private ArtifactArchiver artifactArchiver;
 
     @DataBoundConstructor
     public StackroxBuilder(OptionalTLSConfig tlsConfig) {
@@ -114,9 +119,11 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
 
     //TODO: Add console log for the plugin
     @Override
-    public void perform(Run<?, ?> run, FilePath workspace, Launcher launcher, TaskListener listener) throws InterruptedException, IOException {
+    public void perform(Run<?, ?> run, FilePath workspace, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
         //TODO: Process pass/fail build step while handling exceptions
         runConfig = new RunConfig(run, workspace, launcher, listener);
+        artifactArchiver = new ArtifactArchiver(runConfig.getArtifacts());
+
         try {
             //TODO: pass enable tls
             httpClient = HttpClientUtils.Get();
@@ -129,7 +136,10 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
             processImage(name);
         }
 
-        generateReport();
+        generateBuildReport();
+
+        artifactArchiver.perform(run, workspace, launcher, listener);
+        run.addAction(new StackroxAction(results, run));
 
         cleanupJenkinsWorkspace();
 
@@ -276,30 +286,43 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
         }
     }
 
-    private void generateReport() {
-        runConfig.getLog().println(String.format("Generating report..."));
+    private void generateBuildReport() throws AbortException {
         PrintStream log = runConfig.getLog();
+        log.println(String.format("Generating report..."));
+        try {
+            for (ImageCheckResults result : results) {
+                FilePath imageResultDir = new FilePath(this.runConfig.getReportsDir(), result.getImageName());
+                imageResultDir.mkdirs();
+                FilePath imageCveCsv = new FilePath(imageResultDir, "cves.csv");
+                FilePath policyViolationsCsv = new FilePath(imageResultDir, "policyViolations.csv");
 
-        //TODO: Generate report with CSS formatting
-        for (ImageCheckResults result : results) {
-            log.println(String.format("************ %s *************", result.getImageName()));
-            log.println("CVE Report");
-            for (CVE cve : result.getCves()) {
-                log.println(String.format("CVE: %s, %s, %s, %s, %b", cve.getId(), cve.getCvssScore(), cve.getPackageName(), cve.getPackageVersion(), cve.isFixable()));
+                try (BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(imageCveCsv.write(), StandardCharsets.UTF_8))) {
+                    bw.write("CVE ID, CVSS Score, Package Name, Package Version, Fixable\n");
+                    for (CVE cve : result.getCves()) {
+                        bw.write(String.format("%s, %s, %s, %s, %b\n", cve.getId(), cve.getCvssScore(), cve.getPackageName(), cve.getPackageVersion(), cve.isFixable()));
+                    }
+                }
+
+                try (BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(policyViolationsCsv.write(), StandardCharsets.UTF_8))) {
+                    bw.write("Policy Name, Severity, Enforced\n");
+                    for (ViolatedPolicy policy : result.getViolatedPolicies()) {
+                        bw.write(String.format("%s, %s, %b\n", policy.getName(), policy.getSeverity(), policy.isEnforced()));
+                    }
+                }
             }
-            log.println("Violated Policies");
-            for (ViolatedPolicy policy : result.getViolatedPolicies()) {
-                log.println(String.format("Violated policy: %s, %s, %b", policy.getName(), policy.getSeverity(), policy.isEnforced()));
-            }
+        } catch (IOException | InterruptedException e) {
+            throw new AbortException("Failed to write image scan results");
         }
     }
 
     private void cleanupJenkinsWorkspace() {
-        runConfig.getLog().println(String.format("Cleaning up ..."));
+        runConfig.getLog().println(String.format("Cleaning up the workspace ..."));
 
         try {
             File toDelete = new File(runConfig.getImagesToScanFilePath().toURI());
             Files.deleteIfExists(toDelete.toPath());
+
+            runConfig.getReportsDir().deleteRecursive();
 
         } catch (Exception e) {
             runConfig.getLog().println("WARN: Failed to cleanup.");
@@ -318,7 +341,6 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
         public OptionalTLSConfig(String caCertPEM) {
             this.caCertPEM = caCertPEM;
         }
-
     }
 
     @Extension
@@ -411,8 +433,8 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
                 JsonReader reader = Json.createReader(new InputStreamReader(entity.getContent()));
                 JsonObject object = reader.readObject();
                 EntityUtils.consume(entity);
-                return !Strings.isNullOrEmpty(object.getString("userId"));
 
+                return !Strings.isNullOrEmpty(object.getString("userId"));
             } finally {
                 if (authStatusRequest != null) {
                     authStatusRequest.releaseConnection();
@@ -426,5 +448,4 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
             }
         }
     }
-
 }
