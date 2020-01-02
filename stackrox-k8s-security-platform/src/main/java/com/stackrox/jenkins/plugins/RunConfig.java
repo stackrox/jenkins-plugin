@@ -8,7 +8,6 @@ import hudson.Launcher;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
@@ -16,7 +15,7 @@ import java.util.List;
 
 public class RunConfig {
     private static final String IMAGE_LIST_FILENAME = "rox_images_to_scan";
-    private static String REPORTS_DIR_NAME = "rox_image_security_reports";
+    private static final String REPORTS_DIR_NAME = "rox_image_security_reports";
 
     private EnvVars envVars;
     private PrintStream log;

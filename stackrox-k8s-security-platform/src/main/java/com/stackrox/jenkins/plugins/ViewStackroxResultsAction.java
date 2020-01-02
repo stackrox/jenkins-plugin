@@ -5,11 +5,11 @@ import hudson.model.Run;
 import jenkins.model.Jenkins;
 import java.util.List;
 
-public class StackroxAction implements Action {
+public class ViewStackroxResultsAction implements Action {
     private Run<?, ?> build;
     private List<ImageCheckResults> results;
 
-    public StackroxAction(List<ImageCheckResults> results, Run<?, ?> build) {
+    public ViewStackroxResultsAction(List<ImageCheckResults> results, Run<?, ?> build) {
         this.build = build;
         this.results = results;
     }

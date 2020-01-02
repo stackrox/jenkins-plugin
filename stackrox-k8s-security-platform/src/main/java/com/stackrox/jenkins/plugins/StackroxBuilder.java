@@ -65,7 +65,6 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
     private CloseableHttpClient httpClient;
     private RunConfig runConfig;
     private List<ImageCheckResults> results;
-    private ArtifactArchiver artifactArchiver;
 
     @DataBoundConstructor
     public StackroxBuilder(OptionalTLSConfig tlsConfig) {
@@ -122,7 +121,7 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
     public void perform(Run<?, ?> run, FilePath workspace, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
         //TODO: Process pass/fail build step while handling exceptions
         runConfig = new RunConfig(run, workspace, launcher, listener);
-        artifactArchiver = new ArtifactArchiver(runConfig.getArtifacts());
+        ArtifactArchiver artifactArchiver = new ArtifactArchiver(runConfig.getArtifacts());
 
         try {
             //TODO: pass enable tls
@@ -139,7 +138,7 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
         generateBuildReport();
 
         artifactArchiver.perform(run, workspace, launcher, listener);
-        run.addAction(new StackroxAction(results, run));
+        run.addAction(new ViewStackroxResultsAction(results, run));
 
         cleanupJenkinsWorkspace();
 
@@ -288,30 +287,35 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
 
     private void generateBuildReport() throws AbortException {
         PrintStream log = runConfig.getLog();
-        log.println(String.format("Generating report..."));
+        log.println("Generating report...");
+
         try {
             for (ImageCheckResults result : results) {
-                FilePath imageResultDir = new FilePath(this.runConfig.getReportsDir(), result.getImageName());
+                FilePath imageResultDir = new FilePath(this.runConfig.getReportsDir(), CharMatcher.is(':').replaceFrom(result.getImageName(), '.'));
                 imageResultDir.mkdirs();
                 FilePath imageCveCsv = new FilePath(imageResultDir, "cves.csv");
                 FilePath policyViolationsCsv = new FilePath(imageResultDir, "policyViolations.csv");
 
-                try (BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(imageCveCsv.write(), StandardCharsets.UTF_8))) {
-                    bw.write("CVE ID, CVSS Score, Package Name, Package Version, Fixable\n");
-                    for (CVE cve : result.getCves()) {
-                        bw.write(String.format("%s, %s, %s, %s, %b\n", cve.getId(), cve.getCvssScore(), cve.getPackageName(), cve.getPackageVersion(), cve.isFixable()));
+                if (!result.getCves().isEmpty()) {
+                    try (BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(imageCveCsv.write(), StandardCharsets.UTF_8))) {
+                        bw.write("CVE ID, CVSS Score, Package Name, Package Version, Fixable\n");
+                        for (CVE cve : result.getCves()) {
+                            bw.write(String.format("%s, %s, %s, %s, %b\n", cve.getId(), cve.getCvssScore(), cve.getPackageName(), cve.getPackageVersion(), cve.isFixable()));
+                        }
                     }
                 }
 
-                try (BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(policyViolationsCsv.write(), StandardCharsets.UTF_8))) {
-                    bw.write("Policy Name, Severity, Enforced\n");
-                    for (ViolatedPolicy policy : result.getViolatedPolicies()) {
-                        bw.write(String.format("%s, %s, %b\n", policy.getName(), policy.getSeverity(), policy.isEnforced()));
+                if (!result.getViolatedPolicies().isEmpty()) {
+                    try (BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(policyViolationsCsv.write(), StandardCharsets.UTF_8))) {
+                        bw.write("Policy Name, Severity, Enforced\n");
+                        for (ViolatedPolicy policy : result.getViolatedPolicies()) {
+                            bw.write(String.format("%s, %s, %b\n", policy.getName(), policy.getSeverity(), policy.isEnforced()));
+                        }
                     }
                 }
             }
         } catch (IOException | InterruptedException e) {
-            throw new AbortException("Failed to write image scan results");
+            throw new AbortException(String.format("Failed to write image scan results. Error: %s", e.getMessage()));
         }
     }
 
