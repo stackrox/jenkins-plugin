@@ -20,7 +20,6 @@ import java.security.NoSuchAlgorithmException;
 public class HttpClientUtils {
     //TODO: Create a client with tls verification turned on
     public static final int maxRetries = 3;
-    public static final long retryInterval = 5 * 1000; // 5 seconds
 
     public static CloseableHttpClient Get() throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
         // use the TrustSelfSignedStrategy to allow Self Signed Certificates
@@ -45,18 +44,7 @@ public class HttpClientUtils {
                 .setRetryHandler((IOException exception, int executionCount, HttpContext context) ->
                         executionCount <= maxRetries &&
                                 exception instanceof SocketException
-                ).setServiceUnavailableRetryStrategy(new ServiceUnavailableRetryStrategy() {
-                    @Override
-                    public boolean retryRequest(HttpResponse response, int executionCount, HttpContext context) {
-                        return executionCount <= maxRetries &&
-                                response.getStatusLine().getStatusCode() == HttpStatus.SC_SERVICE_UNAVAILABLE;
-                    }
-
-                    @Override
-                    public long getRetryInterval() {
-                        return retryInterval;
-                    }
-                })
+                )
                 .build();
     }
 }
