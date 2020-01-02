@@ -197,7 +197,7 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
             HttpEntity entity = response.getEntity();
 
             if (statusCode != HttpURLConnection.HTTP_OK || entity == null) {
-                throw new IOException( String.format("Failed build time detection request. Status code: %d. Error: %s",
+                throw new IOException(String.format("Failed build time detection request. Status code: %d. Error: %s",
                         entity.toString(), String.valueOf(entity)));
             }
             JsonReader reader = Json.createReader(new InputStreamReader(entity.getContent()));
@@ -280,7 +280,7 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
         runConfig.getLog().println(String.format("Generating report..."));
         PrintStream log = runConfig.getLog();
 
-        //TODO: Generate report
+        //TODO: Generate report with CSS formatting
         for (ImageCheckResults result : results) {
             log.println(String.format("************ %s *************", result.getImageName()));
             log.println("CVE Report");

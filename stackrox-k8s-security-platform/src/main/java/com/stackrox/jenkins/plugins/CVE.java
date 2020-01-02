@@ -10,6 +10,17 @@ public class CVE {
     private final boolean fixable;
     private final String link;
 
+    private CVE(Builder builder) {
+        this.id = builder.id;
+        this.cvssScore = builder.cvssScore;
+        this.scoreType = builder.scoreType;
+        this.publishDate = builder.publishDate;
+        this.packageName = builder.packageName;
+        this.packageVersion = builder.packageVersion;
+        this.fixable = builder.fixable;
+        this.link = builder.link;
+    }
+
     public String getId() {
         return id;
     }
@@ -40,17 +51,6 @@ public class CVE {
 
     public String getLink() {
         return link;
-    }
-
-    private CVE(Builder builder) {
-        this.id = builder.id;
-        this.cvssScore = builder.cvssScore;
-        this.scoreType = builder.scoreType;
-        this.publishDate = builder.publishDate;
-        this.packageName = builder.packageName;
-        this.packageVersion = builder.packageVersion;
-        this.fixable = builder.fixable;
-        this.link = builder.link;
     }
 
     public static class Builder {
