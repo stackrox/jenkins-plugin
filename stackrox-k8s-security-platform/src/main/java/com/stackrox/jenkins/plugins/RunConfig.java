@@ -32,15 +32,15 @@ public class RunConfig {
             log = listener.getLogger();
             jenkinsWorkspace = workspace;
             baseWorkDir = new FilePath(workspace, envVars.get("BUILD_TAG"));
+
             imagesToScanFilePath = new FilePath(baseWorkDir, IMAGE_LIST_FILENAME);
-            reportsDir = new FilePath(baseWorkDir, REPORTS_DIR_NAME);
-            reportsDir.mkdirs();
-
-            artifacts = reportsDir.getRemote();
-
             if (!imagesToScanFilePath.exists()) {
                 throw new AbortException(String.format("%s not found at %s, no images to scan.", IMAGE_LIST_FILENAME, imagesToScanFilePath));
             }
+
+            reportsDir = new FilePath(baseWorkDir, REPORTS_DIR_NAME);
+            reportsDir.mkdirs();
+            artifacts = String.format("%s/%s/", envVars.get("BUILD_TAG"), REPORTS_DIR_NAME);
 
             try (BufferedReader br = new BufferedReader(new InputStreamReader(imagesToScanFilePath.read()))) {
                 imageNames = Lists.newArrayList();

@@ -17,14 +17,12 @@
         <java.level>8</java.level>
     </properties>
     <name>StackRox Image Security</name>
-    <!--- TODO: Licensing
     <licenses>
-         <license>
-             <name>MIT License</name>
-             <url>https://opensource.org/licenses/MIT</url>
-         </license>
-     </licenses>
-     -->
+        <license>
+            <name>Apache 2 License</name>
+            <url>http://opensource.org/licenses/Apache-2.0</url>
+        </license>
+  </licenses>
     <!-- Assuming you want to host on @jenkinsci:
     <url>https://github.com/jenkinsci/${project.artifactId}-plugin</url>
     <scm>
