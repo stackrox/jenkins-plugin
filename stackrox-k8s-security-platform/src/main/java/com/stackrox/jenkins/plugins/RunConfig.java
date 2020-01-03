@@ -1,6 +1,7 @@
 package com.stackrox.jenkins.plugins;
 
 import com.google.common.collect.Lists;
+import hudson.AbortException;
 import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.Launcher;
@@ -14,6 +15,7 @@ import java.util.List;
 
 public class RunConfig {
     private static final String IMAGE_LIST_FILENAME = "rox_images_to_scan";
+    private static final String REPORTS_DIR_NAME = "rox_image_security_reports";
 
     private EnvVars envVars;
     private PrintStream log;
@@ -22,28 +24,38 @@ public class RunConfig {
     private FilePath reportsDir;
     private FilePath imagesToScanFilePath;
     private List<String> imageNames;
+    private String artifacts;
 
-    public RunConfig(Run<?, ?> run, FilePath workspace, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
-        envVars = run.getEnvironment(listener);
-        log = listener.getLogger();
-        jenkinsWorkspace = workspace;
-        baseWorkDir = new FilePath(workspace, envVars.get("BUILD_TAG"));
-        reportsDir = new FilePath(baseWorkDir, "StackRoxImageSecurityReports");
-        reportsDir.mkdirs();
+    public RunConfig(Run<?, ?> run, FilePath workspace, Launcher launcher, TaskListener listener) throws AbortException {
+        try {
+            envVars = run.getEnvironment(listener);
+            log = listener.getLogger();
+            jenkinsWorkspace = workspace;
+            baseWorkDir = new FilePath(workspace, envVars.get("BUILD_TAG"));
+            imagesToScanFilePath = new FilePath(baseWorkDir, IMAGE_LIST_FILENAME);
+            reportsDir = new FilePath(baseWorkDir, REPORTS_DIR_NAME);
+            reportsDir.mkdirs();
 
-        imagesToScanFilePath = new FilePath(baseWorkDir, IMAGE_LIST_FILENAME);
+            artifacts = reportsDir.getRemote();
 
-        if (!imagesToScanFilePath.exists()) {
-            throw new IOException(String.format("%s not found at %s, no images to scan.", IMAGE_LIST_FILENAME, imagesToScanFilePath));
-        }
-
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(imagesToScanFilePath.read()))) {
-            imageNames = Lists.newArrayList();
-            String name;
-            while ((name = br.readLine()) != null) {
-                imageNames.add(name);
+            if (!imagesToScanFilePath.exists()) {
+                throw new AbortException(String.format("%s not found at %s, no images to scan.", IMAGE_LIST_FILENAME, imagesToScanFilePath));
             }
+
+            try (BufferedReader br = new BufferedReader(new InputStreamReader(imagesToScanFilePath.read()))) {
+                imageNames = Lists.newArrayList();
+                String name;
+                while ((name = br.readLine()) != null) {
+                    imageNames.add(name);
+                }
+            }
+        } catch (IOException | InterruptedException e) {
+            throw new AbortException(String.format("Error in creating a run configuration: %s", e.getMessage()));
         }
+    }
+
+    public String getArtifacts() {
+        return artifacts;
     }
 
     public EnvVars getEnvVars() {

@@ -1,0 +1,6 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout"  xmlns:t="/lib/hudson">
+    <l:layout title="StackRox Image Security Results" norefresh="true">
+        <st:include it="${it.build}" page="sidepanel.jelly" />
+    </l:layout>
+</j:jelly>

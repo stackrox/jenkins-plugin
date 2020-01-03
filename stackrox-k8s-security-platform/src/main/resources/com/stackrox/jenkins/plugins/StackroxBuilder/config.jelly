@@ -6,6 +6,9 @@
     <f:entry title="${%APITokenTitle}" >
         <f:password field="apiToken" />
     </f:entry>
+    <f:validateButton
+            title="${%ValidateConnectionTitle}" progress="${%Connecting...}"
+            method="testConnection" with="portalAddress,apiToken" />
     <f:entry>
         <f:optionalBlock  title="${%EnableTLSVerification}" name="enableTLSVerification" checked="${%true}">
             <f:entry title="${%CACertificate}">
@@ -13,10 +16,6 @@
             </f:entry>
         </f:optionalBlock>
     </f:entry>
-    <f:validateButton
-            title="${%ValidateConnectionTitle}" progress="${%Connecting...}"
-            method="testConnection" with="portalAddress,apiToken" />
-
     <f:entry title="${%FailOnPolicyEvalFailStatusTitle}" field="failOnPolicyEvalFailure">
         <f:checkbox name="failOnPolicyEvalFailure" checked="${instance.failOnPolicyEvalFailure}" default="${%true}"/>
     </f:entry>

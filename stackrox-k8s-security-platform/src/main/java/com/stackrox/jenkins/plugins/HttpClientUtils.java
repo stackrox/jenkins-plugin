@@ -29,7 +29,7 @@ public class HttpClientUtils {
                 .build();
 
         // create an SSL Socket Factory to use the SSLContext with the trust self signed certificate strategy
-        SSLConnectionSocketFactory connectionFactory = new SSLConnectionSocketFactory(sslContext);
+        SSLConnectionSocketFactory connectionFactory = new SSLConnectionSocketFactory(sslContext, SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
 
         RequestConfig requestConfig = RequestConfig.custom()
                 .setConnectTimeout(60 * 1000) // 1 minute
