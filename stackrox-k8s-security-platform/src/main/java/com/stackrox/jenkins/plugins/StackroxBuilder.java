@@ -122,6 +122,7 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
         //TODO: Process pass/fail build step while handling exceptions
         runConfig = new RunConfig(run, workspace, launcher, listener);
         ArtifactArchiver artifactArchiver = new ArtifactArchiver(runConfig.getArtifacts());
+        artifactArchiver.setAllowEmptyArchive(true);
 
         try {
             //TODO: pass enable tls
@@ -374,7 +375,6 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
         @SuppressWarnings("unused")
         public FormValidation doCheckPortalAddress(@QueryParameter final String portalAddress) {
             String[] schemes = {"https"};
-            // TODO: remove allow local urls
             UrlValidator urlValidator = new UrlValidator(schemes, UrlValidator.ALLOW_LOCAL_URLS);
             if (!Strings.isNullOrEmpty(portalAddress) && urlValidator.isValid(portalAddress)) {
                 return FormValidation.ok();
@@ -400,25 +400,21 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
                 }
                 return FormValidation.error(Messages.StackroxBuilder_TestConnectionError());
 
-            } catch (IOException e) {
+            } catch (Exception e) {
                 return FormValidation.error(Messages.StackroxBuilder_TestConnectionError());
 
             }
         }
 
-        private boolean checkRoxAuthStatus(final String portalAddress, final String apiToken) throws IOException {
+        private boolean checkRoxAuthStatus(final String portalAddress, final String apiToken) throws Exception {
             // Cannot use the cached HttpClient here since this is before the perform step.
             CloseableHttpClient httpClient = null;
             CloseableHttpResponse response = null;
             HttpGet authStatusRequest = null;
 
             try {
-                try {
-                    //TODO: pass enable tls
-                    httpClient = HttpClientUtils.Get();
-                } catch (Exception e) {
-                    return false;
-                }
+                //TODO: pass enable tls
+                httpClient = HttpClientUtils.Get();
 
                 authStatusRequest = new HttpGet(Joiner.on("/").join(portalAddress, "v1/auth/status"));
                 authStatusRequest.addHeader("Accept", "application/json");
@@ -436,6 +432,7 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
 
                 JsonReader reader = Json.createReader(new InputStreamReader(entity.getContent()));
                 JsonObject object = reader.readObject();
+
                 EntityUtils.consume(entity);
 
                 return !Strings.isNullOrEmpty(object.getString("userId"));
