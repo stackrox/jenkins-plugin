@@ -2,8 +2,6 @@ package Data
 
 import com.google.gson.JsonElement
 
-
-
 class Alert {
 
     public String id
@@ -17,6 +15,20 @@ class Alert {
     public String FirstOccurred
     public String State
     public String SnoozeTill
+
+    enum LifecycleStages {
+        DEPLOY,
+        BUILD,
+        RUNTIME
+    }
+
+    enum EnforcementAction {
+        UNSET_ENFORCEMENT,
+        SCALE_TO_ZERO_ENFORCEMENT,
+        UNSATISFIABLE_NODE_CONSTRAINT_ENFORCEMENT,
+        KILL_POD_ENFORCEMENT,
+        FAIL_BUILD_ENFORCEMENT
+    }
 
 }
 
@@ -39,6 +51,17 @@ class Whitelist {
         public String Name
         public Scope Scope
     }
+
+    class Scope {
+        String cluster
+        String namespace
+        class Label {
+            String key
+            String value
+        }
+        Label label
+    }
+
 }
 
 

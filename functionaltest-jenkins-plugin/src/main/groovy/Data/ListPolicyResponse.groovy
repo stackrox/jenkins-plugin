@@ -1,9 +1,7 @@
 package Data
 
 import com.google.gson.JsonElement
-import Data.EnforcementAction
-import Data.Severity
-import com.sun.org.apache.xpath.internal.operations.Bool
+import Data.Policy
 
 class ListPolicyResponse {
     String id
@@ -11,8 +9,30 @@ class ListPolicyResponse {
     String description
     Severity severity
     Boolean disabled
-    LifecycleStages lifecycleStages
+    //LifecycleStages lifecycleStages
     String [] notifiers
     JsonElement last_updated
     EnforcementAction enforcementAction
+
+    enum EnforcementAction {
+        UNSET_ENFORCEMENT,
+        SCALE_TO_ZERO_ENFORCEMENT,
+        UNSATISFIABLE_NODE_CONSTRAINT_ENFORCEMENT,
+        KILL_POD_ENFORCEMENT,
+        FAIL_BUILD_ENFORCEMENT
+    }
+
+    enum Severity {
+        UNSET_SEVERITY,
+        LOW_SEVERITY,
+        MEDIUM_SEVERITY,
+        HIGH_SEVERITY,
+        CRITICAL_SEVERITY
+    }
+
+    enum LifecycleStages {
+        DEPLOY,
+        BUILD,
+        RUNTIME
+    }
 }
