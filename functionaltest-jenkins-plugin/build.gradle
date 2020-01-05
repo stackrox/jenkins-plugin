@@ -12,6 +12,12 @@ sourceCompatibility = 1.8
 
 repositories {
     mavenCentral()
+    maven {
+        url 'https://repo.jenkins-ci.org/releases'
+    }
+    maven {
+        url 'https://repo.jenkins-ci.org/public'
+    }
 }
 
 
@@ -60,6 +66,8 @@ dependencies {
     compile group: 'commons-cli', name: 'commons-cli', version: '1.2'
     compile group: 'commons-httpclient', name: 'commons-httpclient', version: '3.1'
     compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.7'
+   // compile group: 'org.jenkins-ci.main', name: 'jenkins-core', version: '1.396'
+
 
     //protobuf version
     // grpc and protobuf
