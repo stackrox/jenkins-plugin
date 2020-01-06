@@ -2,7 +2,7 @@ apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   name: jenkins
-  namespace: qa
+  namespace: stackrox
 spec:
   replicas: 1
   template:
@@ -15,6 +15,11 @@ spec:
       containers:
         - name: jenkins
           image: jenkins/jenkins:lts
+          resources:
+            limits:
+              memory: 512Mi
+            requests:
+              memory: 256Mi
           env:
             - name: JAVA_OPTS
               value: -Djenkins.install.runSetupWizard=false
