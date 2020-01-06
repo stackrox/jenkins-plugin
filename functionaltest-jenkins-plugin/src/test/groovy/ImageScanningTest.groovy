@@ -4,7 +4,7 @@ import Data.DataUtil
 import Data.ListPolicyResponse
 import Data.Policy
 import common.Constants
-import objects.Deployment
+
 
 class ImageScanningTest extends BaseSpecification {
 
