@@ -1,4 +1,0 @@
-package Objects
-
-class Pod {
-}
