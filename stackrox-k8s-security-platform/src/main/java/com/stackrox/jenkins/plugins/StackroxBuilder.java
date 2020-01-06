@@ -34,6 +34,7 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
@@ -50,16 +51,12 @@ import java.nio.file.Files;
 import java.util.List;
 
 public class StackroxBuilder extends Builder implements SimpleBuildStep {
-
-    private static final boolean DEFAULT_FAIL_ON_POLICY_EVAL_FAILURE = true;
-    private static final boolean DEFAULT_FAIL_ON_CRITICAL_PLUGIN_ERROR = true;
-    private static final boolean DEFAULT_ENABLE_TLS_VERIFICATION = true;
-
     private String portalAddress;
     private Secret apiToken = Secret.fromString("");
-    private boolean failOnPolicyEvalFailure = DEFAULT_FAIL_ON_POLICY_EVAL_FAILURE;
-    private boolean failOnCriticalPluginError = DEFAULT_FAIL_ON_CRITICAL_PLUGIN_ERROR;
-    private boolean enableTLSVerification = DEFAULT_ENABLE_TLS_VERIFICATION;
+    private boolean failOnPolicyEvalFailure;
+    private boolean failOnCriticalPluginError;
+
+    private boolean enableTLSVerification;
     private String caCertPEM;
 
     private CloseableHttpClient httpClient;
@@ -67,9 +64,7 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
     private List<ImageCheckResults> results;
 
     @DataBoundConstructor
-    public StackroxBuilder(OptionalTLSConfig tlsConfig) {
-        this.caCertPEM = (tlsConfig != null) ? tlsConfig.caCertPEM : null;
-        this.enableTLSVerification = tlsConfig != null;
+    public StackroxBuilder() {
     }
 
     public String getPortalAddress() {
@@ -109,11 +104,21 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
     }
 
     public boolean isEnableTLSVerification() {
-        return this.enableTLSVerification;
+        return enableTLSVerification;
+    }
+
+    @DataBoundSetter
+    public void setEnableTLSVerification(boolean enableTLSVerification) {
+        this.enableTLSVerification = enableTLSVerification;
     }
 
     public String getCaCertPEM() {
         return caCertPEM;
+    }
+
+    @DataBoundSetter
+    public void setCaCertPEM(String caCertPEM) {
+        this.caCertPEM = caCertPEM;
     }
 
     //TODO: Add console log for the plugin
@@ -121,12 +126,9 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
     public void perform(Run<?, ?> run, FilePath workspace, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
         //TODO: Process pass/fail build step while handling exceptions
         runConfig = new RunConfig(run, workspace, launcher, listener);
-        ArtifactArchiver artifactArchiver = new ArtifactArchiver(runConfig.getArtifacts());
-        artifactArchiver.setAllowEmptyArchive(true);
 
         try {
-            //TODO: pass enable tls
-            httpClient = HttpClientUtils.Get();
+            httpClient = HttpClientUtils.Get(this.enableTLSVerification, this.caCertPEM);
         } catch (Exception e) {
             throw new AbortException(String.format("Fatal error creating client: %s. Aborting ...", e.getMessage()));
         }
@@ -138,7 +140,10 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
 
         generateBuildReport();
 
+        ArtifactArchiver artifactArchiver = new ArtifactArchiver(runConfig.getArtifacts());
+        artifactArchiver.setAllowEmptyArchive(true);
         artifactArchiver.perform(run, workspace, launcher, listener);
+
         run.addAction(new ViewStackroxResultsAction(results, run));
 
         cleanupJenkinsWorkspace();
@@ -324,11 +329,10 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
         runConfig.getLog().println(String.format("Cleaning up the workspace ..."));
 
         try {
-            File toDelete = new File(runConfig.getImagesToScanFilePath().toURI());
-            Files.deleteIfExists(toDelete.toPath());
+            File imagesToScan = new File(runConfig.getImagesToScanFilePath().toURI());
+            Files.deleteIfExists(imagesToScan.toPath());
 
             runConfig.getReportsDir().deleteRecursive();
-
         } catch (Exception e) {
             runConfig.getLog().println("WARN: Failed to cleanup.");
         }
@@ -339,15 +343,7 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
         return (DescriptorImpl) super.getDescriptor();
     }
 
-    public static class OptionalTLSConfig {
-        private String caCertPEM;
-
-        @DataBoundConstructor
-        public OptionalTLSConfig(String caCertPEM) {
-            this.caCertPEM = caCertPEM;
-        }
-    }
-
+    @Symbol("stackrox-image-security")
     @Extension
     public static final class DescriptorImpl extends BuildStepDescriptor<Builder> {
 
@@ -393,9 +389,10 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
         }
 
         @SuppressWarnings("unused")
-        public FormValidation doTestConnection(@QueryParameter("portalAddress") final String portalAddress, @QueryParameter("apiToken") final String apiToken) {
+        public FormValidation doTestConnection(@QueryParameter("portalAddress") final String portalAddress, @QueryParameter("apiToken") final String apiToken,
+                                               @QueryParameter("enableTLSVerification") final boolean tlsVerify, @QueryParameter("caCertPEM") final String caCertPEM) {
             try {
-                if (checkRoxAuthStatus(portalAddress, apiToken)) {
+                if (checkRoxAuthStatus(portalAddress, apiToken, tlsVerify, caCertPEM)) {
                     return FormValidation.ok("Success");
                 }
                 return FormValidation.error(Messages.StackroxBuilder_TestConnectionError());
@@ -406,16 +403,14 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
             }
         }
 
-        private boolean checkRoxAuthStatus(final String portalAddress, final String apiToken) throws Exception {
+        private boolean checkRoxAuthStatus(final String portalAddress, final String apiToken, final boolean tlsVerify, final String caCertPEM) throws Exception {
             // Cannot use the cached HttpClient here since this is before the perform step.
             CloseableHttpClient httpClient = null;
             CloseableHttpResponse response = null;
             HttpGet authStatusRequest = null;
 
             try {
-                //TODO: pass enable tls
-                httpClient = HttpClientUtils.Get();
-
+                httpClient = HttpClientUtils.Get(tlsVerify, caCertPEM);
                 authStatusRequest = new HttpGet(Joiner.on("/").join(portalAddress, "v1/auth/status"));
                 authStatusRequest.addHeader("Accept", "application/json");
                 authStatusRequest.addHeader("Authorization", Joiner.on(" ").join("Bearer", apiToken));
