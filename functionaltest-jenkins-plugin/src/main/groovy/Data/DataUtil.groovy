@@ -33,7 +33,6 @@ class DataUtil {
         println("Writing to a temp file")
         File file = new File("src/main/resources/temp.xml")
         def serializedXml = XmlUtil.serialize(parsexml)
-        println serializedXml
         file.write(serializedXml)
     }
 

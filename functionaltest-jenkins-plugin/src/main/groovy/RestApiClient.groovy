@@ -52,7 +52,6 @@ class RestApiClient {
         Response response =  CreateRequestSpecification("Authorization", encodedpassword)
                 .body(gson.toJson(policyObj))
                 .post(url)
-        println(gson.toJson(policyObj))
         Policy policy = gson.fromJson(response.asString(), Policy)
         return policy
      }
@@ -72,7 +71,6 @@ class RestApiClient {
         Response response =  CreateRequestSpecification("Authorization", encodedpassword)
                 .body(gson.toJson(policyObj))
                 .put(url)
-        println(response.asString())
         Policy policy = gson.fromJson(response.asString(), Policy)
         return policy
     }
@@ -81,7 +79,6 @@ class RestApiClient {
         def url = Constants.baseurl + Constants.putPolicy.replace("{id}",id)
         Response response =  CreateRequestSpecification("Authorization", encodedpassword)
                 .get(url)
-        println(response.asString())
         Policy policy = gson.fromJson(response.asString(), Policy)
         return policy
     }
@@ -92,6 +89,7 @@ class RestApiClient {
         File file = new File("src/main/resources/temp.xml")
         FileInputStream fileInputStream = new FileInputStream(file)
         byte [] bytes = fileInputStream.bytes
+        println("Creating Jenkins job  ${jobName}")
         given().relaxedHTTPSValidation()
             .content(bytes)
             .contentType("text/xml")
@@ -103,6 +101,7 @@ class RestApiClient {
     }
 
      void startJenkinsBuild(String job, String loadBalancer ) {
+        println("Starting Jenkins job ${job}")
         def url = "http://${loadBalancer}:8080/job/${job}/build"
         given().relaxedHTTPSValidation()
             .when()
@@ -112,6 +111,7 @@ class RestApiClient {
     }
 
     String getJenkinsBuildStatus(String job, int timeout, String loadBalancer) {
+        println("Getting build status of ${job}")
         int interval = 1
         int iterations = timeout/interval
         Response response
@@ -122,9 +122,6 @@ class RestApiClient {
                 response = given().relaxedHTTPSValidation()
                            .when()
                            .post(url)
-                println("Going in the while loop")
-                println(timer.SecondsSince())
-                println(response.asString())
                 }
                catch (Exception ex) {
                    println(ex.toString())
