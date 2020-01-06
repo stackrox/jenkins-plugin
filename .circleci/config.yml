@@ -119,7 +119,6 @@ jobs:
       - run:
           name: Build and package the Jenkins plugin
           command: |
-            ls -lrt
             cd stackrox-k8s-security-platform
             mvn package
             mvn hpi:hpi
@@ -204,12 +203,9 @@ jobs:
             ./roxctl central generate k8s pvc \
               --license /tmp/data.lic \
               --main-image "${IMAGE_NAME}" \
-            sleep 20
             export ROX_PASSWORD=$(cat central-bundle/password)
             cci-export ROX_USERNAME "admin"
             cci-export ROX_PASSWORD $ROX_PASSWORD
-
-
 
       - run:
           name: Deploy central to remote cluster
@@ -235,7 +231,7 @@ jobs:
           name: Deploy sensor the remote cluster
           command: |
             kubectl create clusterrolebinding temporary-admin --clusterrole=cluster-admin --user circleci-rox@stackrox-ci.iam.gserviceaccount.com
-            ./roxctl sensor generate k8s --name remote-new \
+            ./roxctl sensor generate k8s --name remote \
                                          --collection-method kernel-module \
                                          --collector-image stackrox/collector \
                                          --image "${IMAGE_NAME}" \
