@@ -1,7 +1,7 @@
 package com.stackrox.jenkins.plugins;
 
 public class ViolatedPolicy {
-    public static String BUILD_TIME_ENFORCEMENT = "FAIL_BUILD_ENFORCEMENT";
+    public static final String FAIL_BUILD_ENFORCEMENT = "FAIL_BUILD_ENFORCEMENT";
 
     private String name;
     private String description;
