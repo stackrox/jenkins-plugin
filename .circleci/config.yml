@@ -28,7 +28,7 @@ setUpJenkinsL: &setUpJenkins
   run:
     name: setting up Jenkins
     command: |
-      export JENKINSPOD=$(kubectl get pods -n qa  -o=jsonpath='{range .items[*]}{.metadata.name}')
+      export JENKINSPOD=$(kubectl get svc jenkinsep -n qa -o jsonpath="{.status.loadBalancer.ingress[*].ip}")
       cci-export JENKINS_POD $JENKINSPOD
       cci-export JENKINS_PORT "8080"
       echo $JENKINS_PORT
