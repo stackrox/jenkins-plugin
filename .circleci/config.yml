@@ -28,13 +28,13 @@ setUpJenkinsL: &setUpJenkins
   run:
     name: setting up Jenkins
     command: |
-      export JENKINSPOD=$(kubectl get svc jenkinsep -n qa -o jsonpath="{.status.loadBalancer.ingress[*].ip}")
+      export JENKINSPOD=$(kubectl get pods -n qa  -o=jsonpath='{range .items[*]}{.metadata.name}')
       cci-export JENKINS_POD $JENKINSPOD
       cci-export JENKINS_PORT "8080"
       echo $JENKINS_PORT
       kubectl cp /home/circleci/jenkins-plugin/stackrox-k8s-security-platform/target/stackrox-k8s-security-platform.hpi \
               $JENKINS_POD:/var/jenkins_home/plugins/ \
-      export JENKINSSVC=$(kubectl get svc -n qa  -o=jsonpath='{range .items[*]}{.metadata.name}')
+      export JENKINSSVC=$(kubectl get svc jenkinsep -n qa -o jsonpath="{.status.loadBalancer.ingress[*].ip}")
       cci-export JENKINS_SVC $JENKINSSVC
       echo Jenkins svc is running on "${JENKINS_SVC}"
       echo restarting jenkins
@@ -46,7 +46,7 @@ waitForJenkins: &waitForJenkins
   run:
     name: Wait for the API server to be up
     command: |
-      export JENKINS_SVC=$(kubectl get svc -n qa  -o=jsonpath='{range .items[*]}{.metadata.name}')
+      export JENKINS_SVC=$(kubectl get svc jenkinsep -n qa -o jsonpath="{.status.loadBalancer.ingress[*].ip}")
       export JENKINS_PORT=8080
       export JENKINS_URL="https://${JENKINS_SVC}:${JENKINS_PORT}/"
       echo "JENKINS_URL is set to ${JENKINS_URL}"
