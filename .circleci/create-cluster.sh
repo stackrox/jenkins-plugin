@@ -40,8 +40,8 @@ create-cluster() {
           --enable-ip-alias \
           --enable-network-policy \
           --image-type ${GCP_IMAGE_TYPE} \
-          --tags="stackrox-ci,stackrox-ci-${CIRCLE_JOB}" \
-          --labels="stackrox-ci=true,stackrox-ci-job=${CIRCLE_JOB},stackrox-ci-workflow=${CIRCLE_WORKFLOW_ID}" \
+          --tags="jenkins-plugin-ci,jenkins-plugin-ci-${CIRCLE_JOB}" \
+          --labels="jenkins-plugin-ci-automation=true,jenkins-plugin-ci-automation=${CIRCLE_JOB},jp-ci-workflow=${CIRCLE_WORKFLOW_ID}" \
           ${PSP_ARG} \
           "${CLUSTER_NAME}"
       status="$?"
