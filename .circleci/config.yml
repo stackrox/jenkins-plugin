@@ -238,7 +238,7 @@ jobs:
                                          --image "${IMAGE_NAME}" \
                                          -e "${API_HOSTNAME}:${API_PORT}" -p "${ROX_PASSWORD}" \
 
-            ./sensor-remote-new/sensor.sh
+            ./sensor-remote/sensor.sh
             kubectl delete clusterrolebinding temporary-admin
             kubectl get pods -n stackrox 
 
