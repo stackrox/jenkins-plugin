@@ -46,7 +46,7 @@ waitForJenkins: &waitForJenkins
   run:
     name: Wait for the API server to be up
     command: |
-      export JENKINS_SVC=$(kubectl get pods -n qa  -o=jsonpath='{range .items[*]}{.metadata.name}')
+      export JENKINS_SVC=$(kubectl get svc -n qa  -o=jsonpath='{range .items[*]}{.metadata.name}')
       export JENKINS_PORT=8080
       export JENKINS_URL="https://${JENKINS_SVC}:${JENKINS_PORT}/"
       echo "JENKINS_URL is set to ${JENKINS_URL}"
