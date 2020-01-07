@@ -54,7 +54,7 @@ waitForJenkins: &waitForJenkins
       SUCCESS=0
       for i in $(seq 1 25); do
         metadata="$(curl -sk --connect-timeout 5 --max-time 10 "${JENKINS_URL}")"
-        if [[ if [[ $output == *"Manage Jenkins"* ]]; then
+        if [[ $output == *"Manage Jenkins"* ]]; then
            SUCCESS=1
            break
         fi
