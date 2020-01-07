@@ -1,15 +1,11 @@
 import Data.BuildDetectRequest
 import Data.Alert
 import Data.DataUtil
-import Data.ListPolicyResponse
-import Data.Policy
-import common.Constants
+
 
 
 class ImageScanningTest extends BaseSpecification {
 
-    def setup() {
-    }
 
     def "image scanning test with the docker image" () {
         given:
@@ -20,7 +16,7 @@ class ImageScanningTest extends BaseSpecification {
         println("Testing image $imageName")
         Service centralSvc = new Service("stackrox", "central")
         def central = centralSvc.getLoadBalancer()
-        Service svc = new Service("stackrox", "jenkinsep")
+        Service svc = new Service("qa", "jenkinsep")
         def jenkinsEp = svc.getLoadBalancer()
         DataUtil.formatXml("src/main/resources/template.xml", imageName, "https://${central}:443", token)
         String jobName = restApiClient.createJenkinsJob(jenkinsEp)
@@ -66,4 +62,8 @@ class ImageScanningTest extends BaseSpecification {
         "docker.io/stackrox/collector:2.5.9-latest" | null
 
     }
+
+
+
+
 }

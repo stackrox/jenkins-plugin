@@ -13,27 +13,11 @@
     <concurrentBuild>false</concurrentBuild>
     <builders>
         <hudson.tasks.Shell>
-            <command>mkdir $BUILD_TAG
-                cd $BUILD_TAG
-                echo &quot;k8s.gcr.io/prometheus-to-sd:v0.8.2&quot; &gt;&gt; rox_images_to_scan</command>
+            <command></command>
         </hudson.tasks.Shell>
         <com.stackrox.jenkins.plugins.StackroxBuilder plugin="stackrox-k8s-security-platform@1.0-SNAPSHOT">
-            <portalAddress>https://34.83.248.149:443</portalAddress>
-            <apiToken>{AQAAABAAAAQg59UH0YNmegAZxXl3FzCFIwZPZOaQU0ZU2JacdyoG5qeBsNIwG9InQrVOtqf1DNWwRxRciflBz4
-                LMqHt8FWimqiyhP4BbXjTHH9MFaSh1KXyj++JtoB4nzyVwP7701V4tujlKvhBrN2vmN8Tp1COy03J3LTbD297PVRMjM7mYFiZZSQDS2
-                hkFAq7MSLeojTFZB6EGhrMlfWYsC3o4GFXQ+NxYEByU8BX/HfX6QUMelCTEfhrkY6DESI/VJmbmlxHCoEnuiTzOCV9CLPxMEvjOnL2i
-                ijzKH6ddT4/1kdt9R0UTBOBXepe2kibeWOxGt6uw0H0ghCFYC4mJ5sqSOEvl5mZObBd6eWMJlUtS9LIGi5TkuvyGZTtXt2w3hocVfnF
-                ZWUUQzRdh4umP5YNL789RP5PRUam3ybhSiztb/GUbI0qDlbtM/kTjAeQr/sZbfg+eh/oYQZXd2m3BlRXIoiKyP1tKyIvIHMaoTbjIYS
-                qZKQsqmg/GgRVZNZ1qgKmHjOGGIi6Yuh66zpajkyGNDNJBQu7ekPjyteXgiP8HzfvISWuWZ80mJdSWijds+QQSUd8OcXuGpbML3GtAv
-                X7y4FF7XPohPP+uz3g8dEvg8+bhf8eA55uXb6yEG57pVn46IJiGUUMTI1dnLnECH0i5IFFMaz7STxI76J22h4pUyEeACx9N0BfuQx75
-                YZhg/St+SFQQZsDfAmNaqP9igTqQ7e6w+DdNIEXGfyHyDpZ2DBXqrf/wz1InKyEWcFxakh4NakRFOYA7i2MBER7NvIV9Rvrfi/EcIGA
-                BVBtUFSonU+WJSGzrveguR/bsY3INvUfVmcGVuQmiuTrI17mV2j56eb/5XaFI/ZZejOss7AGs699pyLPc+QOW4EQyDcJwfJ9qYmit6M
-                tSVPIsM/MxBrCeDM+sjIIA144mDSZmJ5Ogb2j84MQh/+G3SiYBTP7Sq4S/rf/gYgiQ9FcclBj7VfihOvvUN3c1kqnhhpVHr4RrobHYJ
-                81qHcWTkxe7dBUr3Gr+yWHzvQo7clrrmfCsoTwedJ6BrQv2G9ofIXmKHNaK80GYf9XBOzv6vuu4k6lN9k0/FVRKO/8g/In3J2bebjYq
-                NnN+E2Jj/ZTjBYW5hzT7U1Ex/Hs9MGXkYmQD4Xvc9Wfq7HvkzgnKyLoBi0GF+MDrE4X6K5odNnGzv+oGrK5yJRof8tWzuPkJasMA681
-                3suSenYLBe/gwAt9rOBGmkMsoBMskZU3elTujKhDw8X/Eai7S6QW/RWNEd6l5/OfNjT0eJe0YNZeWMHIp2pTrlIl9i/WKE2eyn/7q/9
-                RE86S9/2l3GbrjE4yQJZbWvtHmP/lc4BUL+XzylZPWq/aH8GBywAl0h9h4GgmkgNNhAlaKHn45Lv/UtAABO4q3oizV2Dc0WzMJS0BYv
-                xhaG2q/AYbm8efcKQ==}</apiToken>
+            <portalAddress></portalAddress>
+            <apiToken></apiToken>
             <failOnPolicyEvalFailure>true</failOnPolicyEvalFailure>
             <failOnCriticalPluginError>true</failOnCriticalPluginError>
             <enableTLSVerification>false</enableTLSVerification>
