@@ -23,9 +23,12 @@ jenkinsDeployment: &jenkinsDeployment
     command: |
       kubectl create namespace qa
       kubectl apply -f jenkins
+
+setUpJenkinsL: &setUpJenkins
+  run:
+    name: setting up Jenkins
+    command: |
       export JENKINSPOD=$(kubectl get pods -n qa  -o=jsonpath='{range .items[*]}{.metadata.name}')
-      sleep 60
-      echo $JENKINSPOD
       cci-export JENKINS_POD $JENKINSPOD
       cci-export JENKINS_PORT "8080"
       echo $JENKINS_PORT
@@ -37,6 +40,32 @@ jenkinsDeployment: &jenkinsDeployment
       echo restarting jenkins
       curl -XPOST http://"${JENKINS_SVC}:${JENKINS_PORT}"/restart
 
+
+
+waitForJenkins: &waitForJenkins
+  run:
+    name: Wait for the API server to be up
+    command: |
+      export JENKINS_SVC=$(kubectl get pods -n qa  -o=jsonpath='{range .items[*]}{.metadata.name}')
+      export JENKINS_PORT=8080
+      export JENKINS_URL="https://${JENKINS_SVC}:${JENKINS_PORT}/"
+      echo "JENKINS_URL is set to ${JENKINS_URL}"
+      set +e
+      SUCCESS=0
+      for i in $(seq 1 25); do
+        metadata="$(curl -sk --connect-timeout 5 --max-time 10 "${JENKINS_URL}")"
+        if [[ if [[ $output == *"Manage Jenkins"* ]]; then
+           SUCCESS=1
+           break
+        fi
+        sleep 5
+      done
+      if [[ "${SUCCESS}" == 0 ]]; then
+             kubectl -n stackrox get pod
+             echo "Failed to connect to Jenkins"
+             exit 1
+      fi
+      cci-export JENKINS_URL ${JENKINS_URL}
 
 setupGoogleAppCreds: &setupGoogleAppCreds
   run:
@@ -209,6 +238,8 @@ jobs:
       - *waitForCentral
       - *connectToCentral
       - *jenkinsDeployment
+      - *waitForJenkins
+      - *setUpJenkins
       - *collectK8sLogs
       - *storeK8sLogs
       - *deleteClusterk8s
