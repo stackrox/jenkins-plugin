@@ -21,9 +21,12 @@ import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
-import javax.json.JsonValue;
+import javax.json.JsonString;
 import jenkins.tasks.SimpleBuildStep;
 import net.sf.json.JSONObject;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
+import org.apache.commons.csv.QuoteMode;
 import org.apache.commons.validator.routines.UrlValidator;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHeaders;
@@ -39,14 +42,12 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
-import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.net.HttpURLConnection;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.List;
 
@@ -55,7 +56,6 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
     private Secret apiToken = Secret.fromString("");
     private boolean failOnPolicyEvalFailure;
     private boolean failOnCriticalPluginError;
-
     private boolean enableTLSVerification;
     private String caCertPEM;
 
@@ -124,37 +124,51 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
     //TODO: Add console log for the plugin
     @Override
     public void perform(Run<?, ?> run, FilePath workspace, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
-        //TODO: Process pass/fail build step while handling exceptions
         runConfig = new RunConfig(run, workspace, launcher, listener);
-
         try {
             httpClient = HttpClientUtils.Get(this.enableTLSVerification, this.caCertPEM);
-        } catch (Exception e) {
-            throw new AbortException(String.format("Fatal error creating client: %s. Aborting ...", e.getMessage()));
-        }
-        results = Lists.newArrayList();
 
-        for (String name : runConfig.getImageNames()) {
-            processImage(name);
-        }
+            results = Lists.newArrayList();
 
-        generateBuildReport();
+            for (String name : runConfig.getImageNames()) {
+                processImage(name);
+            }
 
-        ArtifactArchiver artifactArchiver = new ArtifactArchiver(runConfig.getArtifacts());
-        artifactArchiver.setAllowEmptyArchive(true);
-        artifactArchiver.perform(run, workspace, launcher, listener);
+            generateBuildReport();
 
-        run.addAction(new ViewStackroxResultsAction(results, run));
+            ArtifactArchiver artifactArchiver = new ArtifactArchiver(runConfig.getArtifacts());
+            artifactArchiver.setAllowEmptyArchive(true);
+            artifactArchiver.perform(run, workspace, launcher, listener);
 
-        cleanupJenkinsWorkspace();
+            run.addAction(new ViewStackroxResultsAction(results, run));
 
-        if (httpClient != null) {
-            httpClient.close();
+            cleanupJenkinsWorkspace();
+
+            if (enforcedPolicyViolationExists()) {
+                if (this.failOnPolicyEvalFailure) {
+                    throw new AbortException(
+                            "At least one image violated at least one enforced system policy. Marking StackRox Image Security plugin build step failed. Check the report for additional details.");
+                }
+                runConfig.getLog().println("Marking StackRox Image Security plugin build step as successful despite enforced policy violations.");
+            } else {
+                runConfig.getLog().println("No system policy violations found. Marking StackRox Image Security plugin build step as successful.");
+            }
+        } catch (IOException e) {
+            if (this.failOnCriticalPluginError) {
+                throw new AbortException(String.format("Fatal error: %s. Aborting ...", e.getMessage()));
+            }
+            runConfig.getLog().println("Marking StackRox Image Security plugin build step as successful despite error.");
+
+        } finally {
+            if (httpClient != null) {
+                httpClient.close();
+            }
+
         }
     }
 
     // Runs an image scan and the build time policy checks on the image
-    private void processImage(String imageName) {
+    private void processImage(String imageName) throws IOException {
         runConfig.getLog().println(String.format("Checking image %s...", imageName));
 
         try {
@@ -163,6 +177,7 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
             results.add(new ImageCheckResults(imageName, cves, violatedPolicies));
         } catch (IOException e) {
             runConfig.getLog().println(String.format("Error processing image %s: %s", imageName, e.getMessage()));
+            throw e;
         }
     }
 
@@ -177,8 +192,8 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
 
             boolean isEnforced = false;
             JsonArray actions = policy.getJsonArray("enforcementActions");
-            for (JsonValue action : actions) {
-                if (action.toString().equals(ViolatedPolicy.BUILD_TIME_ENFORCEMENT)) {
+            for (JsonString action : actions.getValuesAs(JsonString.class)) {
+                if (ViolatedPolicy.FAIL_BUILD_ENFORCEMENT.equals(action.getString())) {
                     isEnforced = true;
                     break;
                 }
@@ -189,7 +204,6 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
                     policy.getString("severity"),
                     isEnforced));
         }
-
         return violatedPolicies;
     }
 
@@ -303,19 +317,19 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
                 FilePath policyViolationsCsv = new FilePath(imageResultDir, "policyViolations.csv");
 
                 if (!result.getCves().isEmpty()) {
-                    try (BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(imageCveCsv.write(), StandardCharsets.UTF_8))) {
-                        bw.write("CVE ID, CVSS Score, Package Name, Package Version, Fixable\n");
+                    try (CSVPrinter printer = new CSVPrinter(new FileWriter(imageCveCsv.getRemote()), CSVFormat.EXCEL.withQuoteMode(QuoteMode.NON_NUMERIC))) {
+                        printer.printRecord("CVE ID", "CVSS Score", "Package Name", "Package Version", "Fixable", "Publish Date", "Link");
                         for (CVE cve : result.getCves()) {
-                            bw.write(String.format("%s, %s, %s, %s, %b\n", cve.getId(), cve.getCvssScore(), cve.getPackageName(), cve.getPackageVersion(), cve.isFixable()));
+                            printer.printRecord(cve.getId(), cve.getCvssScore(), cve.getPackageName(), cve.getPackageVersion(), cve.isFixable(), cve.getPublishDate(), cve.getLink());
                         }
                     }
                 }
 
                 if (!result.getViolatedPolicies().isEmpty()) {
-                    try (BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(policyViolationsCsv.write(), StandardCharsets.UTF_8))) {
-                        bw.write("Policy Name, Severity, Enforced\n");
+                    try (CSVPrinter printer = new CSVPrinter(new FileWriter(policyViolationsCsv.getRemote()), CSVFormat.EXCEL.withQuoteMode(QuoteMode.NON_NUMERIC))) {
+                        printer.printRecord("Policy Name", "Policy Description", "Severity", "Enforced");
                         for (ViolatedPolicy policy : result.getViolatedPolicies()) {
-                            bw.write(String.format("%s, %s, %b\n", policy.getName(), policy.getSeverity(), policy.isEnforced()));
+                            printer.printRecord(policy.getName(), policy.getDescription(), policy.getSeverity(), policy.isEnforced());
                         }
                     }
                 }
@@ -323,6 +337,17 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
         } catch (IOException | InterruptedException e) {
             throw new AbortException(String.format("Failed to write image scan results. Error: %s", e.getMessage()));
         }
+    }
+
+    private boolean enforcedPolicyViolationExists() {
+        for (ImageCheckResults result : results) {
+            for (ViolatedPolicy policy : result.getViolatedPolicies()) {
+                if (policy.isEnforced()) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     private void cleanupJenkinsWorkspace() {
