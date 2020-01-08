@@ -53,32 +53,34 @@ sourceSets.each { ss ->
     ss.java.srcDirs = []
 }
 
+
 dependencies {
     compile group: 'com.googlecode.json-simple', name: 'json-simple', version: '1.1.1'
-    compile 'io.fabric8:kubernetes-client:4.1.2'
-    compile group: 'com.github.docker-java', name: 'docker-java', version: '3.1.0-rc-3'
-    compile 'io.kubernetes:client-java:2.0.0-beta1'
     compile 'com.google.code.gson:gson:2.7'
+    compile 'com.google.code.gson:gson:2.7'
+    compile 'io.fabric8:kubernetes-client:4.1.2'
+    compile 'io.kubernetes:client-java:2.0.0-beta1'
     compile 'org.codehaus.groovy:groovy-all:2.2.2'
-    testCompile group: 'junit', name: 'junit', version: '4.11'
     compile group: 'com.jayway.restassured', name: 'rest-assured', version: '2.4.1'
-    compile group: 'org.spockframework', name: 'spock-core', version: '1.1-groovy-2.0'
+    compile group: 'com.github.docker-java', name: 'docker-java', version: '3.1.0-rc-3'
     compile group: 'commons-cli', name: 'commons-cli', version: '1.2'
     compile group: 'commons-httpclient', name: 'commons-httpclient', version: '3.1'
+    compile group: 'org.spockframework', name: 'spock-core', version: '1.1-groovy-2.0'
     compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.7'
-   // compile group: 'org.jenkins-ci.main', name: 'jenkins-core', version: '1.396'
+    testCompile group: 'junit', name: 'junit', version: '4.11'
+
 
 
     //protobuf version
     // grpc and protobuf
-    compile 'com.google.code.gson:gson:2.7'
+
     compile "com.google.api.grpc:proto-google-common-protos:1.0.0"
+    compile "com.google.protobuf:protobuf-java-util:${protobufVersion}"
     compile "io.grpc:grpc-alts:${grpcVersion}"
     compile "io.grpc:grpc-netty:${grpcVersion}"
     compile "io.grpc:grpc-protobuf:${grpcVersion}"
     compile "io.grpc:grpc-stub:${grpcVersion}"
     compile "io.grpc:grpc-auth:${grpcVersion}"
-    compile "com.google.protobuf:protobuf-java-util:${protobufVersion}"
     compile "io.netty:netty-tcnative-boringssl-static:${nettyTcNativeVersion}"
     compile group: 'com.google.protobuf', name: 'protobuf-java', version: "${protobufVersion}"
     compile group: 'com.google.protobuf', name: 'protobuf-java-util', version: "${protobufVersion}"
