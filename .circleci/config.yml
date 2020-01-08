@@ -19,10 +19,11 @@ buildLivenessCheck: &buildLivenessCheck
 
 jenkinsDeployment: &jenkinsDeployment
   run:
-    name: Jenkins Deployment and copy the .hpi file
+    name: Jenkins Deployment and wait for jenkins to be setup
     command: |
       kubectl create namespace qa
       kubectl apply -f jenkins
+      sleep 60
 
 setUpJenkinsL: &setUpJenkins
   run:
@@ -52,7 +53,7 @@ waitForJenkins: &waitForJenkins
       echo "JENKINS_URL is set to ${JENKINS_URL}"
       set +e
       SUCCESS=0
-      for i in $(seq 1 25); do
+      for i in $(seq 1 60); do
         output="$(curl -sk --connect-timeout 5 --max-time 10 "${JENKINS_URL}")"
         if [[ $output == *"Manage Jenkins"* ]]; then
            SUCCESS=1
