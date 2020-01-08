@@ -14,14 +14,14 @@ class DataUtil {
        return output
     }
 
-    static void formatXml(String path, String imageName, String portalAddress, String encryptedToken) {
+    static void formatXml(String path, String imageName, String portalAddress,String token) {
         String xml = new File(path).text
         def param = [:]
         param["command"] =  """mkdir \$BUILD_TAG
-                               cd \$BUILD_TAG
+                               cd \$BUILD_TAGBUILD_TAG
                                echo \"${imageName}\" >> rox_images_to_scan"""
         param["portalAddress"] = portalAddress
-        param["apiToken"] = encryptedToken
+        param["apiToken"] = token
         // parse the xml
         def parsexml = new XmlSlurper().parseText(xml)
         param.each { key,value ->
