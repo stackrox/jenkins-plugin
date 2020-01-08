@@ -34,7 +34,7 @@ setUpJenkinsL: &setUpJenkins
       echo $JENKINS_PORT
       kubectl cp /home/circleci/jenkins-plugin/stackrox-k8s-security-platform/target/stackrox-k8s-security-platform.hpi \
               $JENKINS_POD:/var/jenkins_home/plugins/ \
-      export JENKINSSVC=$(kubectl get svc jenkinsep -n qa -o jsonpath="{.status.loadBalancer.ingress[*].ip}")
+      export JENKINSSVC=$(kubectl get svc -n qa -o jsonpath="{.status.loadBalancer.ingress[*].ip}")
       cci-export JENKINS_SVC $JENKINSSVC
       echo Jenkins svc is running on "${JENKINS_SVC}"
       echo restarting jenkins
@@ -46,7 +46,7 @@ waitForJenkins: &waitForJenkins
   run:
     name: Wait for the API server to be up
     command: |
-      export JENKINS_SVC=$(kubectl get svc jenkinsep -n qa -o jsonpath="{.status.loadBalancer.ingress[*].ip}")
+      export JENKINS_SVC=$(kubectl get svc -n qa -o jsonpath="{.status.loadBalancer.ingress[*].ip}")
       export JENKINS_PORT=8080
       export JENKINS_URL="https://${JENKINS_SVC}:${JENKINS_PORT}/"
       echo "JENKINS_URL is set to ${JENKINS_URL}"
@@ -61,7 +61,7 @@ waitForJenkins: &waitForJenkins
         sleep 5
       done
       if [[ "${SUCCESS}" == 0 ]]; then
-             kubectl -n stackrox get pod
+             kubectl -n qa get pods
              echo "Failed to connect to Jenkins"
              exit 1
       fi
