@@ -13,7 +13,7 @@ class ImageScanningTest extends BaseSpecification {
         when:
         "Jenkins is setup"
         then:
-        println("Testing image $imageName")
+        println("Testing image ${imageName} and ${test}")
         Service centralSvc = new Service("stackrox", "central")
         def central = centralSvc.getLoadBalancer()
         Service svc = new Service("qa", "jenkinsep")
@@ -47,7 +47,7 @@ class ImageScanningTest extends BaseSpecification {
         when:
         "Jenkins is setup"
         then:
-        println("Testing image $imageName")
+        println("Testing image ${imageName} and ${test}")
         Service centralSvc = new Service("stackrox", "central")
         def central = centralSvc.getLoadBalancer()
         Service svc = new Service("qa", "jenkinsep")
