@@ -11,7 +11,7 @@ public class ViolatedPolicy {
     public ViolatedPolicy(String name, String description, String severity, boolean enforced) {
         this.name = name;
         this.description = description;
-        this.severity = severity;
+        this.severity = severity.split("_")[0];
         this.enforced = enforced;
     }
 

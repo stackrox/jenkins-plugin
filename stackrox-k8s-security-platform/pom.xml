@@ -22,7 +22,14 @@
             <name>Apache 2 License</name>
             <url>http://opensource.org/licenses/Apache-2.0</url>
         </license>
-  </licenses>
+    </licenses>
+    <developers>
+        <developer>
+            <id>stackrox-k8s-security-platform</id>
+            <name>StackRox k8s Security Platform</name>
+            <email>jenkins-plugin@stackrox.com</email>
+        </developer>
+    </developers>
     <!-- Assuming you want to host on @jenkinsci:
     <url>https://github.com/jenkinsci/${project.artifactId}-plugin</url>
     <scm>
@@ -57,6 +64,11 @@
             <artifactId>commons-csv</artifactId>
             <version>1.7</version>
         </dependency>
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.8.6</version>
+        </dependency>
     </dependencies>
     <dependencyManagement>
         <dependencies>
@@ -79,4 +91,96 @@
             <url>https://repo.jenkins-ci.org/public/</url>
         </pluginRepository>
     </pluginRepositories>
+    <build>
+        <plugins>
+            <!-- download external resources like jQuery, jQuery UI, datatable etc. via webjars -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>download-resources</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.webjars</groupId>
+                                    <artifactId>jquery</artifactId>
+                                    <version>3.4.1</version>
+                                    <includes>**/jquery*.min.js</includes>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.webjars</groupId>
+                                    <artifactId>datatables</artifactId>
+                                    <version>1.10.20</version>
+                                    <includes>
+                                        **/jquery.dataTables.min.js,**/dataTables.bootstrap.min.js,**/dataTables.bootstrap.min.css,**/fonts/*
+                                    </includes>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.webjars</groupId>
+                                    <artifactId>bootstrap</artifactId>
+                                    <version>4.4.1</version>
+                                    <includes>**/bootstrap.min.css,**/bootstrap.min.js,**/fonts/*</includes>
+                                </artifactItem>
+                            </artifactItems>
+                            <outputDirectory>${project.build.directory}/webjars</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- copy downloaded resources to target/external-resources -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-downloaded-resources</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/external-resources</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${project.build.directory}/webjars/META-INF/resources/webjars/jquery/3.4.1</directory>
+                                </resource>
+                                <resource>
+                                    <directory>${project.build.directory}/webjars/META-INF/resources/webjars/datatables/1.10.20</directory>
+                                </resource>
+                                <resource>
+                                    <directory>${project.build.directory}/webjars/META-INF/resources/webjars/bootstrap/4.4.1</directory>
+                                </resource>
+                                <!-- also copy existing resources to use them in the HPL for testing -->
+                                <resource>
+                                    <directory>src/main/webapp</directory>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        <!-- include downloaded resources in HPI -->
+            <plugin>
+                <groupId>org.jenkins-ci.tools</groupId>
+                <artifactId>maven-hpi-plugin</artifactId>
+                <configuration>
+                    <minimumJavaVersion>1.7</minimumJavaVersion>
+                    <webResources>
+                        <webResource>
+                            <directory>${project.build.directory}/external-resources</directory>
+                            <filtering>false</filtering>
+                        </webResource>
+                    </webResources>
+                    <!-- for testing -->
+                    <warSourceDirectory>${project.build.directory}/external-resources</warSourceDirectory>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>

@@ -1,5 +1,6 @@
 package com.stackrox.jenkins.plugins;
 
+import com.google.gson.Gson;
 import java.util.List;
 
 @SuppressWarnings("unused")
@@ -8,11 +9,19 @@ public class ImageCheckResults {
     private final String imageName;
     private final List<CVE> cves;
     private final List<ViolatedPolicy> violatedPolicies;
+    private boolean imageCheckStatusPass;
 
     public ImageCheckResults(String imageName, List<CVE> cves, List<ViolatedPolicy> violatedPolicies) {
         this.imageName = imageName;
         this.cves = cves;
         this.violatedPolicies = violatedPolicies;
+        this.imageCheckStatusPass = true;
+        for (ViolatedPolicy policy: violatedPolicies) {
+            if (policy.isEnforced()) {
+                this.imageCheckStatusPass = false;
+                break;
+            }
+        }
     }
 
     public List<CVE> getCves() {
@@ -25,6 +34,18 @@ public class ImageCheckResults {
 
     public List<ViolatedPolicy> getViolatedPolicies() {
         return violatedPolicies;
+    }
+
+    public boolean isImageCheckStatusPass() {
+        return imageCheckStatusPass;
+    }
+
+    public String getCvesJson() {
+        return new Gson().toJson(cves);
+    }
+
+    public String getViolatedPoliciesJson() {
+        return new Gson().toJson(violatedPolicies);
     }
 
 }
