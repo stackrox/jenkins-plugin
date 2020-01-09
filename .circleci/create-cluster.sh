@@ -6,7 +6,7 @@
 # The "services" secondary range is for ClusterIP services ("--services-ipv4-cidr").
 # See https://cloud.google.com/kubernetes-engine/docs/how-to/alias-ips#cluster_sizing.
 
-CLUSTER_NAME="${CLUSTER_NAME:jenkins-plugin-ci-${CIRCLE_BUILD_NUM}}"
+CLUSTER_NAME="${CLUSTER_NAME:-prevent-ci-${CIRCLE_BUILD_NUM}}"
 
 create-cluster() {
   REGION=us-central1
