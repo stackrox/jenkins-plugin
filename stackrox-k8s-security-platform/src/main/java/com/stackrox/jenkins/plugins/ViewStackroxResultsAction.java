@@ -3,8 +3,6 @@ package com.stackrox.jenkins.plugins;
 import hudson.model.Action;
 import hudson.model.Run;
 import jenkins.model.Jenkins;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 public class ViewStackroxResultsAction implements Action {

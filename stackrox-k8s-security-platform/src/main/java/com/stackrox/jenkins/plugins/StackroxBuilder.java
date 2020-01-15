@@ -144,8 +144,6 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
                 }
             });
 
-            runConfig.getLog().println(results);
-
             generateBuildReport();
 
             ArtifactArchiver artifactArchiver = new ArtifactArchiver(runConfig.getArtifacts());
@@ -214,7 +212,6 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
             if (isEnforced) {
                 List<String> violations = Lists.newArrayList();
                 for (JsonObject violation : alert.getJsonArray("violations").getValuesAs(JsonObject.class)) {
-                    runConfig.getLog().println(String.format("****** Adding violation message: %s", violation.getString("message")));
                     violations.add(violation.getString("message"));
                 }
 

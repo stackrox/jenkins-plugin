@@ -20,7 +20,7 @@ function renderCVETable(tableId, cves) {
                     { title: 'Fixable', data : 'fixable' },
                     { title: 'Publish Date', mData : function (data, type, dataToSet) {
                                                     var d = new Date(data.publishDate);
-                                                    return `<span>${d.getMonth()+1}/${d.getDate()}/${d.getFullYear()}`
+                                                    return `<span>${d.getMonth()+1}/${d.getDate()}/${d.getFullYear()}</span>`
                                                }
                    },
                 ],

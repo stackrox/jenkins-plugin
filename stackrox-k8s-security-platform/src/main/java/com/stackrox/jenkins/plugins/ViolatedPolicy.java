@@ -5,8 +5,7 @@ import java.util.List;
 
 public class ViolatedPolicy {
     public static final String FAIL_BUILD_ENFORCEMENT = "FAIL_BUILD_ENFORCEMENT";
-    public static final String NO_REMIDIATION_ACTIONS = "No remediation actions documented.";
-
+    public static final String NO_REMEDIATION_ACTIONS = "No remediation actions documented.";
 
     private String name;
     private String description;
@@ -36,7 +35,7 @@ public class ViolatedPolicy {
     }
 
     public String getRemediation() {
-        return Strings.isNullOrEmpty(remediation) ? ViolatedPolicy.NO_REMIDIATION_ACTIONS : remediation;
+        return Strings.isNullOrEmpty(remediation) ? ViolatedPolicy.NO_REMEDIATION_ACTIONS : remediation;
     }
 
     public List<String> getViolations() {
