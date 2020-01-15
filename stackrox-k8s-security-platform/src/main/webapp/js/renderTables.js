@@ -12,14 +12,15 @@ function renderCVETable(tableId, cves) {
                                                }
                     },
                     { title: 'CVSS Score', mData : function (data, type, dataToSet) {
-                                                    return `<span>${data.cvssScore}</span><br></br><span style="font-size: 10px; font-family Arial"> (Score type: ${data.scoreType})</span>`;
+                                                    return `<span>${data.cvssScore}</span><br></br><span style="font-size: 10px; font-family Arial"> (${data.scoreType})</span>`;
                                                }
                     },
                     { title: 'Package Name', data : 'packageName' },
                     { title: 'Package Version', data : 'packageVersion' },
                     { title: 'Fixable', data : 'fixable' },
                     { title: 'Publish Date', mData : function (data, type, dataToSet) {
-                                                    return new Date(data.publishDate);
+                                                    var d = new Date(data.publishDate);
+                                                    return `<span>${d.getMonth()+1}/${d.getDate()}/${d.getFullYear()}`
                                                }
                    },
                 ],
@@ -41,27 +42,22 @@ function renderPolicyViolationTable(tableId, violatedPolicies) {
         dom: '<"top"l>rt<"bottom"fip><"clear">',
         retrieve: true,
         bFilter: false,
-        order: [[3, 'desc']],
+        order: [[0, 'asc']],
         data: violatedPolicies,
         columns : [
                     { title: 'Policy Name', data : 'name' },
                     { title: 'Description', data : 'description' },
                     { title: 'Severity', data : 'severity' },
-                    { title: 'Enforced', data : 'enforced' },
+                    { title: 'Remediation', data : 'remediation' },
+
                 ],
         columnDefs: [
                   {
-                    targets: [0, 1],
+                    targets: [0, 1, 3],
                     render: function (source, type, val) {
                       return `<span style="word-break: break-word;">${source}</span>`;
                     }
                   },
-                  {
-                    targets: 3,
-                    render: function (source, type, val) {
-                      return source === true ? 'yes' : 'no'
-                    }
-                  }
                 ]
       });
     });

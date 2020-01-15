@@ -49,6 +49,8 @@ import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.net.HttpURLConnection;
 import java.nio.file.Files;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 public class StackroxBuilder extends Builder implements SimpleBuildStep {
@@ -134,6 +136,16 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
                 processImage(name);
             }
 
+            Collections.sort(results, new Comparator<ImageCheckResults>() {
+                @Override
+                public int compare(ImageCheckResults result1, ImageCheckResults result2) {
+                    //descending order
+                    return Boolean.compare(result1.isImageCheckStatusPass(), result2.isImageCheckStatusPass());
+                }
+            });
+
+            runConfig.getLog().println(results);
+
             generateBuildReport();
 
             ArtifactArchiver artifactArchiver = new ArtifactArchiver(runConfig.getArtifacts());
@@ -198,11 +210,20 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
                     break;
                 }
             }
-            violatedPolicies.add(new ViolatedPolicy(
-                    policy.getString("name"),
-                    policy.getString("description"),
-                    policy.getString("severity"),
-                    isEnforced));
+
+            if (isEnforced) {
+                List<String> violations = Lists.newArrayList();
+                for (JsonObject violation : alert.getJsonArray("violations").getValuesAs(JsonObject.class)) {
+                    runConfig.getLog().println(String.format("****** Adding violation message: %s", violation.getString("message")));
+                    violations.add(violation.getString("message"));
+                }
+
+                violatedPolicies.add(new ViolatedPolicy(
+                        policy.getString("name"),
+                        policy.getString("description"),
+                        policy.getString("severity"),
+                        policy.getString("remediation"), violations));
+            }
         }
         return violatedPolicies;
     }
@@ -327,9 +348,9 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
 
                 if (!result.getViolatedPolicies().isEmpty()) {
                     try (CSVPrinter printer = new CSVPrinter(new FileWriter(policyViolationsCsv.getRemote()), CSVFormat.EXCEL.withQuoteMode(QuoteMode.NON_NUMERIC))) {
-                        printer.printRecord("Policy Name", "Policy Description", "Severity", "Enforced");
+                        printer.printRecord("Policy Name", "Policy Description", "Severity", "Remediation");
                         for (ViolatedPolicy policy : result.getViolatedPolicies()) {
-                            printer.printRecord(policy.getName(), policy.getDescription(), policy.getSeverity(), policy.isEnforced());
+                            printer.printRecord(policy.getName(), policy.getDescription(), policy.getSeverity(), policy.getRemediation());
                         }
                     }
                 }
@@ -341,10 +362,8 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
 
     private boolean enforcedPolicyViolationExists() {
         for (ImageCheckResults result : results) {
-            for (ViolatedPolicy policy : result.getViolatedPolicies()) {
-                if (policy.isEnforced()) {
-                    return true;
-                }
+            if (!result.getViolatedPolicies().isEmpty()) {
+                return true;
             }
         }
         return false;
@@ -357,7 +376,7 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
             File imagesToScan = new File(runConfig.getImagesToScanFilePath().toURI());
             Files.deleteIfExists(imagesToScan.toPath());
 
-            runConfig.getReportsDir().deleteRecursive();
+            runConfig.getBaseWorkDir().deleteRecursive();
         } catch (Exception e) {
             runConfig.getLog().println("WARN: Failed to cleanup.");
         }

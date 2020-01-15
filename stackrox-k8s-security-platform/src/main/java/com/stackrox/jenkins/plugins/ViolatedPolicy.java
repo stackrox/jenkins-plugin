@@ -1,18 +1,26 @@
 package com.stackrox.jenkins.plugins;
 
+import com.google.common.base.Strings;
+import java.util.List;
+
 public class ViolatedPolicy {
     public static final String FAIL_BUILD_ENFORCEMENT = "FAIL_BUILD_ENFORCEMENT";
+    public static final String NO_REMIDIATION_ACTIONS = "No remediation actions documented.";
+
 
     private String name;
     private String description;
     private String severity;
-    private boolean enforced;
+    private String remediation;
 
-    public ViolatedPolicy(String name, String description, String severity, boolean enforced) {
+    private List<String> violations;
+
+    public ViolatedPolicy(String name, String description, String severity, String remediation, List<String> violations) {
         this.name = name;
         this.description = description;
         this.severity = severity.split("_")[0];
-        this.enforced = enforced;
+        this.remediation = remediation;
+        this.violations = violations;
     }
 
     public String getName() {
@@ -27,8 +35,12 @@ public class ViolatedPolicy {
         return severity;
     }
 
-    public boolean isEnforced() {
-        return enforced;
+    public String getRemediation() {
+        return Strings.isNullOrEmpty(remediation) ? ViolatedPolicy.NO_REMIDIATION_ACTIONS : remediation;
+    }
+
+    public List<String> getViolations() {
+        return violations;
     }
 
 }
