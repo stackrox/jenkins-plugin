@@ -15,13 +15,7 @@ public class ImageCheckResults {
         this.imageName = imageName;
         this.cves = cves;
         this.violatedPolicies = violatedPolicies;
-        this.imageCheckStatusPass = true;
-        for (ViolatedPolicy policy: violatedPolicies) {
-            if (policy.isEnforced()) {
-                this.imageCheckStatusPass = false;
-                break;
-            }
-        }
+        this.imageCheckStatusPass = violatedPolicies.isEmpty();
     }
 
     public List<CVE> getCves() {
@@ -41,11 +35,11 @@ public class ImageCheckResults {
     }
 
     public String getCvesJson() {
-        return new Gson().toJson(cves);
+        return cves.isEmpty() ? "" : new Gson().toJson(cves);
     }
 
     public String getViolatedPoliciesJson() {
-        return new Gson().toJson(violatedPolicies);
+        return violatedPolicies.isEmpty() ? "" : new Gson().toJson(violatedPolicies);
     }
 
 }

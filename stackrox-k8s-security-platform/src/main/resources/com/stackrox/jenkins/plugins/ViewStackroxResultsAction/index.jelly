@@ -38,17 +38,27 @@
                          <div>
                              <div>
                                  <h6>Policy Violations</h6>
-                                 <table id="policy_table_${index}" class="table table-striped table-bordered dataTable no-footer" style="width: 100%;"></table>
-                                 <script type="text/javascript">
-                                     renderPolicyViolationTable("#policy_table_${index}", ${result.violatedPoliciesJson});
-                                 </script>
+                                 <j:if test="${!empty(result.violatedPoliciesJson)}">
+                                     <table id="policy_table_${index}" class="table table-striped table-bordered dataTable no-footer" style="width: 100%;"></table>
+                                     <script type="text/javascript">
+                                         renderPolicyViolationTable("#policy_table_${index}", ${result.violatedPoliciesJson});
+                                     </script>
+                                 </j:if>
+                                 <j:if  test="${empty(result.violatedPoliciesJson)}">
+                                     <p>No policy violations found.</p>
+                                 </j:if>
                              </div>
                              <div>
                                  <h6>Vulnerabilities</h6>
-                                 <table id="cve_table_${index}" class="table table-striped table-bordered dataTable no-footer" style="width: 100%;"></table>
-                                 <script type="text/javascript">
-                                     renderCVETable("#cve_table_${index}", ${result.cvesJson});
-                                 </script>
+                                 <j:if test="${!empty(result.cvesJson)}">
+                                     <table id="cve_table_${index}" class="table table-striped table-bordered dataTable no-footer" style="width: 100%;"></table>
+                                     <script type="text/javascript">
+                                         renderCVETable("#cve_table_${index}", ${result.cvesJson});
+                                     </script>
+                                 </j:if>
+                                 <j:if  test="${empty(result.cvesJson)}">
+                                     <p>No CVEs found.</p>
+                                 </j:if>
                              </div>
                          </div>
                     </j:forEach>
