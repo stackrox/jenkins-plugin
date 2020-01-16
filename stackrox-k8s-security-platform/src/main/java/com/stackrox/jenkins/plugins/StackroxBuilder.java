@@ -384,7 +384,7 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
         return (DescriptorImpl) super.getDescriptor();
     }
 
-    @Symbol("stackrox-image-security")
+    @Symbol("stackrox-container-image-security")
     @Extension
     public static final class DescriptorImpl extends BuildStepDescriptor<Builder> {
 
