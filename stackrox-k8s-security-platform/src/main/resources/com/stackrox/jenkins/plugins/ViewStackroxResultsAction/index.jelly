@@ -1,66 +1,79 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
     <l:layout title="StackRox Image Security Results" norefresh="true">
-        <st:include it="${it.build}" page="sidepanel.jelly" />
+        <st:include it="${it.build}" page="sidepanel.jelly"/>
         <l:main-panel>
-            <link rel="stylesheet" type="text/css" href="${resURL}/plugin/stackrox-k8s-security-platform/css/bootstrap.min.css"/>
-            <link rel="stylesheet" type="text/css" href="${resURL}/plugin/stackrox-k8s-security-platform/css/dataTables.bootstrap.min.css"/>
-            <link rel="stylesheet" type="text/css" href="${resURL}/plugin/stackrox-k8s-security-platform/css/collapsible.css"/>
+            <link rel="stylesheet" type="text/css"
+                  href="${resURL}/plugin/stackrox-k8s-security-platform/css/bootstrap.min.css"/>
+            <link rel="stylesheet" type="text/css"
+                  href="${resURL}/plugin/stackrox-k8s-security-platform/css/dataTables.bootstrap.min.css"/>
+            <link rel="stylesheet" type="text/css"
+                  href="${resURL}/plugin/stackrox-k8s-security-platform/css/collapsible.css"/>
             <link rel="stylesheet" type="text/css" href="${resURL}/plugin/stackrox-k8s-security-platform/css/rox.css"/>
 
 
             <script type="text/javascript" src="${resURL}/plugin/stackrox-k8s-security-platform/jquery.min.js"></script>
-            <script type="text/javascript" src="${resURL}/plugin/stackrox-k8s-security-platform/js/jquery.collapsible.js"></script>
-            <script type="text/javascript" src="${resURL}/plugin/stackrox-k8s-security-platform/js/jquery.dataTables.min.js"></script>
-            <script type="text/javascript" src="${resURL}/plugin/stackrox-k8s-security-platform/js/dataTables.bootstrap.min.js"></script>
-            <script type="text/javascript" src="${resURL}/plugin/stackrox-k8s-security-platform/js/renderTables.js"></script>
+            <script type="text/javascript"
+                    src="${resURL}/plugin/stackrox-k8s-security-platform/js/jquery.collapsible.js"></script>
+            <script type="text/javascript"
+                    src="${resURL}/plugin/stackrox-k8s-security-platform/js/jquery.dataTables.min.js"></script>
+            <script type="text/javascript"
+                    src="${resURL}/plugin/stackrox-k8s-security-platform/js/dataTables.bootstrap.min.js"></script>
+            <script type="text/javascript"
+                    src="${resURL}/plugin/stackrox-k8s-security-platform/js/renderTables.js"></script>
             <script>
                 $( function() {
-                    $( "#accordion" ).collapsible({
-                            animate: false,
-                    });
+                $( "#accordion" ).collapsible({
+                animate: false,
+                });
                 });
             </script>
             <j:if test="${!empty(it.results)}">
                 <h3 style="margin-bottom: 30px;">StackRox Image Security Report</h3>
                 <div id="accordion">
-                     <j:forEach items="${it.results}" var="result" indexVar="index">
-                         <h5 class="collapsible-header">
-                             <span class="arrow-r"></span><span style="width:100%;" >${result.imageName}</span>
-                             <j:if test="${result.imageCheckStatusPass == true}">
-                                 <div class="chipPassed">Pass</div>
-                             </j:if>
-                             <j:if test="${result.imageCheckStatusPass == false}">
-                                 <div class="chipFailed">Fail</div>
-                             </j:if>
-                         </h5>
+                    <j:forEach items="${it.results}" var="result" indexVar="index">
+                        <h5 class="collapsible-header">
+                            <span class="arrow-r"></span>
+                            <span style="width:100%;">${result.imageName}</span>
+                            <j:if test="${result.imageCheckStatusPass == true}">
+                                <div class="chipPassed">Pass</div>
+                            </j:if>
+                            <j:if test="${result.imageCheckStatusPass == false}">
+                                <div class="chipFailed">Fail</div>
+                            </j:if>
+                        </h5>
 
-                         <div>
-                             <div>
-                                 <h6>Policy Violations</h6>
-                                 <j:if test="${!empty(result.violatedPoliciesJson)}">
-                                     <table id="policy_table_${index}" class="table table-striped table-bordered dataTable no-footer" style="width: 100%;"></table>
-                                     <script type="text/javascript">
-                                         renderPolicyViolationTable("#policy_table_${index}", ${result.violatedPoliciesJson});
-                                     </script>
-                                 </j:if>
-                                 <j:if  test="${empty(result.violatedPoliciesJson)}">
-                                     <p>No policy violations found.</p>
-                                 </j:if>
-                             </div>
-                             <div>
-                                 <h6>Vulnerabilities</h6>
-                                 <j:if test="${!empty(result.cvesJson)}">
-                                     <table id="cve_table_${index}" class="table table-striped table-bordered dataTable no-footer" style="width: 100%;"></table>
-                                     <script type="text/javascript">
-                                         renderCVETable("#cve_table_${index}", ${result.cvesJson});
-                                     </script>
-                                 </j:if>
-                                 <j:if  test="${empty(result.cvesJson)}">
-                                     <p>No CVEs found.</p>
-                                 </j:if>
-                             </div>
-                         </div>
+                        <div>
+                            <div>
+                                <h6>Policy Violations</h6>
+                                <j:if test="${!empty(result.violatedPoliciesJson)}">
+                                    <table id="policy_table_${index}"
+                                           class="table table-striped table-bordered dataTable no-footer"
+                                           style="width: 100%;"></table>
+                                    <script type="text/javascript">
+                                        renderPolicyViolationTable("#policy_table_${index}",
+                                        ${result.violatedPoliciesJson});
+                                    </script>
+                                </j:if>
+                                <j:if test="${empty(result.violatedPoliciesJson)}">
+                                    <p>No policy violations found.</p>
+                                </j:if>
+                            </div>
+                            <div>
+                                <h6>Vulnerabilities</h6>
+                                <j:if test="${!empty(result.cvesJson)}">
+                                    <table id="cve_table_${index}"
+                                           class="table table-striped table-bordered dataTable no-footer"
+                                           style="width: 100%;"></table>
+                                    <script type="text/javascript">
+                                        renderCVETable("#cve_table_${index}", ${result.cvesJson});
+                                    </script>
+                                </j:if>
+                                <j:if test="${empty(result.cvesJson)}">
+                                    <p>No CVEs found.</p>
+                                </j:if>
+                            </div>
+                        </div>
                     </j:forEach>
                 </div>
             </j:if>

@@ -22,6 +22,7 @@ import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 import javax.json.JsonString;
+import jenkins.model.Jenkins;
 import jenkins.tasks.SimpleBuildStep;
 import net.sf.json.JSONObject;
 import org.apache.commons.csv.CSVFormat;
@@ -42,6 +43,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.verb.POST;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -411,6 +413,7 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
 
         @SuppressWarnings("unused")
         public FormValidation doCheckPortalAddress(@QueryParameter final String portalAddress) {
+            Jenkins.get().checkPermission(Jenkins.ADMINISTER);
             String[] schemes = {"https"};
             UrlValidator urlValidator = new UrlValidator(schemes, UrlValidator.ALLOW_LOCAL_URLS);
             if (!Strings.isNullOrEmpty(portalAddress) && urlValidator.isValid(portalAddress)) {
@@ -422,6 +425,7 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
 
         @SuppressWarnings("unused")
         public FormValidation doCheckApiToken(@QueryParameter final String apiToken) {
+            Jenkins.get().checkPermission(Jenkins.ADMINISTER);
             if (!Strings.isNullOrEmpty(apiToken)) {
                 return FormValidation.ok();
             } else {
@@ -430,8 +434,10 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
         }
 
         @SuppressWarnings("unused")
+        @POST
         public FormValidation doTestConnection(@QueryParameter("portalAddress") final String portalAddress, @QueryParameter("apiToken") final String apiToken,
                                                @QueryParameter("enableTLSVerification") final boolean tlsVerify, @QueryParameter("caCertPEM") final String caCertPEM) {
+            Jenkins.get().checkPermission(Jenkins.ADMINISTER);
             try {
                 if (checkRoxAuthStatus(portalAddress, apiToken, tlsVerify, caCertPEM)) {
                     return FormValidation.ok("Success");
