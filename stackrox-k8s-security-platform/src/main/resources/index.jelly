@@ -1,5 +1,4 @@
 <?jelly escape-by-default='true'?>
 <div>
-    This plugin provides vulnerability scanning of container images for OS packages and language vulnerabilities using
-    the StackRox Kubernetes Security Platform.
+    This plugin provides vulnerability scanning of container images for OS packages and language vulnerabilities using the StackRox Kubernetes Security Platform.
 </div>
