@@ -1,0 +1,24 @@
+#!/bin/sh
+set -eu
+
+user_name='roxbot'
+user_email='roxbot@stackrox.com'
+local_subdirectory='stackrox-k8s-security-platform'
+remote_repository='git@github.com:roxbot/mirror-test.git'
+# remote_repo="git@github.com:jenkinsci/stackrox-container-image-scanner-plugin.git"
+
+main() {
+  echo "Mirroring directory ${local_subdirectory} to repo ${remote_repository}"
+
+  tmp_remote_repository="$(mktemp -d)"
+  cp -r "${local_subdirectory}/." "$tmp_remote_repository"
+  cd "$tmp_remote_repository"
+  
+  git init
+  git remote add origin "$remote_repository"
+  git add -A
+  git  -c "user.name=${user_name}" -c "user.email=${user_email}" commit -m "Update repository"
+  git push origin master --force
+}
+
+main "$@"
