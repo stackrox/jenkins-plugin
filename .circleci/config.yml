@@ -31,8 +31,6 @@ setUpJenkinsL: &setUpJenkins
       export JENKINSPOD=$(kubectl get pods -n qa  -o=jsonpath='{range .items[*]}{.metadata.name}')
       export JENKINSPORT=8080
       cd stackrox-k8s-security-platform
-      mvn package
-      mvn hpi:hpi
       kubectl cp /home/circleci/jenkins-plugin/stackrox-k8s-security-platform/target/stackrox-k8s-security-platform.hpi \
               qa/$JENKINSPOD:/var/jenkins_home/plugins/. \
       export JENKINSVC=$(kubectl get svc -n qa jenkinsep -o jsonpath="{.status.loadBalancer.ingress[*].ip}")
@@ -128,7 +126,6 @@ jobs:
             cd stackrox-container-image-scanner
             mvn package
             mvn hpi:hpi
-
       - store_artifacts:
           path: /home/circleci/jenkins-plugin/stackrox-container-image-scanner/target/stackrox-container-image-scanner.hpi
           destination: artifacts
@@ -164,7 +161,6 @@ jobs:
       validate-autoupgrade-label:
         type: boolean
         default: false
-
     steps:
       - setup-gcp:
             docker-login: false
@@ -174,6 +170,15 @@ jobs:
       - attach-gke-cluster:
             cluster-id: qa-tests
       - checkout
+      - run:
+            name: Build and package the Jenkins plugin
+            command: |
+              cd stackrox-k8s-security-platform
+              mvn package
+              mvn hpi:hpi
+      - store_artifacts:
+                  path: /home/circleci/jenkins-plugin/stackrox-k8s-security-platform/target/stackrox-k8s-security-platform.hpi
+                  destination: artifacts
       - run:
           name: Get Roxctl binary and set the image name
           command: |
