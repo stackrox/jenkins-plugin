@@ -23,7 +23,6 @@ jenkinsDeployment: &jenkinsDeployment
     command: |
       kubectl create namespace qa
       kubectl apply -f jenkins
-      sleep 60
 
 setUpJenkinsL: &setUpJenkins
   run:
@@ -31,8 +30,10 @@ setUpJenkinsL: &setUpJenkins
     command: |
       export JENKINSPOD=$(kubectl get pods -n qa  -o=jsonpath='{range .items[*]}{.metadata.name}')
       export JENKINSPORT=8080
+      echo checking the build artifact
+      ls /home/circleci/jenkins-plugin/stackrox-k8s-security-platform/target/
       kubectl cp /home/circleci/jenkins-plugin/stackrox-k8s-security-platform/target/stackrox-k8s-security-platform.hpi \
-              qa/$JENKINSPOD:/var/jenkins_home/plugins/ \
+              qa/$JENKINSPOD:/var/jenkins_home/plugins/. \
       export JENKINSVC=$(kubectl get svc -n qa jenkinsep -o jsonpath="{.status.loadBalancer.ingress[*].ip}")
       echo Jenkins svc is running on "${JENKINSVC}"
       echo restarting jenkins
