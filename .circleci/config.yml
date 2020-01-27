@@ -49,21 +49,6 @@ waitForJenkins: &waitForJenkins
       export JENKINS_PORT=8080
       export JENKINS_URL="https://${JENKINS_SVC}:${JENKINS_PORT}/"
       echo "JENKINS_URL is set to ${JENKINS_URL}"
-      set +e
-      SUCCESS=0
-      for i in $(seq 1 60); do
-        output="$(curl -sk --connect-timeout 5 --max-time 10 "${JENKINS_URL}")"
-        if [[ $output == *"Manage Jenkins"* ]]; then
-           SUCCESS=1
-           break
-        fi
-        sleep 5
-      done
-      if [[ "${SUCCESS}" == 0 ]]; then
-             kubectl -n qa get pods
-             echo "Failed to connect to Jenkins"
-             exit 1
-      fi
       cci-export JENKINS_URL ${JENKINS_URL}
 
 setupGoogleAppCreds: &setupGoogleAppCreds
