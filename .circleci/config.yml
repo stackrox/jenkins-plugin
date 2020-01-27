@@ -29,7 +29,7 @@ setUpJenkinsL: &setUpJenkins
   run:
     name: setting up Jenkins
     command: |
-      export JENKINSPOD=$(kubectl get pods -n qa   -o=jsonpath='{range .items[*]}{.metadata.name}')
+      export JENKINSPOD=$(kubectl get pods -n qa  -o=jsonpath='{range .items[*]}{.metadata.name}')
       export JENKINSPORT=8080
       kubectl cp /home/circleci/jenkins-plugin/stackrox-k8s-security-platform/target/stackrox-k8s-security-platform.hpi \
               $JENKINSPOD:/var/jenkins_home/plugins/ \
