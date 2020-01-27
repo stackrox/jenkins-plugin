@@ -30,9 +30,7 @@ setUpJenkinsL: &setUpJenkins
     command: |
       export JENKINSPOD=$(kubectl get pods -n qa  -o=jsonpath='{range .items[*]}{.metadata.name}')
       export JENKINSPORT=8080
-      echo checking the build artifact
-      ls /home/circleci/jenkins-plugin/stackrox-k8s-security-platform/target/
-      kubectl cp /home/circleci/jenkins-plugin/stackrox-k8s-security-platform/target/stackrox-k8s-security-platform.hpi \
+      kubectl cp stackrox-k8s-security-platform/target/stackrox-k8s-security-platform.hpi \
               qa/$JENKINSPOD:/var/jenkins_home/plugins/. \
       export JENKINSVC=$(kubectl get svc -n qa jenkinsep -o jsonpath="{.status.loadBalancer.ingress[*].ip}")
       echo Jenkins svc is running on "${JENKINSVC}"
@@ -153,6 +151,7 @@ jobs:
         auth:
           username: $DOCKER_IO_PULL_USERNAME
           password: $DOCKER_IO_PULL_PASSWORD
+    working_directory: /home/circleci/jenkins-plugin
     parameters:
       orchestrator-flavor:
         type: string
