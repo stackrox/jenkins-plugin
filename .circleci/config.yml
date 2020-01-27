@@ -30,7 +30,6 @@ setUpJenkinsL: &setUpJenkins
     command: |
       export JENKINSPOD=$(kubectl get pods -n qa  -o=jsonpath='{range .items[*]}{.metadata.name}')
       export JENKINSPORT=8080
-      cd stackrox-k8s-security-platform
       kubectl cp /home/circleci/jenkins-plugin/stackrox-k8s-security-platform/target/stackrox-k8s-security-platform.hpi \
               qa/$JENKINSPOD:/var/jenkins_home/plugins/. \
       export JENKINSVC=$(kubectl get svc -n qa jenkinsep -o jsonpath="{.status.loadBalancer.ingress[*].ip}")
@@ -131,7 +130,7 @@ jobs:
           destination: artifacts
   provision-cluster-qa-tests:
    docker:
-      - image: docker.io/stackrox/apollo-ci:0.2.8-2-g1e9382b6d6
+      - image: docker.io/stackrox/apollo-ci:jenkins-plugin-0.2.8-1-ga776a448ee
         auth:
           username: $DOCKER_IO_PULL_USERNAME
           password: $DOCKER_IO_PULL_PASSWORD
@@ -147,7 +146,7 @@ jobs:
 
   deploy-stackrox:
     docker:
-      - image: docker.io/stackrox/apollo-ci:0.2.8-2-g1e9382b6d6
+      - image: docker.io/stackrox/apollo-ci:jenkins-plugin-0.2.8-1-ga776a448ee
         auth:
           username: $DOCKER_IO_PULL_USERNAME
           password: $DOCKER_IO_PULL_PASSWORD
