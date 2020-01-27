@@ -37,6 +37,7 @@ setUpJenkinsL: &setUpJenkins
       echo Jenkins svc is running on "${JENKINSVC}"
       echo restarting jenkins
       curl -XPOST http://"${JENKINSVC}:${JENKINSPORT}"/restart
+      sleep 60
 
 
 
