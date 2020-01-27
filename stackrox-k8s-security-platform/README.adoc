@@ -63,14 +63,14 @@ link:https://jenkins.io/doc/book/managing/cli/[Jenkins CLI] to install the
 
 [source, bash]
 ----
-java -jar jenkins-cli.jar -s <jenkins-address> install-plugin stackrox-jenkins-plugin -deploy
+java -jar jenkins-cli.jar -s <jenkins-address> install-plugin stackrox-container-image-scanner -deploy
 ----
 
 [[use-the-stackrox-container-image-scanner-plugin]]
 == Use the {plugin-name} plugin
 
 You can use the {plugin-name} plugin in both freestyle
-projects and pipeline.
+projects and pipelines.
 
 [IMPORTANT]
 ====
