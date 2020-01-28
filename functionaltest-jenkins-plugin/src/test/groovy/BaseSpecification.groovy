@@ -8,7 +8,6 @@ class BaseSpecification extends Specification {
     RestApiClient restApiClient
     public String token
     def setup() {
-        gson = new Gson()
         restApiClient = new RestApiClient()
         Token tokenobject = new Token()
         tokenobject.setName("automation")

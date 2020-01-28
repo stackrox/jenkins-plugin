@@ -10,6 +10,5 @@ class Name {
     public String remote
     public String tag
     public String full_name
-}
-
+  }
 }

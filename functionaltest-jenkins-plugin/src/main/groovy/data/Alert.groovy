@@ -36,7 +36,6 @@ class Violation {
     public JsonElement message
 }
 
-
 class Component {
     public String Name
     public String Version
@@ -61,7 +60,6 @@ class Whitelist {
         }
         Label label
     }
-
 }
 
 
