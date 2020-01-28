@@ -16,7 +16,6 @@ class Service {
     }
 
     String getLoadBalancer() {
-        this.client = new DefaultKubernetesClient()
         service = client.services().inNamespace(namespace).withName(serviceName).get()
         if (service?.status?.loadBalancer?.ingress?.size()) {
             loadBalancerIP = service.status.loadBalancer.ingress.get(0).
