@@ -1,8 +1,8 @@
-import Data.BuildDetectRequest
-import Data.Alert
-import Data.DataUtil
-import Data.ListPolicyResponse
-import Data.Policy
+import data.BuildDetectRequest
+import data.Alert
+import data.DataUtil
+import data.ListPolicyResponse
+import data.Policy
 
 
 class ImageScanningTest extends BaseSpecification {

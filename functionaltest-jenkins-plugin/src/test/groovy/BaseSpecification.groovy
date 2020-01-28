@@ -1,7 +1,7 @@
 import com.google.gson.Gson
 import spock.lang.Specification
-import Data.DataUtil
-import Data.Token
+import data.DataUtil
+import data.Token
 
 class BaseSpecification extends Specification {
     Gson gson

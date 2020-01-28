@@ -1,7 +1,7 @@
-import Data.DataUtil
-import Data.Alert
-import Data.ListPolicyResponse
-import Data.Policy
+import data.DataUtil
+import data.Alert
+import data.ListPolicyResponse
+import data.Policy
 import Util.Timer
 import com.google.gson.Gson
 import com.jayway.restassured.specification.RequestSpecification

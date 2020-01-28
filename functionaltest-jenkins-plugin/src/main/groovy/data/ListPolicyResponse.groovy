@@ -1,7 +1,6 @@
-package Data
+package data
 
 import com.google.gson.JsonElement
-import Data.Policy
 
 class ListPolicyResponse {
     String id

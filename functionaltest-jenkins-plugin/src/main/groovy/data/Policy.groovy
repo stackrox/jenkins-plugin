@@ -1,6 +1,4 @@
-package Data
-
-import com.google.gson.JsonElement
+package data
 
 class Policy {
     String id

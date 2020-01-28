@@ -1,4 +1,4 @@
-package Data
+package data
 
 class Token {
    String name
