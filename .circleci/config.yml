@@ -30,7 +30,8 @@ setUpJenkinsL: &setUpJenkins
     command: |
       export JENKINSPOD=$(kubectl get pods -n qa  -o=jsonpath='{range .items[*]}{.metadata.name}')
       export JENKINSPORT=8080
-      kubectl cp stackrox-k8s-security-platform/target/stackrox-k8s-security-platform.hpi
+      echo $JENKINSPOD
+      kubectl cp workspace/stackrox-k8s-security-platform/target/stackrox-k8s-security-platform.hpi
               qa/$JENKINSPOD:/var/jenkins_home/plugins/.
       export JENKINSVC=$(kubectl get svc -n qa jenkinsep -o jsonpath="{.status.loadBalancer.ingress[*].ip}")
       echo Jenkins svc is running on "${JENKINSVC}"
