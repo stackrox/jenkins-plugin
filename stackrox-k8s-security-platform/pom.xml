@@ -30,14 +30,12 @@
             <email>jenkins-plugin@stackrox.com</email>
         </developer>
     </developers>
-    <!-- Assuming you want to host on @jenkinsci:
     <url>https://github.com/jenkinsci/${project.artifactId}-plugin</url>
     <scm>
         <connection>scm:git:git://github.com/jenkinsci/${project.artifactId}-plugin.git</connection>
         <developerConnection>scm:git:git@github.com:jenkinsci/${project.artifactId}-plugin.git</developerConnection>
         <url>https://github.com/jenkinsci/${project.artifactId}-plugin</url>
     </scm>
-    -->
     <dependencies>
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
