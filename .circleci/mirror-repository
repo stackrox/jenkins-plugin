@@ -4,7 +4,7 @@ set -eu
 user_name='roxbot'
 user_email='roxbot@stackrox.com'
 local_subdirectory='stackrox-k8s-security-platform'
-remote_repo="git@github.com:jenkinsci/stackrox-container-image-scanner-plugin.git"
+remote_repository="git@github.com:jenkinsci/stackrox-container-image-scanner-plugin.git"
 
 main() {
     echo "Mirroring directory ${local_subdirectory} to repo ${remote_repository}"
