@@ -30,8 +30,8 @@ setUpJenkinsL: &setUpJenkins
     command: |
       export JENKINSPOD=$(kubectl get pods -n qa  -o=jsonpath='{range .items[*]}{.metadata.name}')
       export JENKINSPORT=8080
-      kubectl cp /home/circleci/jenkins-plugin/stackrox-k8s-security-platform/target/stackrox-k8s-security-platform.hpi \
-              qa/$JENKINSPOD:/var/jenkins_home/plugins/. \
+      kubectl cp stackrox-k8s-security-platform/target/stackrox-k8s-security-platform.hpi
+              qa/$JENKINSPOD:/var/jenkins_home/plugins/.
       export JENKINSVC=$(kubectl get svc -n qa jenkinsep -o jsonpath="{.status.loadBalancer.ingress[*].ip}")
       echo Jenkins svc is running on "${JENKINSVC}"
       echo restarting jenkins
@@ -128,9 +128,14 @@ jobs:
       - store_artifacts:
           path: /home/circleci/jenkins-plugin/stackrox-container-image-scanner/target/stackrox-container-image-scanner.hpi
           destination: artifacts
+      - persist_to_workspace:
+            root: workspace
+            paths:
+              - stackrox-k8s-security-platform/target/stackrox-k8s-security-platform.hpi
+
   provision-cluster-qa-tests:
-   docker:
-      - image: docker.io/stackrox/apollo-ci:jenkins-plugin-0.2.8-1-ga776a448ee
+    docker:
+      - image: docker.io/stackrox/apollo-ci:0.2.8-2-g1e9382b6d6
         auth:
           username: $DOCKER_IO_PULL_USERNAME
           password: $DOCKER_IO_PULL_PASSWORD
@@ -143,10 +148,9 @@ jobs:
     - provision-gke-cluster:
         cluster-id: qa-tests
         num-nodes: 1
-
-  deploy-stackrox:
+   deploy-stackrox:
     docker:
-      - image: docker.io/stackrox/apollo-ci:jenkins-plugin-0.2.8-1-ga776a448ee
+      - image: docker.io/stackrox/apollo-ci:0.2.8-2-g1e9382b6d6
         auth:
           username: $DOCKER_IO_PULL_USERNAME
           password: $DOCKER_IO_PULL_PASSWORD
@@ -169,15 +173,6 @@ jobs:
       - attach-gke-cluster:
             cluster-id: qa-tests
       - checkout
-      - run:
-            name: Build and package the Jenkins plugin
-            command: |
-              cd stackrox-k8s-security-platform
-              mvn package
-              mvn hpi:hpi
-      - store_artifacts:
-                  path: /home/circleci/jenkins-plugin/stackrox-k8s-security-platform/target/stackrox-k8s-security-platform.hpi
-                  destination: artifacts
       - run:
           name: Get Roxctl binary and set the image name
           command: |
@@ -235,7 +230,6 @@ jobs:
 
 
 
-
   mirror:
     docker:
       - image: docker.io/stackrox/apollo-ci:jenkins-plugin-0.2.8-1-ga776a448ee
@@ -248,6 +242,7 @@ jobs:
       - run:
           name: Mirror to public JenkinsCI repo
           command: .circleci/mirror-repository
+
 
 
 workflows:
