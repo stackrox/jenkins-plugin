@@ -18,7 +18,7 @@ class DataUtil {
         String xml = new File(path).text
         def param = [:]
         param["command"] =  """mkdir \$BUILD_TAG
-                               cd \$BUILD_TAGBUILD_TAG
+                               cd \$BUILD_TAG
                                echo \"${imageName}\" >> rox_images_to_scan"""
         param["portalAddress"] = portalAddress
         param["apiToken"] = token

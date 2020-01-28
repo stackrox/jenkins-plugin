@@ -69,6 +69,7 @@ class ImageScanningTest extends BaseSpecification {
         }
         for (ListPolicyResponse policy1 : policies) {
             if (policy1.name == "Latest tag") {
+                println("Updating the latest tag policy")
                 restApiClient.updatePolicy(newpolicy, policy1.id)
             }
         }
