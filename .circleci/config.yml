@@ -129,7 +129,7 @@ jobs:
           path: /home/circleci/jenkins-plugin/stackrox-container-image-scanner/target/stackrox-container-image-scanner.hpi
           destination: artifacts
       - persist_to_workspace:
-            root: workspace
+            root: /home/circleci/jenkins-plugin
             paths:
               - stackrox-k8s-security-platform/target/stackrox-k8s-security-platform.hpi
 
