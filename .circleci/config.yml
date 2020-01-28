@@ -30,6 +30,7 @@ setUpJenkinsL: &setUpJenkins
     command: |
       sleep 60
       export JENKINSPOD=$(kubectl get pods -n qa  -o=jsonpath='{range .items[*]}{.metadata.name}')
+      echo $JENKINSPOD
       export JENKINSPORT=8080
       echo "kubectl cp workspace/stackrox-k8s-security-platform/target/stackrox-k8s-security-platform.hpi
                           qa/$JENKINSPOD:/var/jenkins_home/plugins/stackrox-k8s-security-platform.hpi"
@@ -54,7 +55,7 @@ waitForJenkins: &waitForJenkins
       SUCCESS=0
       for i in $(seq 1 25); do
         output="$(curl -sk --connect-timeout 5 --max-time 10 "${JENKINS_URL}")"
-        if [[ $output != ""  ]]; then
+        if [[ $output == *"<title>Dashboard [Jenkins]</title>"* ]]; then
           SUCCESS=1
           break
         fi
