@@ -19,8 +19,8 @@ class RestApiClient {
     private final static encodedpassword = "Basic " + DataUtil.base64Encode(common.Constants.cluserUserName+":"+common.Constants.clusterPassword)
 
     RestApiClient() {
-        gson = new Gson();
-        parser = new JSONParser();
+        gson = new Gson()
+        parser = new JSONParser()
     }
 
     protected  RequestSpecification CreateRequestSpecification(String header, String value) {
