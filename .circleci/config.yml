@@ -47,10 +47,10 @@ workflows:
               only: /.*/
       - mirror:
           context: docker-io-pull
-#          requires:
-#            - build
+          requires:
+            - build
           filters:
             branches:
-              only: jdk/mirror-automation
+              only: master
             tags:
               only: /.*/
