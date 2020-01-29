@@ -2,6 +2,7 @@
 :toc: preamble
 :toc-title: Contents
 :icons: font
+:stylesheet: docstyle.css
 :image-path: ./src/img/
 :plugin-name: StackRox Container Image Scanner
 :product-name: StackRox Kubernetes Security Platform
@@ -86,6 +87,7 @@ Jenkins FreeStyle project or a Pipeline.
 scan in the `<jenkins-workspace>/${BUILD_TAG}/rox_images_to_scan` file. Each
 image name must be on a separate line. 
 +
+[.bordered]
 image::{image-path}build-step.png[]
 +
 For example, to do this:
@@ -156,6 +158,7 @@ the {product-name} but doesn't fail the build step.
 3+| _^*^ Required_
 |===
 +
+[.bordered]
 image::{image-path}plugin-config.png[]
 +
 . Select *Save* and then select *Apply*.
@@ -189,6 +192,11 @@ node {
 <1> For more information about the variables, see the
 <<plugin-configuration-variables, plugin configuration variables>> section.
 
++
+[.bordered]
+image::{image-path}plugin-pipeline.png[]
+
+
 [[view-scan-reports]]
 == View scan reports
 
@@ -208,5 +216,6 @@ To view the HTML report:
 
 . Select *StackRox Image Security Report* from the left-hand navigation menu. 
 +
+[.bordered]
 image::{image-path}view-html-report.png[]
 +
