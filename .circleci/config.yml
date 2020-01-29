@@ -28,16 +28,16 @@ setUpPlugin: &setUpPlugin
   run:
     name: Installing the plugin on the Jenkins service
     command: |
-      kubectl get pods -n qa
       set +e
       SUCCESS=0
-      for i in $(seq 1 25); do
+      for i in $(seq 1 50); do
         export JENKINSPOD=$(kubectl get pods -n qa  -o=jsonpath='{range .items[*]}{.metadata.name}')
         export JENKINSPORT=8080
         if [[ ! -z "${JENKINSPOD}" ]]; then
            SUCCESS=1
            break
         fi
+      done
       if [[ "${SUCCESS}" == 0 ]]; then
            kubectl -n qa get pods
            echo "Failed to deploy jenkins pod"
@@ -57,9 +57,9 @@ waitForJenkins: &waitForJenkinsService
     command: |
       set +e
       SUCCESS=0
-      for i in $(seq 1 25); do
+      export JENKINS_PORT=8080
+      for i in $(seq 1 50); do
         export JENKINS_SVC=$(kubectl get svc -n qa jenkinsep -o jsonpath="{.status.loadBalancer.ingress[*].ip}")
-        export JENKINS_PORT=8080
         export JENKINS_URL="https://${JENKINS_SVC}:${JENKINS_PORT}/"
         output="$(curl -sk --connect-timeout 5 --max-time 10 "${JENKINS_URL}")"
         if [[ $output == *"<title>Dashboard [Jenkins]</title>"* ]]; then
