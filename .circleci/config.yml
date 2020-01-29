@@ -28,6 +28,8 @@ setUpPlugin: &setUpPlugin
   run:
     name: Installing the plugin on the Jenkins service
     command: |
+      kubectl get pods -n qa
+      sleep 90
       export JENKINSPOD=$(kubectl get pods -n qa  -o=jsonpath='{range .items[*]}{.metadata.name}')
       export JENKINSPORT=8080
       kubectl cp workspace/stackrox-k8s-security-platform/target/stackrox-k8s-security-platform.hpi
