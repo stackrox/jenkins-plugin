@@ -24,7 +24,7 @@ jenkinsDeployment: &jenkinsDeployment
       kubectl create namespace qa
       kubectl apply -f jenkins/JenkinsAppDeployment.yaml
       kubectl apply -f jenkins/JenkinsService.yaml
-      kubectl apply -f centralService.yaml
+      kubectl apply -f jenkins/centralService.yaml
 
 
 setUpPlugin: &setUpPlugin
