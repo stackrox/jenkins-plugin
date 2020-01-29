@@ -22,7 +22,10 @@ jenkinsDeployment: &jenkinsDeployment
     name: Jenkins Deployment and wait for jenkins to be setup
     command: |
       kubectl create namespace qa
-      kubectl apply -f jenkins
+      kubectl apply -f jenkins/JenkinsAppDeployment.yaml
+      kubectl apply -f jenkins/JenkinsService.yaml
+      kubectl apply -f centralService.yaml
+
 
 setUpPlugin: &setUpPlugin
   run:
@@ -41,7 +44,6 @@ setUpPlugin: &setUpPlugin
       if [[ "${SUCCESS}" == 0 ]]; then
            kubectl -n qa get pods
            echo "Failed to deploy jenkins pod"
-           exit 1
       fi
       kubectl cp workspace/stackrox-k8s-security-platform/target/stackrox-k8s-security-platform.hpi
               qa/${JENKINSPOD}:/var/jenkins_home/plugins/stackrox-k8s-security-platform.hpi
@@ -53,7 +55,7 @@ setUpPlugin: &setUpPlugin
 
 waitForJenkins: &waitForJenkinsService
   run:
-    name: Wait for the API server to be up
+    name: Wait for the Jenkins server to come up
     command: |
       set +e
       SUCCESS=0
@@ -71,7 +73,6 @@ waitForJenkins: &waitForJenkinsService
       if [[ "${SUCCESS}" == 0 ]]; then
           kubectl -n qa get pods
           echo "Failed to deploy jenkins server"
-          exit 1
       fi
       echo "JENKINS_URL is set to ${JENKINS_URL}"
 
