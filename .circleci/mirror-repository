@@ -13,6 +13,9 @@ main() {
     cp -r "${local_subdirectory}/." "$tmp_remote_repository"
     cd "$tmp_remote_repository"
 
+    # Sanity check some files before pushing them publicly.
+    banned CHANGELOG.md '[NEXT RELEASE]'
+
     git init
     git remote add origin "$remote_repository"
     git fetch
@@ -20,6 +23,17 @@ main() {
     git add -A
     git -c "user.name=${user_name}" -c "user.email=${user_email}" commit -m "Update repository" || exit 0
     git push origin master --force
+}
+
+banned() {
+    file="$1"
+    phrase="$2"
+    if [ -f "$file" ]; then
+        if grep -qF "$phrase" "$file"; then
+            echo "fatal: file '${file}' contains banned phrase '${phrase}'" 1>&2
+            exit 1
+        fi
+    fi
 }
 
 main "$@"
