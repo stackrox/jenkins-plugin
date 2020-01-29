@@ -29,7 +29,6 @@ setUpPlugin: &setUpPlugin
     name: Installing the plugin on the Jenkins service
     command: |
       kubectl get pods -n qa
-      sleep 90
       export JENKINSPOD=$(kubectl get pods -n qa  -o=jsonpath='{range .items[*]}{.metadata.name}')
       export JENKINSPORT=8080
       kubectl cp workspace/stackrox-k8s-security-platform/target/stackrox-k8s-security-platform.hpi
@@ -56,6 +55,11 @@ waitForJenkins: &waitForJenkinsService
           break
         fi
         sleep 5
+        if [[ "${SUCCESS}" == 0 ]]; then
+          kubectl -n qa get pods
+          echo "Failed to deploy jenkins server"
+          exit 1
+        fi
       done
       echo "JENKINS_URL is set to ${JENKINS_URL}"
 
