@@ -172,9 +172,9 @@ jobs:
               --license /tmp/data.lic \
               --main-image "${IMAGE_NAME}" \
             sleep 20
-            export ROX_PASSWORD=$(cat central-bundle/password)
+            export ROX_PASSWORD="$(cat central-bundle/password)"
             cci-export ROX_USERNAME "admin"
-            cci-export ROX_PASSWORD $ROX_PASSWORD
+            cci-export ROX_PASSWORD "$ROX_PASSWORD"
 
       - run:
           name: Deploy central to remote cluster
