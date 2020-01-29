@@ -29,8 +29,20 @@ setUpPlugin: &setUpPlugin
     name: Installing the plugin on the Jenkins service
     command: |
       kubectl get pods -n qa
-      export JENKINSPOD=$(kubectl get pods -n qa  -o=jsonpath='{range .items[*]}{.metadata.name}')
-      export JENKINSPORT=8080
+      set +e
+      SUCCESS=0
+      for i in $(seq 1 25); do
+        export JENKINSPOD=$(kubectl get pods -n qa  -o=jsonpath='{range .items[*]}{.metadata.name}')
+        export JENKINSPORT=8080
+        if [[ ! -z "${JENKINSPOD}" ]]; then
+           SUCCESS=1
+           break
+        fi
+      if [[ "${SUCCESS}" == 0 ]]; then
+           kubectl -n qa get pods
+           echo "Failed to deploy jenkins pod"
+           exit 1
+      fi
       kubectl cp workspace/stackrox-k8s-security-platform/target/stackrox-k8s-security-platform.hpi
               qa/${JENKINSPOD}:/var/jenkins_home/plugins/stackrox-k8s-security-platform.hpi
       export JENKINSVC=$(kubectl get svc -n qa jenkinsep -o jsonpath="{.status.loadBalancer.ingress[*].ip}")
@@ -55,12 +67,12 @@ waitForJenkins: &waitForJenkinsService
           break
         fi
         sleep 5
-        if [[ "${SUCCESS}" == 0 ]]; then
+      done
+      if [[ "${SUCCESS}" == 0 ]]; then
           kubectl -n qa get pods
           echo "Failed to deploy jenkins server"
           exit 1
-        fi
-      done
+      fi
       echo "JENKINS_URL is set to ${JENKINS_URL}"
 
 setupGoogleAppCreds: &setupGoogleAppCreds
