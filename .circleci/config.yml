@@ -25,6 +25,7 @@ jenkinsDeployment: &jenkinsDeployment
       kubectl apply -f jenkins/JenkinsAppDeployment.yaml
       kubectl apply -f jenkins/JenkinsService.yaml
       kubectl apply -f jenkins/centralService.yaml
+      sleep 60
 
 
 setUpPlugin: &setUpPlugin
@@ -62,7 +63,7 @@ waitForJenkins: &waitForJenkinsService
       export JENKINS_PORT=8080
       for i in $(seq 1 50); do
         export JENKINS_SVC=$(kubectl get svc -n qa jenkinsep -o jsonpath="{.status.loadBalancer.ingress[*].ip}")
-        export JENKINS_URL="https://${JENKINS_SVC}:${JENKINS_PORT}/"
+        export JENKINS_URL="http://${JENKINS_SVC}:${JENKINS_PORT}/"
         output="$(curl -sk --connect-timeout 5 --max-time 10 "${JENKINS_URL}")"
         if [[ $output == *"<title>Dashboard [Jenkins]</title>"* ]]; then
           SUCCESS=1
