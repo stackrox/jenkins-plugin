@@ -120,7 +120,7 @@ echo "stackrox/vuln-images:django-cve-2019-14235" >> rox_images_to_scan
 
 |`apiToken`
 |API token ^*^
-|The StackRox access token with the CI authorization role.
+|The StackRox access token with the Continuous Integration (CI) authorization role.
 
 |`enableTLSVerification`
 |Enable TLS verification
@@ -151,8 +151,8 @@ in the {product-name}. This value is `TRUE` by default.
 
 [NOTE]
 ====
-If you don't enable `failOnPolicyEvalFailure`, the plugin sends violations to
-the {product-name} but doesn't fail the build step.
+If you don't enable `failOnPolicyEvalFailure`, the plugin will not fail the build even if
+the {product-name} reports system policy violations.
 ====
 
 3+| _^*^ Required_
