@@ -14,12 +14,12 @@ jobs:
       - run:
           name: Build and package the Jenkins plugin
           command: |
-            cd stackrox-k8s-security-platform
+            cd stackrox-container-image-scanner
             mvn package
             mvn hpi:hpi
 
       - store_artifacts:
-          path: /home/circleci/jenkins-plugin/stackrox-k8s-security-platform/target/stackrox-k8s-security-platform.hpi
+          path: /home/circleci/jenkins-plugin/stackrox-container-image-scanner/target/stackrox-container-image-scanner.hpi
           destination: artifacts
 
   mirror:
