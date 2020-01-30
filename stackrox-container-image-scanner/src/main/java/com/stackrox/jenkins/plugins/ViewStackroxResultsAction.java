@@ -24,7 +24,7 @@ public class ViewStackroxResultsAction implements Action {
 
     @Override
     public String getIconFileName() {
-        return Jenkins.RESOURCE_PATH + "/plugin/stackrox-k8s-security-platform/images/sr-logo.png";
+        return Jenkins.RESOURCE_PATH + "/plugin/stackrox-container-image-scanner/images/sr-logo.png";
     }
 
     @Override

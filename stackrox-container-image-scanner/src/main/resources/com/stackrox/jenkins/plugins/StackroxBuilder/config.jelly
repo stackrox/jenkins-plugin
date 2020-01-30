@@ -1,19 +1,19 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core"
          xmlns:f="/lib/form">
-    <f:entry title="${%PortalAddressTitle}" help="/plugin/stackrox-k8s-security-platform/help/help-portalAddress.html">
+    <f:entry title="${%PortalAddressTitle}" help="/plugin/stackrox-container-image-scanner/help/help-portalAddress.html">
         <f:textbox field="portalAddress"/>
     </f:entry>
-    <f:entry title="${%APITokenTitle}" help="/plugin/stackrox-k8s-security-platform/help/help-apiToken.html">
+    <f:entry title="${%APITokenTitle}" help="/plugin/stackrox-container-image-scanner/help/help-apiToken.html">
         <f:password field="apiToken"/>
     </f:entry>
     <f:entry>
         <j:if test="${instance != null}">
             <f:optionalBlock title="${%EnableTLSVerification}" name="enableTLSVerification"
                              checked="${instance.enableTLSVerification}" inline="true"
-                             help="/plugin/stackrox-k8s-security-platform/help/help-enableTLSVerification.html">
+                             help="/plugin/stackrox-container-image-scanner/help/help-enableTLSVerification.html">
                 <f:entry title="${%CACertificate}" field="caCertPEM"
-                         help="/plugin/stackrox-k8s-security-platform/help/help-caCertPEM.html">
+                         help="/plugin/stackrox-container-image-scanner/help/help-caCertPEM.html">
                     <f:expandableTextbox value="${instance.caCertPEM}"/>
                 </f:entry>
             </f:optionalBlock>
@@ -21,9 +21,9 @@
         <j:if test="${instance == null}">
             <f:optionalBlock title="${%EnableTLSVerification}" name="enableTLSVerification"
                              checked="${%true}" inline="true"
-                             help="/plugin/stackrox-k8s-security-platform/help/help-enableTLSVerification.html">
+                             help="/plugin/stackrox-container-image-scanner/help/help-enableTLSVerification.html">
                 <f:entry title="${%CACertificate}" field="caCertPEM"
-                         help="/plugin/stackrox-k8s-security-platform/help/help-caCertPEM.html">
+                         help="/plugin/stackrox-container-image-scanner/help/help-caCertPEM.html">
                     <f:expandableTextbox value="${instance.caCertPEM}"/>
                 </f:entry>
             </f:optionalBlock>

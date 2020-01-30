@@ -4,23 +4,23 @@
         <st:include it="${it.build}" page="sidepanel.jelly"/>
         <l:main-panel>
             <link rel="stylesheet" type="text/css"
-                  href="${resURL}/plugin/stackrox-k8s-security-platform/css/bootstrap.min.css"/>
+                  href="${resURL}/plugin/stackrox-container-image-scanner/css/bootstrap.min.css"/>
             <link rel="stylesheet" type="text/css"
-                  href="${resURL}/plugin/stackrox-k8s-security-platform/css/dataTables.bootstrap.min.css"/>
+                  href="${resURL}/plugin/stackrox-container-image-scanner/css/dataTables.bootstrap.min.css"/>
             <link rel="stylesheet" type="text/css"
-                  href="${resURL}/plugin/stackrox-k8s-security-platform/css/collapsible.css"/>
-            <link rel="stylesheet" type="text/css" href="${resURL}/plugin/stackrox-k8s-security-platform/css/rox.css"/>
+                  href="${resURL}/plugin/stackrox-container-image-scanner/css/collapsible.css"/>
+            <link rel="stylesheet" type="text/css" href="${resURL}/plugin/stackrox-container-image-scanner/css/rox.css"/>
 
 
-            <script type="text/javascript" src="${resURL}/plugin/stackrox-k8s-security-platform/jquery.min.js"></script>
+            <script type="text/javascript" src="${resURL}/plugin/stackrox-container-image-scanner/jquery.min.js"></script>
             <script type="text/javascript"
-                    src="${resURL}/plugin/stackrox-k8s-security-platform/js/jquery.collapsible.js"></script>
+                    src="${resURL}/plugin/stackrox-container-image-scanner/js/jquery.collapsible.js"></script>
             <script type="text/javascript"
-                    src="${resURL}/plugin/stackrox-k8s-security-platform/js/jquery.dataTables.min.js"></script>
+                    src="${resURL}/plugin/stackrox-container-image-scanner/js/jquery.dataTables.min.js"></script>
             <script type="text/javascript"
-                    src="${resURL}/plugin/stackrox-k8s-security-platform/js/dataTables.bootstrap.min.js"></script>
+                    src="${resURL}/plugin/stackrox-container-image-scanner/js/dataTables.bootstrap.min.js"></script>
             <script type="text/javascript"
-                    src="${resURL}/plugin/stackrox-k8s-security-platform/js/renderTables.js"></script>
+                    src="${resURL}/plugin/stackrox-container-image-scanner/js/renderTables.js"></script>
             <script>
                 $( function() {
                 $( "#accordion" ).collapsible({
