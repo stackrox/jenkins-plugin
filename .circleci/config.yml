@@ -22,9 +22,7 @@ jenkinsDeployment: &jenkinsDeployment
     name: Jenkins Deployment and wait for jenkins to be setup
     command: |
       kubectl create namespace qa
-      kubectl apply -f jenkins/JenkinsAppDeployment.yaml
-      kubectl apply -f jenkins/JenkinsService.yaml
-      kubectl apply -f jenkins/centralService.yaml
+      kubectl apply -f jenkins
 
 
 setUpPlugin: &setUpPlugin
@@ -33,9 +31,9 @@ setUpPlugin: &setUpPlugin
     command: |
       set +e
       SUCCESS=0
+      export JENKINSPORT="8080"
       for i in $(seq 1 50); do
         export JENKINSPOD="$(kubectl get pods -n qa  -o=jsonpath='{range .items[*]}{.metadata.name}')"
-        export JENKINSPORT="8080"
         if [[ ! -z "${JENKINSPOD}" ]]; then
            SUCCESS=1
            break
@@ -48,12 +46,21 @@ setUpPlugin: &setUpPlugin
            kubectl -n qa get pods
            echo "Failed to deploy jenkins pod"
       fi
-      kubectl cp workspace/stackrox-k8s-security-platform/target/stackrox-k8s-security-platform.hpi
+      kubectl cp stackrox-k8s-security-platform/target/stackrox-k8s-security-platform.hpi
               qa/${JENKINSPOD}:/var/jenkins_home/plugins/stackrox-k8s-security-platform.hpi
       export JENKINSVC=$(kubectl get svc -n qa jenkinsep -o jsonpath="{.status.loadBalancer.ingress[*].ip}")
       echo Jenkins svc is running on "${JENKINSVC}"
       echo restarting jenkins
-      curl -XPOST http://"${JENKINSVC}:${JENKINSPORT}"/restart
+      export JENKINS_URL="http://${JENKINS_SVC}:${JENKINS_PORT}/"
+      curl -XPOST "${JENKINS_URL}/restart"
+      for i in $(seq 1 50); do
+        output="$(curl -sk --connect-timeout 5 --max-time 10 "${JENKINS_URL}")"
+        if [[ $output == *"<title>Dashboard [Jenkins]</title>"* ]]; then
+             break
+             echo "Jenkins is up and running"
+        fi
+      done
+      echo "Jenkins installation is complete"
 
 
 waitForJenkins: &waitForJenkinsService
