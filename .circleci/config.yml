@@ -69,7 +69,6 @@ connectToCentral: &connectToCentral
       set +e
       nohup kubectl -n 'stackrox' port-forward service/central '8000:443' 1>/dev/null 2>&1 &
       sleep 5
-    when: always
 
 deleteClusterk8s: &deleteClusterk8s
   run:
@@ -170,8 +169,7 @@ jobs:
           command: |
             ./roxctl central generate k8s pvc \
               --license /tmp/data.lic \
-              --main-image "${IMAGE_NAME}" \
-            sleep 20
+              --main-image "${IMAGE_NAME}"
             export ROX_PASSWORD="$(cat central-bundle/password)"
             cci-export ROX_USERNAME "admin"
             cci-export ROX_PASSWORD "$ROX_PASSWORD"
@@ -192,8 +190,6 @@ jobs:
       - *connectToCentral
 
       - *waitForAPI
-
-
       - run:
           name: Deploy sensor the remote cluster
           command: |
@@ -202,7 +198,7 @@ jobs:
                                          --collection-method kernel-module \
                                          --collector-image stackrox/collector \
                                          --image "${IMAGE_NAME}" \
-                                         -e "${API_HOSTNAME}:${API_PORT}" -p "${ROX_PASSWORD}" \
+                                         -e "${API_HOSTNAME}:${API_PORT}" -p "${ROX_PASSWORD}"
 
             ./sensor-remote/sensor.sh
             kubectl delete clusterrolebinding temporary-admin
