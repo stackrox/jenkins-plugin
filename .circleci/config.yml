@@ -106,7 +106,6 @@ jobs:
           password: $DOCKER_IO_PULL_PASSWORD
    environment:
      - GCP_IMAGE_TYPE: "COS"
-     - POD_SECURITY_POLICIES: "true"
    working_directory: /home/circleci/jenkins-plugin
    steps:
     - checkout
