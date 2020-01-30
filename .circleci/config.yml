@@ -25,7 +25,6 @@ jenkinsDeployment: &jenkinsDeployment
       kubectl apply -f jenkins/JenkinsAppDeployment.yaml
       kubectl apply -f jenkins/JenkinsService.yaml
       kubectl apply -f jenkins/centralService.yaml
-      sleep 60
 
 
 setUpPlugin: &setUpPlugin
@@ -35,14 +34,15 @@ setUpPlugin: &setUpPlugin
       set +e
       SUCCESS=0
       for i in $(seq 1 50); do
-        export JENKINSPOD=$(kubectl get pods -n qa  -o=jsonpath='{range .items[*]}{.metadata.name}')
-        export JENKINSPORT=8080
+        export JENKINSPOD="$(kubectl get pods -n qa  -o=jsonpath='{range .items[*]}{.metadata.name}')"
+        export JENKINSPORT="8080"
         if [[ ! -z "${JENKINSPOD}" ]]; then
            SUCCESS=1
            break
         fi
       done
       if [[ "${SUCCESS}" == 0 ]]; then
+           kubectl -n qa get svc
            kubectl -n qa get pods
            echo "Failed to deploy jenkins pod"
       fi
@@ -62,7 +62,7 @@ waitForJenkins: &waitForJenkinsService
       SUCCESS=0
       export JENKINS_PORT=8080
       for i in $(seq 1 50); do
-        export JENKINS_SVC=$(kubectl get svc -n qa jenkinsep -o jsonpath="{.status.loadBalancer.ingress[*].ip}")
+        export JENKINS_SVC="$(kubectl get svc -n qa jenkinsep -o jsonpath="{.status.loadBalancer.ingress[*].ip}")"
         export JENKINS_URL="http://${JENKINS_SVC}:${JENKINS_PORT}/"
         output="$(curl -sk --connect-timeout 5 --max-time 10 "${JENKINS_URL}")"
         if [[ $output == *"<title>Dashboard [Jenkins]</title>"* ]]; then
