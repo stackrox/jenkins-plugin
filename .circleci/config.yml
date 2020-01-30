@@ -42,6 +42,7 @@ setUpPlugin: &setUpPlugin
         fi
       done
       if [[ "${SUCCESS}" == 0 ]]; then
+           kubectl -n qa describe deploy
            kubectl -n qa get svc
            kubectl -n qa get pods
            echo "Failed to deploy jenkins pod"
