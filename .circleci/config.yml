@@ -169,16 +169,16 @@ jobs:
         auth:
           username: $DOCKER_IO_PULL_USERNAME
           password: $DOCKER_IO_PULL_PASSWORD
-   environment:
+    environment:
      - GCP_IMAGE_TYPE: "COS"
-   working_directory: /home/circleci/jenkins-plugin
-   steps:
-    - checkout
-    - setup_remote_docker
-    - provision-gke-cluster:
+    working_directory: /home/circleci/jenkins-plugin
+    steps:
+     - checkout
+     - setup_remote_docker
+     - provision-gke-cluster:
         cluster-id: qa-tests
         num-nodes: 1
-   deploy-stackrox:
+  deploy-stackrox:
     docker:
       - image: docker.io/stackrox/apollo-ci:0.2.8-2-g1e9382b6d6
         auth:
