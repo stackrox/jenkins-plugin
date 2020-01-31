@@ -172,7 +172,7 @@ jobs:
       - persist_to_workspace:
             root: /home/circleci/jenkins-plugin/stackrox-k8s-security-platform/target/
             paths:
-              - /tmp/
+              - /home/circleci/jenkins-plugin/
 
   provision-cluster-qa-tests:
     docker:
