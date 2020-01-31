@@ -10,7 +10,7 @@
     </parent>
     
     <artifactId>stackrox-container-image-scanner</artifactId>
-    <version>1.1</version>
+    <version>1.1-SNAPSHOT</version>
     <packaging>hpi</packaging>
     <properties>
         <jenkins.version>2.164.1</jenkins.version>
