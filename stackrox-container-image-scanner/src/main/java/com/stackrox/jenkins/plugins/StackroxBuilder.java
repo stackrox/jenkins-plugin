@@ -341,7 +341,7 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
                 FilePath policyViolationsCsv = new FilePath(imageResultDir, "policyViolations.csv");
 
                 if (!result.getCves().isEmpty()) {
-                    try (CSVPrinter printer = new CSVPrinter(new FileWriter(imageCveCsv.getRemote()), CSVFormat.EXCEL.withQuoteMode(QuoteMode.NON_NUMERIC))) {
+                    try (CSVPrinter printer = new CSVPrinter(new OutputStreamWriter(new FileOutputStream(imageCveCsv.getRemote()),StandardCharsets.UTF_8), CSVFormat.EXCEL.withQuoteMode(QuoteMode.NON_NUMERIC))) {
                         printer.printRecord("CVE ID", "CVSS Score", "Score Type", "Package Name", "Package Version", "Fixable", "Publish Date", "Link");
                         for (CVE cve : result.getCves()) {
                             printer.printRecord(cve.getId(), cve.getCvssScore(), cve.getScoreType(), cve.getPackageName(), cve.getPackageVersion(), cve.isFixable(), cve.getPublishDate(), cve.getLink());

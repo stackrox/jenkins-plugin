@@ -8,7 +8,7 @@
         <version>3.50</version>
         <relativePath/>
     </parent>
-    
+
     <artifactId>stackrox-container-image-scanner</artifactId>
     <version>1.1-SNAPSHOT</version>
     <packaging>hpi</packaging>
@@ -146,13 +146,19 @@
                             <outputDirectory>${project.build.directory}/external-resources</outputDirectory>
                             <resources>
                                 <resource>
-                                    <directory>${project.build.directory}/webjars/META-INF/resources/webjars/jquery/3.4.1</directory>
+                                    <directory>
+                                        ${project.build.directory}/webjars/META-INF/resources/webjars/jquery/3.4.1
+                                    </directory>
                                 </resource>
                                 <resource>
-                                    <directory>${project.build.directory}/webjars/META-INF/resources/webjars/datatables/1.10.20</directory>
+                                    <directory>
+                                        ${project.build.directory}/webjars/META-INF/resources/webjars/datatables/1.10.20
+                                    </directory>
                                 </resource>
                                 <resource>
-                                    <directory>${project.build.directory}/webjars/META-INF/resources/webjars/bootstrap/4.4.1</directory>
+                                    <directory>
+                                        ${project.build.directory}/webjars/META-INF/resources/webjars/bootstrap/4.4.1
+                                    </directory>
                                 </resource>
                                 <!-- also copy existing resources to use them in the HPL for testing -->
                                 <resource>
@@ -163,7 +169,7 @@
                     </execution>
                 </executions>
             </plugin>
-        <!-- include downloaded resources in HPI -->
+            <!-- include downloaded resources in HPI -->
             <plugin>
                 <groupId>org.jenkins-ci.tools</groupId>
                 <artifactId>maven-hpi-plugin</artifactId>
