@@ -184,12 +184,9 @@ jobs:
           command:  |
             central-bundle/scanner/scripts/setup.sh
             kubectl create -R -f central-bundle/scanner
-            
-
 
       - *connectToCentral
 
-      - *waitForAPI
       - run:
           name: Deploy sensor the remote cluster
           command: |
