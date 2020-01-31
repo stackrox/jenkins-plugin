@@ -48,7 +48,8 @@ setUpPlugin: &setUpPlugin
            echo "Failed to deploy jenkins pod"
       fi
       echo JENKINSPOD is running on ${JENKINSPOD}
-      kubectl cp stackrox-k8s-security-platform/target/stackrox-k8s-security-platform.hpi qa/${JENKINSPOD}:/var/jenkins_home/plugins/.
+      ls -R /home/circleci/jenkins-plugin/stackrox-k8s-security-platform/
+      kubectl cp /home/circleci/jenkins-plugin/stackrox-k8s-security-platform/target/stackrox-k8s-security-platform.hpi qa/${JENKINSPOD}:/var/jenkins_home/plugins/.
       export JENKINSVC=$(kubectl get svc -n qa jenkinsep -o jsonpath="{.status.loadBalancer.ingress[*].ip}")
       echo Jenkins svc is running on "${JENKINSVC}"
       echo restarting jenkins
@@ -169,7 +170,7 @@ jobs:
       - persist_to_workspace:
             root: /home/circleci/jenkins-plugin
             paths:
-              - stackrox-k8s-security-platform/target/stackrox-k8s-security-platform.hpi
+              - stackrox-k8s-security-platform/target/
 
   provision-cluster-qa-tests:
     docker:
