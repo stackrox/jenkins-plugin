@@ -47,11 +47,11 @@ setUpPlugin: &setUpPlugin
            echo "Failed to deploy jenkins pod"
       fi
       kubectl cp stackrox-k8s-security-platform/target/stackrox-k8s-security-platform.hpi
-              qa/${JENKINSPOD}:/var/jenkins_home/plugins/stackrox-k8s-security-platform.hpi
+              qa/${JENKINSPOD}:/var/jenkins_home/plugins/.
       export JENKINSVC=$(kubectl get svc -n qa jenkinsep -o jsonpath="{.status.loadBalancer.ingress[*].ip}")
       echo Jenkins svc is running on "${JENKINSVC}"
       echo restarting jenkins
-      export JENKINS_URL="http://${JENKINS_SVC}:${JENKINS_PORT}/"
+      export JENKINS_URL="http://${JENKINSVC}:${JENKINSPORT}/"
       curl -XPOST "${JENKINS_URL}/restart"
       for i in $(seq 1 50); do
         output="$(curl -sk --connect-timeout 5 --max-time 10 "${JENKINS_URL}")"
