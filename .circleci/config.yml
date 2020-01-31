@@ -24,32 +24,6 @@ getCentralLogs: &getCentralLogs
       kubectl logs $podname -n stackrox
     when: on_fail
 
-waitForAPI: &waitForAPI
-  run:
-    name: Wait for the API server to be up
-    command: |
-      export API_HOSTNAME=localhost
-      export API_PORT=8000
-      export METADATA_URL="https://${API_HOSTNAME}:${API_PORT}/v1/metadata"
-      echo "METADATA_URL is set to ${METADATA_URL}"
-      set +e
-      SUCCESS=0
-      for i in $(seq 1 25); do
-        metadata="$(curl -sk --connect-timeout 5 --max-time 10 "${METADATA_URL}")"
-        if [[ $? -eq 0 && "$(jq '.licenseStatus' -r \<<<"$metadata")" != "RESTARTING" ]]; then
-          SUCCESS=1
-          break
-        fi
-        sleep 5
-      done
-      if [[ "${SUCCESS}" == 0 ]]; then
-        kubectl -n stackrox get pod
-        echo "Failed to connect to Central"
-        exit 1
-      fi
-      cci-export API_HOSTNAME "$API_HOSTNAME"
-      cci-export API_PORT "$API_PORT"
-      cci-export API_ENDPOINT "${API_HOSTNAME}:${API_PORT}"
 
 setupGoogleAppCreds: &setupGoogleAppCreds
   run:
@@ -69,13 +43,14 @@ connectToCentral: &connectToCentral
       set +e
       nohup kubectl -n 'stackrox' port-forward service/central '8000:443' 1>/dev/null 2>&1 &
       sleep 5
-      for i in $(seq 1 25);do
-        output="$(./roxctl image scan --image alpine -e "localhost:8000" -p "$ROX_PASSWORD"  --insecure-skip-tls-verify)"
+      for i in $(seq 1 50);do
+        output="$(./roxctl image scan --image alpine -e localhost:8000 -p "$ROX_PASSWORD"  --insecure-skip-tls-verify)"
         if [[ $output == "*metadata*" ]]; then
           echo "scanner is up and running"
         fi
+        sleep 5
       done
-      sleep 5
+
 
 deleteClusterk8s: &deleteClusterk8s
   run:
@@ -194,23 +169,6 @@ jobs:
 
 
       - *connectToCentral
-
-      - *waitForAPI
-
-      - run:
-          name: Deploy sensor the remote cluster
-          command: |
-            kubectl create clusterrolebinding temporary-admin --clusterrole=cluster-admin --user circleci-rox@stackrox-ci.iam.gserviceaccount.com
-            ./roxctl sensor generate k8s --name remote \
-                                         --collection-method kernel-module \
-                                         --collector-image stackrox/collector \
-                                         --image "${IMAGE_NAME}" \
-                                         -e "${API_HOSTNAME}:${API_PORT}" -p "${ROX_PASSWORD}"
-
-            ./sensor-remote/sensor.sh
-            kubectl delete clusterrolebinding temporary-admin
-            kubectl get pods -n stackrox 
-
       - *getCentralLogs
       - *deleteClusterk8s
 
