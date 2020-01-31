@@ -11,6 +11,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 public class RunConfig {
@@ -42,7 +44,7 @@ public class RunConfig {
             reportsDir.mkdirs();
             artifacts = String.format("%s/%s/", envVars.get("BUILD_TAG"), REPORTS_DIR_NAME);
 
-            try (BufferedReader br = new BufferedReader(new InputStreamReader(imagesToScanFilePath.read()))) {
+            try (BufferedReader br = new BufferedReader(new InputStreamReader(imagesToScanFilePath.read(), StandardCharsets.UTF_8))) {
                 imageNames = Lists.newArrayList();
                 String name;
                 while ((name = br.readLine()) != null) {

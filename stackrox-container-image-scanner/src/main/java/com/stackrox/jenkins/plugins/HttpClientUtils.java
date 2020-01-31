@@ -12,6 +12,8 @@ import org.apache.http.ssl.SSLContextBuilder;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.SocketException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -24,7 +26,7 @@ public class HttpClientUtils {
     //TODO: Create a client with tls verification turned on
     public static final int maxRetries = 3;
 
-    public static CloseableHttpClient Get(final boolean tlsVerify, final String caCertPEM) throws IOException {
+    public static CloseableHttpClient get(final boolean tlsVerify, final String caCertPEM) throws IOException {
         try {
             // use the TrustSelfSignedStrategy to allow Self Signed Certificates
             SSLContext sslContext;
@@ -35,7 +37,7 @@ public class HttpClientUtils {
                 keyStore.load(null, "".toCharArray());
 
                 CertificateFactory cf = CertificateFactory.getInstance("X.509");
-                X509Certificate cert = (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(caCertPEM.getBytes()));
+                X509Certificate cert = (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(caCertPEM.getBytes(StandardCharsets.UTF_8)));
                 keyStore.setCertificateEntry("ca.crt", cert);
 
                 sslContext = SSLContextBuilder
