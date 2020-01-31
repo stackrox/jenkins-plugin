@@ -184,7 +184,14 @@ jobs:
           command:  |
             central-bundle/scanner/scripts/setup.sh
             kubectl create -R -f central-bundle/scanner
-            sleep 60
+            for i in seq(1..50); do
+              output="$(./roxctl-darwin image scan --image alpine -e localhost:8000 -p "$ROX_PASSWORD"  --insecure-skip-tls-verify)"
+              if [[ $output == "*metadata*" ]]; then
+                echo "scanner is up and running"
+              fi
+              sleep 5
+            done
+
 
       - *connectToCentral
 
