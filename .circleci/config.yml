@@ -50,7 +50,7 @@ setUpPlugin: &setUpPlugin
       echo JENKINSPOD is running on ${JENKINSPOD}
       ls -R /home/circleci/jenkins-plugin/
       ls -R /home/circleci/jenkins-plugin/stackrox-k8s-security-platform/
-      kubectl cp /home/circleci/jenkins-plugin/stackrox-k8s-security-platform/target/stackrox-k8s-security-platform.hpi qa/${JENKINSPOD}:/var/jenkins_home/plugins/.
+      kubectl cp /tmp/stackrox-k8s-security-platform.hpi qa/${JENKINSPOD}:/var/jenkins_home/plugins/.
       export JENKINSVC=$(kubectl get svc -n qa jenkinsep -o jsonpath="{.status.loadBalancer.ingress[*].ip}")
       echo Jenkins svc is running on "${JENKINSVC}"
       echo restarting jenkins
@@ -62,6 +62,7 @@ setUpPlugin: &setUpPlugin
              break
              echo "stackrox plugin installation on Jenkins is complete"
         fi
+        sleep 5
       done
       echo "Jenkins installation is complete"
 
@@ -169,9 +170,9 @@ jobs:
           path: /home/circleci/jenkins-plugin/stackrox-container-image-scanner/target/stackrox-container-image-scanner.hpi
           destination: artifacts
       - persist_to_workspace:
-            root: /home/circleci/jenkins-plugin
+            root: /home/circleci/jenkins-plugin/stackrox-k8s-security-platform/target/
             paths:
-              - stackrox-k8s-security-platform/target/
+              - /tmp/
 
   provision-cluster-qa-tests:
     docker:
@@ -208,7 +209,7 @@ jobs:
       - setup-gcp:
             docker-login: false
       - attach_workspace:
-          at: /home/circleci/jenkins-plugin/
+          at: /home/circleci/jenkins-plugin/stackrox-k8s-security-platform/target/
       - setup_remote_docker
       - attach-gke-cluster:
             cluster-id: qa-tests
