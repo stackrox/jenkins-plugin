@@ -58,7 +58,7 @@ setUpPlugin: &setUpPlugin
         output="$(curl -sk --connect-timeout 5 --max-time 10 "${JENKINS_URL}")"
         if [[ $output == *"<title>Dashboard [Jenkins]</title>"* ]]; then
              break
-             echo "Jenkins is up and running"
+             echo "stackrox plugin installation on Jenkins is complete"
         fi
       done
       echo "Jenkins installation is complete"
