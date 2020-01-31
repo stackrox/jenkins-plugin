@@ -9,10 +9,12 @@
                   href="${resURL}/plugin/stackrox-container-image-scanner/css/dataTables.bootstrap.min.css"/>
             <link rel="stylesheet" type="text/css"
                   href="${resURL}/plugin/stackrox-container-image-scanner/css/collapsible.css"/>
-            <link rel="stylesheet" type="text/css" href="${resURL}/plugin/stackrox-container-image-scanner/css/rox.css"/>
+            <link rel="stylesheet" type="text/css"
+                  href="${resURL}/plugin/stackrox-container-image-scanner/css/rox.css"/>
 
 
-            <script type="text/javascript" src="${resURL}/plugin/stackrox-container-image-scanner/jquery.min.js"></script>
+            <script type="text/javascript"
+                    src="${resURL}/plugin/stackrox-container-image-scanner/jquery.min.js"></script>
             <script type="text/javascript"
                     src="${resURL}/plugin/stackrox-container-image-scanner/js/jquery.collapsible.js"></script>
             <script type="text/javascript"
