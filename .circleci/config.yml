@@ -184,13 +184,7 @@ jobs:
           command:  |
             central-bundle/scanner/scripts/setup.sh
             kubectl create -R -f central-bundle/scanner
-            for i in seq(1..50); do
-              output="$(./roxctl image scan --image alpine -e "${API_HOSTNAME}:${API_PORT}" -p "$ROX_PASSWORD"  --insecure-skip-tls-verify)"
-              if [[ $output == "*metadata*" ]]; then
-                echo "scanner is up and running"
-              fi
-              sleep 5
-            done
+            
 
 
       - *connectToCentral
