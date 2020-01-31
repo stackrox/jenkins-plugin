@@ -69,6 +69,13 @@ connectToCentral: &connectToCentral
       set +e
       nohup kubectl -n 'stackrox' port-forward service/central '8000:443' 1>/dev/null 2>&1 &
       sleep 5
+      for i in $(seq 1 25);do
+        output="$(./roxctl image scan --image alpine -e "localhost:8000" -p "$ROX_PASSWORD"  --insecure-skip-tls-verify)"
+        if [[ $output == "*metadata*" ]]; then
+          echo "scanner is up and running"
+        fi
+      done
+      sleep 5
 
 deleteClusterk8s: &deleteClusterk8s
   run:
@@ -184,13 +191,6 @@ jobs:
           command:  |
             central-bundle/scanner/scripts/setup.sh
             kubectl create -R -f central-bundle/scanner
-             for i in $(seq 1 25);do
-               output="$(./roxctl image scan --image alpine -e "localhost:8000" -p "$ROX_PASSWORD"  --insecure-skip-tls-verify)"
-               if [[ $output == "*metadata*" ]]; then
-                    echo "scanner is up and running"
-               fi
-               sleep 5
-            done
 
 
       - *connectToCentral
