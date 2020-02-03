@@ -142,7 +142,7 @@ jobs:
             touch /tmp/data.lic
             chmod 0600 /tmp/data.lic
             echo $ROX_LICENSE_KEY >> /tmp/data.lic
-            cci-export ROX_LICENSE_KEY $ROX_LICENSE_KEY
+
 
       - run:
           name: Generate central bundle
@@ -231,7 +231,7 @@ commands:
         type: string
       num-nodes:
         type: integer
-        default: 3
+        default: 1
 
     steps:
       - setup-gcp:
