@@ -23,7 +23,7 @@ class RestApiClient {
         parser = new JSONParser()
     }
 
-    protected  RequestSpecification CreateRequestSpecification(String header, String value) {
+    protected RequestSpecification CreateRequestSpecification(String header, String value) {
         return given().relaxedHTTPSValidation().header(header, value)
     }
 
@@ -86,6 +86,7 @@ class RestApiClient {
     String createJenkinsJob(String loadBalancer, File file) {
         def jobName = "testjob" +new Random().nextInt()
         def url = "${Constants.jenkinsProtocol}://${loadBalancer}:${Constants.jenkinsPort}/createItem?name=${jobName}"
+        print(url)
         FileInputStream fileInputStream = new FileInputStream(file)
         byte [] bytes = fileInputStream.bytes
         println("Creating Jenkins job  ${jobName}")
@@ -101,8 +102,9 @@ class RestApiClient {
 
      void startJenkinsBuild(String job, String loadBalancer ) {
         println("Starting Jenkins job ${job}")
-        def url = "http://${loadBalancer}:8080/job/${job}/build"
-        given().relaxedHTTPSValidation()
+        def url = "${Constants.jenkinsProtocol}://${loadBalancer}:${Constants.jenkinsPort}/job/${job}/build"
+        print url
+         given().relaxedHTTPSValidation()
             .when()
             .post(url)
             .then().statusCode(201)
@@ -117,11 +119,14 @@ class RestApiClient {
         Timer timer = new Timer(iterations,interval)
         while ((response?.body() == null || response?.asString()?.startsWith("<") || response?.jsonPath()?.get("result") == null) && timer.IsValid()) {
             try {
-                def url = "http://${loadBalancer}:8080/job/${job}/lastBuild/api/json"
+                def url = "${Constants.jenkinsProtocol}://${loadBalancer}:${Constants.jenkinsPort}/job/${job}/lastBuild/api/json"
+                println(url)
                 response = given().relaxedHTTPSValidation()
                            .when()
                            .post(url)
+                println(response.asString())
                 }
+
                catch (Exception ex) {
                    println(ex.toString())
                }
