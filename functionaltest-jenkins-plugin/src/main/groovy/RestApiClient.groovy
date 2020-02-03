@@ -89,8 +89,7 @@ class RestApiClient {
         FileInputStream fileInputStream = new FileInputStream(file)
         byte [] bytes = fileInputStream.bytes
         println("Creating Jenkins job  ${jobName}")
-        given().relaxedHTTPSValidation()
-            .content(bytes)
+        given().content(bytes)
             .contentType("text/xml")
             .when()
             .post(url)
@@ -103,8 +102,7 @@ class RestApiClient {
         println("Starting Jenkins job ${job}")
         def url = "${Constants.jenkinsProtocol}://${loadBalancer}:${Constants.jenkinsPort}/job/${job}/build"
         print url
-         given().relaxedHTTPSValidation()
-            .when()
+         given().when()
             .post(url)
             .then().statusCode(201)
 
@@ -120,8 +118,7 @@ class RestApiClient {
             try {
                 def url = "${Constants.jenkinsProtocol}://${loadBalancer}:${Constants.jenkinsPort}/job/${job}/lastBuild/api/json"
                 println(url)
-                response = given().relaxedHTTPSValidation()
-                           .when()
+                response = given().when()
                            .post(url)
                 println(response.asString())
                 }
