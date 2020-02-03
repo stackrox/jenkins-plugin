@@ -299,6 +299,7 @@ workflows:
           orchestrator-flavor: k8s
           requires:
             - provision-cluster-qa-tests
+            - build
 
 
 commands:
