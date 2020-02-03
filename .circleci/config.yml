@@ -48,10 +48,8 @@ setUpPlugin: &setUpPlugin
            echo "Failed to deploy jenkins pod"
       fi
       echo JENKINSPOD is running on ${JENKINSPOD}
-      ls -lrt .
-      cd stackrox-k8s-security-platform
-      ls -lrt .
-      kubectl /home/circleci/jenkins-plugin/stackrox-k8s-security-platform/target/stackrox-k8s-security-platform.hpi qa/${JENKINSPOD}:/var/jenkins_home/plugins/.
+      ls -R . 
+      kubectl cp /home/circleci/jenkins-plugin/stackrox-k8s-security-platform/target/stackrox-k8s-security-platform.hpi qa/${JENKINSPOD}:/var/jenkins_home/plugins/.
       export JENKINSVC=$(kubectl get svc -n qa jenkinsep -o jsonpath="{.status.loadBalancer.ingress[*].ip}")
       echo Jenkins svc is running on "${JENKINSVC}"
       echo restarting jenkins
@@ -208,12 +206,12 @@ jobs:
     steps:
       - setup-gcp:
             docker-login: false
+      - checkout
       - attach_workspace:
           at: /home/circleci/jenkins-plugin/
       - setup_remote_docker
       - attach-gke-cluster:
             cluster-id: qa-tests
-      - checkout
       - run:
           name: Get Roxctl binary and set the image name
           command: |
