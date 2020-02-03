@@ -86,7 +86,6 @@ class RestApiClient {
     String createJenkinsJob(String loadBalancer, File file) {
         def jobName = "testjob" +new Random().nextInt()
         def url = "${Constants.jenkinsProtocol}://${loadBalancer}:${Constants.jenkinsPort}/createItem?name=${jobName}"
-        print(url)
         FileInputStream fileInputStream = new FileInputStream(file)
         byte [] bytes = fileInputStream.bytes
         println("Creating Jenkins job  ${jobName}")
