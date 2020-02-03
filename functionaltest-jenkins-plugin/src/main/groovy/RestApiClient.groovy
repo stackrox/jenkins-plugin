@@ -83,10 +83,9 @@ class RestApiClient {
         return policy
     }
 
-    String createJenkinsJob(String loadBalancer) {
+    String createJenkinsJob(String loadBalancer, File file) {
         def jobName = "testjob" +new Random().nextInt()
         def url = "${Constants.jenkinsProtocol}://${loadBalancer}:${Constants.jenkinsPort}/createItem?name=${jobName}"
-        File file = new File("src/test/resources/temp.xml")
         FileInputStream fileInputStream = new FileInputStream(file)
         byte [] bytes = fileInputStream.bytes
         println("Creating Jenkins job  ${jobName}")

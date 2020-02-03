@@ -19,7 +19,8 @@ class ImageScanningTest extends BaseSpecification {
         Service svc = new Service("qa", "jenkinsep")
         def jenkinsEp = svc.getLoadBalancer()
         DataUtil.createJenkinsConfig(imageName, "https://${central}:443", token)
-        String jobName = restApiClient.createJenkinsJob(jenkinsEp)
+        File file = new File("src/test/resources/temp.xml")
+        String jobName = restApiClient.createJenkinsJob(jenkinsEp, file)
         restApiClient.startJenkinsBuild(jobName, jenkinsEp)
         String status = restApiClient.getJenkinsBuildStatus(jobName, 60, jenkinsEp)
         BuildDetectRequest buildDetectRequest = new BuildDetectRequest()
@@ -75,7 +76,8 @@ class ImageScanningTest extends BaseSpecification {
         }
         def jenkinsEp = svc.getLoadBalancer()
         DataUtil.createJenkinsConfig(imageName, "https://${central}:443", token)
-        String jobName = restApiClient.createJenkinsJob(jenkinsEp)
+        File file = new File("src/test/resources/temp.xml")
+        String jobName = restApiClient.createJenkinsJob(jenkinsEp, file)
         restApiClient.startJenkinsBuild(jobName, jenkinsEp)
         String status = restApiClient.getJenkinsBuildStatus(jobName, 60, jenkinsEp)
         assert status == "FAILURE"

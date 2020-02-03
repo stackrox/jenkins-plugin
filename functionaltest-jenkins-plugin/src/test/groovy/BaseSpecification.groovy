@@ -4,7 +4,6 @@ import data.DataUtil
 import data.Token
 
 class BaseSpecification extends Specification {
-    Gson gson
     RestApiClient restApiClient
     public String token
     def setup() {
