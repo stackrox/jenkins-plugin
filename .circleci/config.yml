@@ -376,6 +376,7 @@ commands:
           root: /home/circleci/jenkins-plugin/
           paths:
             - .ci-clusters/<< parameters.cluster-id >>
+            -  stackrox-k8s-security-platform/target/stackrox-k8s-security-platform.hpi
 
   attach-gke-cluster:
     parameters:
