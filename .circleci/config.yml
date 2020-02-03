@@ -49,6 +49,8 @@ setUpPlugin: &setUpPlugin
       fi
       echo JENKINSPOD is running on ${JENKINSPOD}
       ls -lrt .
+      cd stackrox-k8s-security-platform
+      ls -lrt .
       kubectl cp target/stackrox-k8s-security-platform.hpi qa/${JENKINSPOD}:/var/jenkins_home/plugins/.
       export JENKINSVC=$(kubectl get svc -n qa jenkinsep -o jsonpath="{.status.loadBalancer.ingress[*].ip}")
       echo Jenkins svc is running on "${JENKINSVC}"
