@@ -45,7 +45,7 @@ connectToCentral: &connectToCentral
       sleep 5
       for i in $(seq 1 50);do
         output="$(./roxctl image scan --image alpine -e localhost:8000 -p "$ROX_PASSWORD"  --insecure-skip-tls-verify)"
-        if [[ $output == "*metadata*" ]]; then
+        if [[ $? -eq 0 ]]; then
           echo "scanner is up and running"
         fi
         sleep 5
@@ -142,7 +142,6 @@ jobs:
             touch /tmp/data.lic
             chmod 0600 /tmp/data.lic
             echo $ROX_LICENSE_KEY >> /tmp/data.lic
-            cat /tmp/data.lic
             cci-export ROX_LICENSE_KEY $ROX_LICENSE_KEY
 
       - run:
@@ -209,7 +208,6 @@ commands:
             gcloud auth list
             gcloud config set project stackrox-ci
             gcloud config set compute/region us-central1
-            gcloud config unset compute/zone
             gcloud config set core/disable_prompts True
 
   create-gke:
