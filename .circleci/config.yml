@@ -51,7 +51,7 @@ setUpPlugin: &setUpPlugin
       ls -lrt .
       cd stackrox-k8s-security-platform
       ls -lrt .
-      kubectl cp target/stackrox-k8s-security-platform.hpi qa/${JENKINSPOD}:/var/jenkins_home/plugins/.
+      kubectl /home/circleci/jenkins-plugin/stackrox-k8s-security-platform/target/stackrox-k8s-security-platform.hpi qa/${JENKINSPOD}:/var/jenkins_home/plugins/.
       export JENKINSVC=$(kubectl get svc -n qa jenkinsep -o jsonpath="{.status.loadBalancer.ingress[*].ip}")
       echo Jenkins svc is running on "${JENKINSVC}"
       echo restarting jenkins
