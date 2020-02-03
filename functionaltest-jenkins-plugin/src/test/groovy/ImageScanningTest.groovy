@@ -18,11 +18,11 @@ class ImageScanningTest extends BaseSpecification {
         def central = centralSvc.getLoadBalancer()
         Service svc = new Service("qa", "jenkinsep")
         def jenkinsEp = svc.getLoadBalancer()
-        DataUtil.formatXml("src/main/resources/template.xml", imageName, "https://${central}:443", token)
+        DataUtil.createJenkinsConfig(imageName, "https://${central}:443", token)
         String jobName = restApiClient.createJenkinsJob(jenkinsEp)
         restApiClient.startJenkinsBuild(jobName, jenkinsEp)
         String status = restApiClient.getJenkinsBuildStatus(jobName, 60, jenkinsEp)
-        BuildDetectRequest buildDetectRequest = new BuildDetectRequest();
+        BuildDetectRequest buildDetectRequest = new BuildDetectRequest()
         buildDetectRequest.setProperty("image_name", imageName)
         Alert[] alerts = restApiClient.getAlerts(buildDetectRequest)
         def alertFlag = false
@@ -74,7 +74,7 @@ class ImageScanningTest extends BaseSpecification {
             }
         }
         def jenkinsEp = svc.getLoadBalancer()
-        DataUtil.formatXml("src/main/resources/template.xml", imageName, "https://${central}:443", token)
+        DataUtil.createJenkinsConfig(imageName, "https://${central}:443", token)
         String jobName = restApiClient.createJenkinsJob(jenkinsEp)
         restApiClient.startJenkinsBuild(jobName, jenkinsEp)
         String status = restApiClient.getJenkinsBuildStatus(jobName, 60, jenkinsEp)

@@ -15,6 +15,6 @@ class BaseSpecification extends Specification {
         token = restApiClient.getToken(tokenobject)
     }
     def cleanup() {
-        DataUtil.deleteFileFromDisk("src/main/resources/temp.xml")
+        DataUtil.deleteFileFromDisk("src/test/resources/temp.xml")
     }
 }

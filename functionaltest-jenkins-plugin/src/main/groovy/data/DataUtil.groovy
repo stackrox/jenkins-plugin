@@ -9,7 +9,8 @@ class DataUtil {
        return output
     }
 
-    static void formatXml(String path, String imageName, String portalAddress,String token) {
+    static void createJenkinsConfig(String imageName, String portalAddress,String token) {
+        String path = "src/test/resources/template.xml"
         String xml = new File(path).text
         def param = [:]
         param["command"] =  """mkdir \$BUILD_TAG
@@ -26,7 +27,7 @@ class DataUtil {
 
         }
         println("Writing to a temp file")
-        File file = new File("src/main/resources/temp.xml")
+        File file = new File("src/test/resources/temp.xml")
         def serializedXml = XmlUtil.serialize(parsexml)
         file.write(serializedXml)
     }
