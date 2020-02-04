@@ -6,7 +6,6 @@ import data.ListPolicyResponse
 import data.Policy
 import data.Policies
 
-
 class ImageScanningTest extends BaseSpecification {
 
     def "image scanning test with the docker image + scenarios" () {
