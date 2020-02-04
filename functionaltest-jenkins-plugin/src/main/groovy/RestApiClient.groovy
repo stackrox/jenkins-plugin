@@ -1,7 +1,8 @@
 import data.DataUtil
-import data.Alert
+import data.Alerts
 import data.ListPolicyResponse
 import data.Policy
+import data.Policies
 import Util.Timer
 import com.google.gson.Gson
 import com.jayway.restassured.specification.RequestSpecification
@@ -37,13 +38,12 @@ class RestApiClient {
 
     }
 
-    protected Alert[] getAlerts(Object requestObj) {
+    protected Alerts getAlerts(Object requestObj) {
         String url = Constants.baseurl + Constants.buildDetect
         Response response =  CreateRequestSpecification("Authorization", encodedpassword)
                              .body(gson.toJson(requestObj))
                              .post(url)
-        JSONObject jsonObject = (JSONObject) parser.parse(response.asString())
-        Alert[] alerts = gson.fromJson(jsonObject.get("alerts").toString(), Alert[])
+        Alerts alerts = gson.fromJson(response.asString(), Alerts)
         return alerts
     }
 
@@ -56,12 +56,11 @@ class RestApiClient {
         return policy
      }
 
-     ListPolicyResponse [] getPolicies() {
+     Policies getPolicies() {
         def url = Constants.baseurl + Constants.getPolicies
         Response response =  CreateRequestSpecification("Authorization", encodedpassword)
                              .get(url)
-        JSONObject jsonObject = (JSONObject) parser.parse(response.asString())
-        ListPolicyResponse [] policies = gson.fromJson(jsonObject.get("policies").toString(), ListPolicyResponse[])
+        Policies policies = gson.fromJson(response.asString(), Policies)
         return policies
      }
 
@@ -120,7 +119,6 @@ class RestApiClient {
                 println(url)
                 response = given().when()
                            .post(url)
-                println(response.asString())
                 }
 
                catch (Exception ex) {

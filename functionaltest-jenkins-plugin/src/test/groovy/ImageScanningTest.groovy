@@ -1,8 +1,10 @@
 import data.BuildDetectRequest
+import data.Alerts
 import data.Alert
 import data.DataUtil
 import data.ListPolicyResponse
 import data.Policy
+import data.Policies
 
 
 class ImageScanningTest extends BaseSpecification {
@@ -25,15 +27,17 @@ class ImageScanningTest extends BaseSpecification {
         String status = restApiClient.getJenkinsBuildStatus(jobName, 60, jenkinsEp)
         BuildDetectRequest buildDetectRequest = new BuildDetectRequest()
         buildDetectRequest.setProperty("image_name", imageName)
-        Alert[] alerts = restApiClient.getAlerts(buildDetectRequest)
+        Alerts alerts = restApiClient.getAlerts(buildDetectRequest)
         def alertFlag = false
-        for (Alert alert : alerts) {
+        for (Alert alert : alerts.alerts ) {
             if (alert.policy.enforcement_actions != null) {
-                  alertFlag = true
+                 alertFlag = true
+
             }
         }
         assert status == "SUCCESS"
         assert alertFlag == false
+
 
         where:
         "data inputs are: "
@@ -52,7 +56,6 @@ class ImageScanningTest extends BaseSpecification {
         Service centralSvc = new Service("stackrox", "central")
         def central = centralSvc.getLoadBalancer()
         Service svc = new Service("qa", "jenkinsep")
-        ListPolicyResponse[] policies = restApiClient.getPolicies()
         Policy newpolicy = new Policy()
         Policy.PolicyFields policyFields = new Policy.PolicyFields()
         Policy.PolicyFields.ImageNamePolicy imageNamePolicy = new Policy.PolicyFields.ImageNamePolicy()
@@ -68,10 +71,11 @@ class ImageScanningTest extends BaseSpecification {
             severity = "MEDIUM_SEVERITY"
             enforcement_actions = ["FAIL_BUILD_ENFORCEMENT"]
         }
-        for (ListPolicyResponse policy1 : policies) {
-            if (policy1.name == "Latest tag") {
+        Policies policies = restApiClient.getPolicies()
+        for (ListPolicyResponse policy : policies.policies) {
+            if (policy.name == "Latest tag") {
                 println("Updating the latest tag policy")
-                restApiClient.updatePolicy(newpolicy, policy1.id)
+                restApiClient.updatePolicy(newpolicy, policy.id)
             }
         }
         def jenkinsEp = svc.getLoadBalancer()
