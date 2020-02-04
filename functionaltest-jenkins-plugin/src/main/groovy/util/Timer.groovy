@@ -1,4 +1,4 @@
-package Util
+package util
 
 class Timer {
     private Integer currIteration = 0

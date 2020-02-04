@@ -1,9 +1,8 @@
 import data.DataUtil
 import data.Alerts
-import data.ListPolicyResponse
 import data.Policy
 import data.Policies
-import Util.Timer
+import util.Timer
 import com.google.gson.Gson
 import com.jayway.restassured.specification.RequestSpecification
 import common.Constants
@@ -116,7 +115,6 @@ class RestApiClient {
         while ((response?.body() == null || response?.asString()?.startsWith("<") || response?.jsonPath()?.get("result") == null) && timer.IsValid()) {
             try {
                 def url = "${Constants.jenkinsProtocol}://${loadBalancer}:${Constants.jenkinsPort}/job/${job}/lastBuild/api/json"
-                println(url)
                 response = given().when()
                            .post(url)
                 }

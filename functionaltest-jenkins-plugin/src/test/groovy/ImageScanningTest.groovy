@@ -17,9 +17,9 @@ class ImageScanningTest extends BaseSpecification {
         then:
         println("Testing image ${imageName} and ${test}")
         Service centralSvc = new Service("stackrox", "central")
-        def central = centralSvc.getLoadBalancer()
+        def central = centralSvc.getLoadBalancer(60)
         Service svc = new Service("qa", "jenkinsep")
-        def jenkinsEp = svc.getLoadBalancer()
+        def jenkinsEp = svc.getLoadBalancer(60)
         DataUtil.createJenkinsConfig(imageName, "https://${central}:443", token)
         File file = new File("src/test/resources/temp.xml")
         String jobName = restApiClient.createJenkinsJob(jenkinsEp, file)
@@ -54,7 +54,7 @@ class ImageScanningTest extends BaseSpecification {
         then:
         println("Testing image ${imageName} and ${test}")
         Service centralSvc = new Service("stackrox", "central")
-        def central = centralSvc.getLoadBalancer()
+        def central = centralSvc.getLoadBalancer(60)
         Service svc = new Service("qa", "jenkinsep")
         Policy newpolicy = new Policy()
         Policy.PolicyFields policyFields = new Policy.PolicyFields()
@@ -78,7 +78,7 @@ class ImageScanningTest extends BaseSpecification {
                 restApiClient.updatePolicy(newpolicy, policy.id)
             }
         }
-        def jenkinsEp = svc.getLoadBalancer()
+        def jenkinsEp = svc.getLoadBalancer(60)
         DataUtil.createJenkinsConfig(imageName, "https://${central}:443", token)
         File file = new File("src/test/resources/temp.xml")
         String jobName = restApiClient.createJenkinsJob(jenkinsEp, file)
