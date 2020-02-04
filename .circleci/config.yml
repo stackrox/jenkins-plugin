@@ -36,7 +36,8 @@ setUpPlugin: &setUpPlugin
         export JENKINSPOD="$(kubectl get pods -n qa  -o=jsonpath='{range .items[*]}{.metadata.name}')"
         if [[ ! -z "${JENKINSPOD}" ]]; then
            SUCCESS=1
-           echo jenkins pod is $JENKINSPOD
+           echo "Jenkins Pod is ready"
+           echo JENKINSPOD is running on ${JENKINSPOD}
            break
         fi
       done
@@ -47,7 +48,6 @@ setUpPlugin: &setUpPlugin
            kubectl -n qa get pods
            echo "Failed to deploy jenkins pod"
       fi
-      echo JENKINSPOD is running on ${JENKINSPOD}
       kubectl cp /home/circleci/jenkins-plugin/stackrox-k8s-security-platform/target/stackrox-k8s-security-platform.hpi qa/${JENKINSPOD}:/var/jenkins_home/plugins/.
       output="$(kubectl -n qa  exec -i ${JENKINSPOD} ls /var/jenkins_home/plugins/stackrox-k8s-security-platform.hpi)"
       if [[ $? -eq 0 ]]; then
@@ -270,8 +270,6 @@ jobs:
       - *storeK8sLogs
       - *deleteClusterk8s
 
-
-
   mirror:
     docker:
       - image: docker.io/stackrox/apollo-ci:jenkins-plugin-0.2.8-1-ga776a448ee
@@ -284,8 +282,6 @@ jobs:
       - run:
           name: Mirror to public JenkinsCI repo
           command: .circleci/mirror-repository
-
-
 
 workflows:
   version: 2
