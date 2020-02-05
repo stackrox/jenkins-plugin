@@ -10,13 +10,15 @@
     </parent>
 
     <artifactId>stackrox-container-image-scanner</artifactId>
-    <version>1.1-SNAPSHOT</version>
+    <version>1.2-SNAPSHOT</version>
     <packaging>hpi</packaging>
     <properties>
         <jenkins.version>2.164.1</jenkins.version>
         <java.level>8</java.level>
     </properties>
     <name>StackRox Container Image Scanner</name>
+    <description>This plugin provides vulnerability scanning of container images for OS packages and language vulnerabilities using the StackRox Kubernetes Security Platform</description>
+    <url>https://github.com/jenkinsci/${project.artifactId}-plugin</url>
     <licenses>
         <license>
             <name>Apache 2 License</name>
@@ -30,7 +32,6 @@
             <email>jenkins-plugin@stackrox.com</email>
         </developer>
     </developers>
-    <url>https://github.com/jenkinsci/${project.artifactId}-plugin</url>
     <scm>
         <connection>scm:git:git://github.com/jenkinsci/${project.artifactId}-plugin.git</connection>
         <developerConnection>scm:git:git@github.com:jenkinsci/${project.artifactId}-plugin.git</developerConnection>
