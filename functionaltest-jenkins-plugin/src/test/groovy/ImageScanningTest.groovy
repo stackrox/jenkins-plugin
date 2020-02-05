@@ -30,8 +30,6 @@ class ImageScanningTest extends BaseSpecification {
         def alertFlag = false
         for (Alert alert : alerts.alerts ) {
             if (alert.policy.enforcement_actions != null) {
-                 println("printing alert info")
-                 println(alert.policy.enforcement_actions)
                  alertFlag = true
 
             }
