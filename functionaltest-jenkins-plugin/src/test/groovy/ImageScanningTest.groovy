@@ -19,7 +19,7 @@ class ImageScanningTest extends BaseSpecification {
         def central = centralSvc.getLoadBalancer(60)
         Service svc = new Service("qa", "jenkinsep")
         def jenkinsEp = svc.getLoadBalancer(60)
-        DataUtil.createJenkinsConfig(imageName, "https://${central}:443", token)
+        DataUtil.createJenkinsConfig(imageName, "https://${central}:443", token, true, true)
         File file = new File("src/test/resources/temp.xml")
         String jobName = restApiClient.createJenkinsJob(jenkinsEp, file)
         restApiClient.startJenkinsBuild(jobName, jenkinsEp)
@@ -27,17 +27,10 @@ class ImageScanningTest extends BaseSpecification {
         BuildDetectRequest buildDetectRequest = new BuildDetectRequest()
         buildDetectRequest.setProperty("image_name", imageName)
         Alerts alerts = restApiClient.getAlerts(buildDetectRequest)
-        def alertFlag = false
         for (Alert alert : alerts.alerts ) {
-            if (alert.policy.enforcement_actions != null) {
-                 alertFlag = true
-
-            }
+            println alert.policy.lifecycle_stages
         }
         assert status == "SUCCESS"
-        assert alertFlag == false
-
-
         where:
         "data inputs are: "
          imageName | test
@@ -78,7 +71,7 @@ class ImageScanningTest extends BaseSpecification {
             }
         }
         def jenkinsEp = svc.getLoadBalancer(60)
-        DataUtil.createJenkinsConfig(imageName, "https://${central}:443", token)
+        DataUtil.createJenkinsConfig(imageName, "https://${central}:443", token, true, true)
         File file = new File("src/test/resources/temp.xml")
         String jobName = restApiClient.createJenkinsJob(jenkinsEp, file)
         restApiClient.startJenkinsBuild(jobName, jenkinsEp)
@@ -89,6 +82,57 @@ class ImageScanningTest extends BaseSpecification {
         "data inputs are: "
         imageName | test
         "ngixn:latest" | "Tesing nginx with latest tag"
+        "jenkins/jenkins:lts" | "testing jenkins image with latest tag"
+    }
+
+
+    def "image scanning test with the docker image -ve scenarios with ignore policy eval check" () {
+        given:
+        "a repo with images in the scanner repo"
+        when:
+        "Jenkins is setup"
+        then:
+        println("Testing image ${imageName} and ${test}")
+        Service centralSvc = new Service("stackrox", "central")
+        def central = centralSvc.getLoadBalancer(60)
+        Service svc = new Service("qa", "jenkinsep")
+        def jenkinsEp = svc.getLoadBalancer(60)
+        DataUtil.createJenkinsConfig(imageName, "https://${central}:443", token, false, true)
+        File file = new File("src/test/resources/temp.xml")
+        String jobName = restApiClient.createJenkinsJob(jenkinsEp, file)
+        restApiClient.startJenkinsBuild(jobName, jenkinsEp)
+        String status = restApiClient.getJenkinsBuildStatus(jobName, 60, jenkinsEp)
+        println("printing status")
+        println status
+        assert status == "SUCCESS"
+        where:
+        "data inputs are: "
+        imageName | test
+        "jenkins/jenkins:lts" | "testing jenkins image with latest tag"
+    }
+
+    def "image scanning test with the docker image -ve scenarios with ignore policy eval check + ignore fail configuration error" () {
+        given:
+        "a repo with images in the scanner repo"
+        when:
+        "Jenkins is setup"
+        then:
+        println("Testing image ${imageName} and ${test}")
+        Service centralSvc = new Service("stackrox", "central")
+        def central = centralSvc.getLoadBalancer(60)
+        Service svc = new Service("qa", "jenkinsep")
+        def jenkinsEp = svc.getLoadBalancer(60)
+        DataUtil.createJenkinsConfig(imageName, "https://${central}:443", token, false, false)
+        File file = new File("src/test/resources/temp.xml")
+        String jobName = restApiClient.createJenkinsJob(jenkinsEp, file)
+        restApiClient.startJenkinsBuild(jobName, jenkinsEp)
+        String status = restApiClient.getJenkinsBuildStatus(jobName, 60, jenkinsEp)
+        println("printing status")
+        println status
+        assert status == "SUCCESS"
+        where:
+        "data inputs are: "
+        imageName | test
         "jenkins/jenkins:lts" | "testing jenkins image with latest tag"
     }
 }

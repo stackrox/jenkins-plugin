@@ -18,9 +18,9 @@
         <com.stackrox.jenkins.plugins.StackroxBuilder plugin="stackrox-k8s-security-platform@1.0-SNAPSHOT">
             <portalAddress></portalAddress>
             <apiToken></apiToken>
-            <failOnPolicyEvalFailure>true</failOnPolicyEvalFailure>
-            <failOnCriticalPluginError>true</failOnCriticalPluginError>
-            <enableTLSVerification>false</enableTLSVerification>
+            <failOnPolicyEvalFailure></failOnPolicyEvalFailure>
+            <failOnCriticalPluginError></failOnCriticalPluginError>
+            <enableTLSVerification></enableTLSVerification>
         </com.stackrox.jenkins.plugins.StackroxBuilder>
     </builders>
     <publishers/>

@@ -107,7 +107,7 @@ class RestApiClient {
     }
 
     String getJenkinsBuildStatus(String job, int timeout, String loadBalancer) {
-        println("Getting build status of ${job}")
+        println("/n" +"Getting build status of ${job}")
         int interval = 1
         int iterations = timeout/interval
         Response response
@@ -117,6 +117,7 @@ class RestApiClient {
                 def url = "${Constants.jenkinsProtocol}://${loadBalancer}:${Constants.jenkinsPort}/job/${job}/lastBuild/api/json"
                 response = given().when()
                            .post(url)
+                println response.asString()
                 }
 
                catch (Exception ex) {

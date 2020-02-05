@@ -1,5 +1,6 @@
 package data
 
+import com.sun.org.apache.xpath.internal.operations.Bool
 import groovy.xml.XmlUtil
 
 class DataUtil {
@@ -9,7 +10,7 @@ class DataUtil {
        return output
     }
 
-    static void createJenkinsConfig(String imageName, String portalAddress,String token) {
+    static void createJenkinsConfig(String imageName, String portalAddress, String token, Boolean policyEvalCheck, Boolean failOnCriticalPluginError) {
         String path = "src/test/resources/template.xml"
         String xml = new File(path).text
         def param = [:]
@@ -18,6 +19,8 @@ class DataUtil {
                                echo \"${imageName}\" >> rox_images_to_scan"""
         param["portalAddress"] = portalAddress
         param["apiToken"] = token
+        param["failOnPolicyEvalFailure"] = policyEvalCheck
+        param["failOnCriticalPluginError"] = failOnCriticalPluginError
         // parse the xml
         def parsexml = new XmlSlurper().parseText(xml)
         param.each { key,value ->
