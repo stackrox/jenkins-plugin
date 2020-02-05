@@ -241,6 +241,7 @@ jobs:
           name: Generate central bundle
           command: |
             ./roxctl central generate k8s pvc \
+              --password jenkinsPlugin
               --license /tmp/data.lic \
               --main-image "${IMAGE_NAME}" \
               --scanner-image docker.io/stackrox/scanner:2.0.4 \
