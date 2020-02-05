@@ -30,6 +30,8 @@ class ImageScanningTest extends BaseSpecification {
         def alertFlag = false
         for (Alert alert : alerts.alerts ) {
             if (alert.policy.enforcement_actions != null) {
+                 println("printing alert info")
+                 println(alert.policy.enforcement_actions)
                  alertFlag = true
 
             }
@@ -89,6 +91,6 @@ class ImageScanningTest extends BaseSpecification {
         "data inputs are: "
         imageName | test
         "ngixn:latest" | "Tesing nginx with latest tag"
-        "docker.io/stackrox/collector:2.5.9-latest" | "testing collector image with latest tag"
+        "jenkins/jenkins:lts" | "testing jenkins image with latest tag"
     }
 }
