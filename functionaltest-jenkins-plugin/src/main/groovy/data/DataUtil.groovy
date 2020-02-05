@@ -1,6 +1,5 @@
 package data
 
-import com.sun.org.apache.xpath.internal.operations.Bool
 import groovy.xml.XmlUtil
 
 class DataUtil {
