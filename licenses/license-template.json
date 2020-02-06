@@ -1,8 +1,0 @@
-{
-  "restrictions": {
-    "allowOffline": true,
-    "maxNodes": 10,
-    "noBuildFlavorRestriction": true,
-    "deploymentEnvironments": ["gcp/stackrox-ci"]
-  }
-}
