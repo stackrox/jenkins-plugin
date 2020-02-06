@@ -39,8 +39,6 @@ collectK8sLogs: &collectK8sLogs
       set +e
       ./scripts/collect-service-logs.sh stackrox
       ./scripts/collect-service-logs.sh kube-system
-      ./scripts/collect-service-logs.sh proxies
-      ./scripts/collect-service-logs.sh squid
       ./scripts/collect-infrastructure-logs.sh
     when: always
 
