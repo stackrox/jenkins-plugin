@@ -26,31 +26,6 @@ setupGoogleAppCreds: &setupGoogleAppCreds
       gcloud auth activate-service-account --key-file /tmp/gcp.json
       gcloud auth list
 
-waitForAPI: &waitForAPI
-  run:
-    name: Wait for the API server to be up
-    command: |
-      export API_HOSTNAME=localhost
-      export API_PORT=8000
-      export METADATA_URL="https://${API_HOSTNAME}:${API_PORT}/v1/metadata"
-      echo "METADATA_URL is set to ${METADATA_URL}"
-      set +e
-      SUCCESS=0
-      for i in $(seq 1 25); do
-        metadata="$(curl -sk --connect-timeout 5 --max-time 10 "${METADATA_URL}")"
-        if [[ $? -eq 0 ]]; then
-          SUCCESS=1
-          echo "central is up and running"
-          break
-        fi
-        sleep 5
-      done
-      if [[ "${SUCCESS}" == 0 ]]; then
-        kubectl -n stackrox get pod
-        echo "Failed to connect to Central"
-        exit 1
-      fi
-
 storeK8sLogs: &storeK8sLogs
   store_artifacts:
     path: /tmp/k8s-service-logs
@@ -64,6 +39,27 @@ collectK8sLogs: &collectK8sLogs
       set +e
       ./scripts/collect-service-logs.sh stackrox
     when: always
+
+waitForCentral: &waitForCentral
+  run:
+    name: wait for central
+    command: |
+      pod="$(kubectl get pod -n stackrox  -o jsonpath="{.items[0].metadata.name}")"
+      status="$(kubectl get pods -n stackrox ${POD}  -o jsonpath="{.status.phase}")"
+      SUCCESS=0
+      for i in $(seq 1 50);do
+        echo "waiting for central to come up"
+        if [[ $status -eq "Running" ]]; then
+          SUCCESS=1
+          echo "Central is up and running"
+          break
+        fi
+        sleep 5
+      done
+      if [[ $SUCCESS == 0 ]]; then
+             echo "Central did not come up"
+      fi
+
 
 connectToCentral: &connectToCentral
   run:
@@ -203,7 +199,7 @@ jobs:
             central-bundle/scanner/scripts/setup.sh
             kubectl create -R -f central-bundle/scanner
 
-      - *waitForAPI
+      - *waitForCentral
       - *connectToCentral
       - *collectK8sLogs
       - *storeK8sLogs
