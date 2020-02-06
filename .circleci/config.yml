@@ -45,7 +45,7 @@ waitForCentral: &waitForCentral
     name: wait for central
     command: |
       pod="$(kubectl get pod -n stackrox  -o jsonpath="{.items[0].metadata.name}")"
-      status="$(kubectl get pods -n stackrox ${POD}  -o jsonpath="{.status.phase}")"
+      status="$(kubectl get pods -n stackrox ${pod}  -o jsonpath="{.status.phase}")"
       SUCCESS=0
       for i in $(seq 1 50);do
         echo "waiting for central to come up"
