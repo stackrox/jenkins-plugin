@@ -38,8 +38,6 @@ collectK8sLogs: &collectK8sLogs
     command: |
       set +e
       ./scripts/collect-service-logs.sh stackrox
-      ./scripts/collect-service-logs.sh kube-system
-      ./scripts/collect-infrastructure-logs.sh
     when: always
 
 connectToCentral: &connectToCentral
