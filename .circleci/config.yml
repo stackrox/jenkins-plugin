@@ -26,6 +26,24 @@ setupGoogleAppCreds: &setupGoogleAppCreds
       gcloud auth activate-service-account --key-file /tmp/gcp.json
       gcloud auth list
 
+storeK8sLogs: &storeK8sLogs
+  store_artifacts:
+    path: /tmp/k8s-service-logs
+    destination: k8s-service-logs
+
+collectK8sLogs: &collectK8sLogs
+  run:
+    name: Collect k8s logs
+
+    command: |
+      set +e
+      ./scripts/ci/collect-service-logs.sh stackrox
+      ./scripts/ci/collect-service-logs.sh kube-system
+      ./scripts/ci/collect-service-logs.sh proxies
+      ./scripts/ci/collect-service-logs.sh squid
+      ./scripts/ci/collect-infrastructure-logs.sh
+    when: always
+
 connectToCentral: &connectToCentral
   run:
     name: Connect to central via port-forward on 443
@@ -162,7 +180,10 @@ jobs:
           command:  |
             central-bundle/scanner/scripts/setup.sh
             kubectl create -R -f central-bundle/scanner
+
       - *connectToCentral
+      - *collectK8sLogs
+      - *storeK8sLogs
       - *deleteClusterk8s
 
 
