@@ -245,7 +245,8 @@ jobs:
               --main-image "${IMAGE_NAME}" \
               --scanner-image docker.io/stackrox/scanner:2.0.4 \
               --scanner-db-image docker.io/stackrox/scanner-db:2.0.4
-            export ROX_PASSWORD="$(cat central-bundle/password)"
+              --password jenkinsPlugin
+            export ROX_PASSWORD="jenkinsPlugin"x
             cci-export ROX_USERNAME "admin"
             cci-export ROX_PASSWORD "$ROX_PASSWORD"
 
