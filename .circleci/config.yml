@@ -58,6 +58,7 @@ waitForCentral: &waitForCentral
       done
       if [[ $SUCCESS == 0 ]]; then
           echo "Central did not come up"
+          exit 1
       fi
 
 connectToCentral: &connectToCentral
@@ -214,7 +215,7 @@ workflows:
           requires:
             - provision-cluster-qa-tests
 
-      
+
 commands:
   setup-gcp:
     parameters:
