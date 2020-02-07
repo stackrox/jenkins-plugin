@@ -57,36 +57,18 @@ waitForCentral: &waitForCentral
         sleep 5
       done
       if [[ $SUCCESS == 0 ]]; then
-             echo "Central did not come up"
+          echo "Central did not come up"
       fi
-
 
 connectToCentral: &connectToCentral
   run:
     name: Connect to central via port-forward on 443
     command: |
       set +e
-      nohup kubectl -n 'stackrox' port-forward service/central '8000:443' &> /tmp/nohup.out
-      cat /tmp/nohup.out
-      sleep 5
-      for i in $(seq 1 50);do
-        SUCCESS=0
-        ./roxctl image scan --image alpine -e localhost:8000 -p "$ROX_PASSWORD"  --insecure-skip-tls-verify
-        if [[ $? -eq 0 ]]; then
-          SUCCESS=1
-          echo "scanner is up and running"
-          break
-        fi
-        sleep 5
-      done
-      if [[ $SUCCESS == 0 ]]; then
-         echo "Scanner did not come up"
-      fi
-
-
+      nohup kubectl -n 'stackrox' port-forward service/central '8000:443' 1>/dev/null 2>&1 &
 
 deleteClusterk8s: &deleteClusterk8s
-  run:
+  run:  
     name: Tear down cluster upon failure
     command: |
       gcloud container clusters delete "$CLUSTER_NAME" --async
