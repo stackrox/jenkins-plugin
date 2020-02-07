@@ -260,7 +260,6 @@ commands:
       num-nodes:
         type: integer
         default: 1
-
     steps:
       - setup-gcp:
           docker-login: false
