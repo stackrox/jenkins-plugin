@@ -172,7 +172,7 @@ jobs:
           path: /home/circleci/jenkins-plugin
           destination: artifacts
       - persist_to_workspace:
-            root: /home/circleci/jenkins-plugin
+            root: /home/circleci/jenkins-plugin/
             paths:
               - stackrox-k8s-security-platform/target/stackrox-k8s-security-platform.hpi
   provision-cluster-qa-tests:
