@@ -140,7 +140,7 @@ jobs:
       - run:
           name: Get Roxctl binary and set the image name
           command: |
-            cci-export IMAGE_NAME "docker.io/stackrox/main:3.0.35.0"
+            cci-export IMAGE_NAME "stackrox/main:3.0.35.0"
             docker login -u "$DOCKER_IO_PULL_USERNAME" -p "$DOCKER_IO_PULL_PASSWORD"
             cci-export REGISTRY_USERNAME "$DOCKER_IO_PULL_USERNAME"
             cci-export REGISTRY_PASSWORD "$DOCKER_IO_PULL_PASSWORD"
