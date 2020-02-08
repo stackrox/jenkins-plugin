@@ -49,7 +49,7 @@ waitForCentral: &waitForCentral
       for i in $(seq 1 50);do
         status="$(kubectl get pods -n stackrox ${pod}  -o jsonpath="{.status.phase}")"
         echo "waiting for central to come up"
-        if [[ $status -eq "Running" ]]; then
+        if [[ $status == "Running" ]]; then
           SUCCESS=1
           echo "Central is up and running"
           break
