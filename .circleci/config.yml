@@ -92,6 +92,7 @@ waitForJenkins: &waitForJenkinsService
       fi
       echo "JENKINS_URL is set to ${JENKINS_URL}"
 
+
 setupGoogleAppCreds: &setupGoogleAppCreds
   run:
     name: Setup GCloud Service Account
@@ -175,8 +176,9 @@ jobs:
             root: /home/circleci/jenkins-plugin/
             paths:
               - stackrox-container-image-scanner/target/stackrox-container-image-scanner.hpi
+
   provision-cluster-qa-tests:
-    docker:
+   docker:
       - image: docker.io/stackrox/apollo-ci:0.2.8-2-g1e9382b6d6
         auth:
           username: $DOCKER_IO_PULL_USERNAME
@@ -206,15 +208,26 @@ jobs:
       validate-autoupgrade-label:
         type: boolean
         default: false
+<<<<<<< HEAD
     steps:
       - setup-gcp:
             docker-login: false
       - checkout
+=======
+
+    steps:
+      - setup-gcp:
+            docker-login: false
+>>>>>>> ROX-3771 ROX-3783 - Deploy stackrox core components. (#3)
       - attach_workspace:
           at: /home/circleci/jenkins-plugin/
       - setup_remote_docker
       - attach-gke-cluster:
             cluster-id: qa-tests
+<<<<<<< HEAD
+=======
+      - checkout
+>>>>>>> ROX-3771 ROX-3783 - Deploy stackrox core components. (#3)
       - run:
           name: Get Roxctl binary and set the image name
           command: |
@@ -245,8 +258,12 @@ jobs:
               --main-image "${IMAGE_NAME}" \
               --scanner-image docker.io/stackrox/scanner:2.0.4 \
               --scanner-db-image docker.io/stackrox/scanner-db:2.0.4
+<<<<<<< HEAD
               --password jenkinsPlugin
             export ROX_PASSWORD="jenkinsPlugin"x
+=======
+            export ROX_PASSWORD="$(cat central-bundle/password)"
+>>>>>>> ROX-3771 ROX-3783 - Deploy stackrox core components. (#3)
             cci-export ROX_USERNAME "admin"
             cci-export ROX_PASSWORD "$ROX_PASSWORD"
 
@@ -270,6 +287,8 @@ jobs:
       - *collectK8sLogs
       - *storeK8sLogs
       - *deleteClusterk8s
+
+
 
   mirror:
     docker:
@@ -298,6 +317,7 @@ workflows:
           requires:
             - provision-cluster-qa-tests
             - build
+
 
 
 commands:
