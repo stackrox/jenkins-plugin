@@ -30,18 +30,18 @@ setUpPlugin: &setUpPlugin
     name: Installing the plugin on the Jenkins service
     command: |
       set +e
-      SUCCESS=0
-      export JENKINSPORT="8080"
+      SUCCESS=1
+      JENKINSPORT="8080"
       for i in $(seq 1 50); do
         export JENKINSPOD="$(kubectl get pods -n qa  -o=jsonpath='{range .items[*]}{.metadata.name}')"
         if [[ ! -z "${JENKINSPOD}" ]]; then
-           SUCCESS=1
+           SUCCESS=0
            echo "Jenkins Pod is ready"
-           echo JENKINSPOD is running on ${JENKINSPOD}
+           echo "JENKINSPOD is running on ${JENKINSPOD}"
            break
         fi
       done
-      if [[ "${SUCCESS}" == 0 ]]; then
+      if [[ "${SUCCESS}" == 1 ]]; then
            kubectl -n qa describe deploy
            kubectl -n qa describe rs
            kubectl -n qa get svc
@@ -74,19 +74,19 @@ waitForJenkins: &waitForJenkinsService
     name: Wait for the Jenkins server to come up
     command: |
       set +e
-      SUCCESS=0
+      SUCCESS=1
       export JENKINS_PORT=8080
       for i in $(seq 1 50); do
         export JENKINS_SVC="$(kubectl get svc -n qa jenkinsep -o jsonpath="{.status.loadBalancer.ingress[*].ip}")"
         export JENKINS_URL="http://${JENKINS_SVC}:${JENKINS_PORT}/"
         output="$(curl -sk --connect-timeout 5 --max-time 10 "${JENKINS_URL}")"
         if [[ $output == *"<title>Dashboard [Jenkins]</title>"* ]]; then
-          SUCCESS=1
+          SUCCESS=0
           break
         fi
         sleep 5
       done
-      if [[ "${SUCCESS}" == 0 ]]; then
+      if [[ "${SUCCESS}" == 1 ]]; then
           kubectl -n qa get pods
           echo "Failed to deploy jenkins server"
       fi
@@ -123,18 +123,18 @@ waitForCentral: &waitForCentral
     name: wait for central
     command: |
       pod="$(kubectl get pod -l app=central -n stackrox -o custom-columns=:metadata.name)"
-      SUCCESS=0
+      SUCCESS=1
       for i in $(seq 1 50);do
         status="$(kubectl get pods -n stackrox ${pod}  -o jsonpath="{.status.phase}")"
         echo "waiting for central to come up"
         if [[ $status == "Running" ]]; then
-          SUCCESS=1
+          SUCCESS=0
           echo "Central is up and running"
           break
         fi
         sleep 5
       done
-      if [[ $SUCCESS == 0 ]]; then
+      if [[ $SUCCESS == 1 ]]; then
           echo "Central did not come up"
           exit 1
       fi
@@ -249,7 +249,6 @@ jobs:
               --scanner-db-image docker.io/stackrox/scanner-db:2.0.4
               --password jenkinsPlugin
             export ROX_PASSWORD="jenkinsPlugin"
-            export ROX_PASSWORD="$(cat central-bundle/password)"
             cci-export ROX_USERNAME "admin"
             cci-export ROX_PASSWORD "$ROX_PASSWORD"
 
