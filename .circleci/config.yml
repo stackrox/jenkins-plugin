@@ -48,8 +48,8 @@ setUpPlugin: &setUpPlugin
            kubectl -n qa get pods
            echo "Failed to deploy jenkins pod"
       fi
-      kubectl cp /home/circleci/jenkins-plugin/stackrox-container-image-scanner/target/stackrox-container-image-scanner.hpi qa/${JENKINSPOD}:/var/jenkins_home/plugins/.
-      output="$(kubectl -n qa  exec -i ${JENKINSPOD} ls /var/jenkins_home/plugins/stackrox-container-image-scanner.hpi)"
+      kubectl cp /home/circleci/jenkins-plugin/stackrox-k8s-security-platform/target/stackrox-k8s-security-platform.hpi qa/${JENKINSPOD}:/var/jenkins_home/plugins/.
+      output="$(kubectl -n qa  exec -i ${JENKINSPOD} ls /var/jenkins_home/plugins/stackrox-k8s-security-platform.hpi)"
       if [[ $? -eq 0 ]]; then
           echo "Jenkins plugin has been installed"
       fi
@@ -170,7 +170,7 @@ jobs:
             mvn package
             mvn hpi:hpi
       - store_artifacts:
-          path: /home/circleci/jenkins-plugin/stackrox-container-image-scanner/target/stackrox-container-image-scanner.hpi
+          path: /home/circleci/jenkins-plugin
           destination: artifacts
       - persist_to_workspace:
             root: /home/circleci/jenkins-plugin/
@@ -208,26 +208,15 @@ jobs:
       validate-autoupgrade-label:
         type: boolean
         default: false
-<<<<<<< HEAD
     steps:
       - setup-gcp:
             docker-login: false
-      - checkout
-=======
-
-    steps:
-      - setup-gcp:
-            docker-login: false
->>>>>>> ROX-3771 ROX-3783 - Deploy stackrox core components. (#3)
       - attach_workspace:
           at: /home/circleci/jenkins-plugin/
       - setup_remote_docker
       - attach-gke-cluster:
             cluster-id: qa-tests
-<<<<<<< HEAD
-=======
       - checkout
->>>>>>> ROX-3771 ROX-3783 - Deploy stackrox core components. (#3)
       - run:
           name: Get Roxctl binary and set the image name
           command: |
@@ -258,12 +247,9 @@ jobs:
               --main-image "${IMAGE_NAME}" \
               --scanner-image docker.io/stackrox/scanner:2.0.4 \
               --scanner-db-image docker.io/stackrox/scanner-db:2.0.4
-<<<<<<< HEAD
               --password jenkinsPlugin
-            export ROX_PASSWORD="jenkinsPlugin"x
-=======
+            export ROX_PASSWORD="jenkinsPlugin"
             export ROX_PASSWORD="$(cat central-bundle/password)"
->>>>>>> ROX-3771 ROX-3783 - Deploy stackrox core components. (#3)
             cci-export ROX_USERNAME "admin"
             cci-export ROX_PASSWORD "$ROX_PASSWORD"
 
@@ -395,6 +381,7 @@ commands:
           root: /home/circleci/jenkins-plugin/
           paths:
             - .ci-clusters/<< parameters.cluster-id >>
+            -  stackrox-k8s-security-platform/target/stackrox-k8s-security-platform.hpi
 
   attach-gke-cluster:
     parameters:
