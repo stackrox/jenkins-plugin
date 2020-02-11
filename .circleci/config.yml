@@ -31,7 +31,7 @@ setUpPlugin: &setUpPlugin
     command: |
       set +e
       SUCCESS=1
-      export JENKINSPORT="8080"
+      JENKINSPORT="8080"
       for i in $(seq 1 50); do
         export JENKINSPOD="$(kubectl get pods -n qa  -o=jsonpath='{range .items[*]}{.metadata.name}')"
         if [[ ! -z "${JENKINSPOD}" ]]; then
@@ -48,8 +48,8 @@ setUpPlugin: &setUpPlugin
            kubectl -n qa get pods
            echo "Failed to deploy jenkins pod"
       fi
-      kubectl cp /home/circleci/jenkins-plugin/stackrox-k8s-security-platform/target/stackrox-k8s-security-platform.hpi qa/${JENKINSPOD}:/var/jenkins_home/plugins/.
-      output="$(kubectl -n qa  exec -i ${JENKINSPOD} ls /var/jenkins_home/plugins/stackrox-k8s-security-platform.hpi)"
+      kubectl cp /home/circleci/jenkins-plugin/stackrox-container-image-scanner/target/stackrox-container-image-scanner.hpi qa/${JENKINSPOD}:/var/jenkins_home/plugins/.
+      output="$(kubectl -n qa  exec -i ${JENKINSPOD} ls /var/jenkins_home/plugins/stackrox-container-image-scanner.hpi)"
       if [[ $? -eq 0 ]]; then
           echo "Jenkins plugin has been installed"
       fi
@@ -75,7 +75,7 @@ waitForJenkins: &waitForJenkinsService
     command: |
       set +e
       SUCCESS=1
-      export JENKINS_PORT=8080
+      JENKINS_PORT=8080
       for i in $(seq 1 50); do
         export JENKINS_SVC="$(kubectl get svc -n qa jenkinsep -o jsonpath="{.status.loadBalancer.ingress[*].ip}")"
         export JENKINS_URL="http://${JENKINS_SVC}:${JENKINS_PORT}/"
@@ -123,18 +123,18 @@ waitForCentral: &waitForCentral
     name: wait for central
     command: |
       pod="$(kubectl get pod -l app=central -n stackrox -o custom-columns=:metadata.name)"
-      SUCCESS=0
+      SUCCESS=1
       for i in $(seq 1 50);do
         status="$(kubectl get pods -n stackrox ${pod}  -o jsonpath="{.status.phase}")"
         echo "waiting for central to come up"
         if [[ $status == "Running" ]]; then
-          SUCCESS=1
+          SUCCESS=0
           echo "Central is up and running"
           break
         fi
         sleep 5
       done
-      if [[ $SUCCESS == 0 ]]; then
+      if [[ $SUCCESS == 1 ]]; then
           echo "Central did not come up"
           exit 1
       fi
@@ -250,7 +250,6 @@ jobs:
               --main-image "${IMAGE_NAME}" \
               --scanner-image docker.io/stackrox/scanner:2.0.4 \
               --scanner-db-image docker.io/stackrox/scanner-db:2.0.4
-            export ROX_PASSWORD="$(cat central-bundle/password)"
             cci-export ROX_USERNAME "admin"
             cci-export ROX_PASSWORD "$ROX_PASSWORD"
 
