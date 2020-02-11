@@ -243,11 +243,11 @@ jobs:
           name: Generate central bundle
           command: |
             ./roxctl central generate k8s pvc \
+              --password jenkinsPlugin
               --license /tmp/data.lic \
               --main-image "${IMAGE_NAME}" \
               --scanner-image docker.io/stackrox/scanner:2.0.4 \
               --scanner-db-image docker.io/stackrox/scanner-db:2.0.4
-              --password jenkinsPlugin
             export ROX_PASSWORD="jenkinsPlugin"
             cci-export ROX_USERNAME "admin"
             cci-export ROX_PASSWORD "$ROX_PASSWORD"
