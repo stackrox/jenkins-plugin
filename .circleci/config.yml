@@ -173,6 +173,10 @@ jobs:
       - store_artifacts:
           path: /home/circleci/jenkins-plugin/stackrox-container-image-scanner/target/stackrox-container-image-scanner.hpi
           destination: artifacts
+      - persist_to_workspace:
+          root: /home/circleci/jenkins-plugin/
+          paths:
+            - stackrox-container-image-scanner/target/stackrox-container-image-scanner.hpi
   provision-cluster-qa-tests:
    docker:
       - image: docker.io/stackrox/apollo-ci:0.2.8-2-g1e9382b6d6
@@ -298,6 +302,7 @@ workflows:
           orchestrator-flavor: k8s
           requires:
             - provision-cluster-qa-tests
+            - build
 
 
 commands:
