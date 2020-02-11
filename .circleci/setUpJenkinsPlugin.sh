@@ -26,14 +26,20 @@ if [[ $? -eq 0 ]]; then
     echo "Jenkins plugin failed to install"
     exit 1
 fi
+GETSVC=1
 for i in $(seq 1 50); do
   export JENKINSVC=$(kubectl get svc -n qa jenkinsep -o jsonpath="{.status.loadBalancer.ingress[*].ip}")
    if [[ -n "${JENKINSVC}" ]]; then
       echo "Jenkins svc is running on ${JENKINSVC}"
+      GETSVC=0
       break
    fi
    sleep 5
 done
+if [[ GETSVC -eq 1 ]]; then
+  echo "Jenkins svc failed to come up"
+  exit
+fi
 echo restarting jenkins
 export JENKINS_URL="http://${JENKINSVC}:${JENKINSPORT}/"
 curl -XPOST "${JENKINS_URL}/restart"
