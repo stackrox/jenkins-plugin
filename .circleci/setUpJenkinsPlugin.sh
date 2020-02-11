@@ -36,7 +36,7 @@ for i in $(seq 1 50); do
    fi
    sleep 5
 done
-if [[ GETSVC -eq 1 ]]; then
+if [[ $GETSVC -eq 1 ]]; then
   echo "Jenkins svc failed to come up"
   exit
 fi
