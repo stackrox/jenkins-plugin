@@ -32,16 +32,24 @@ for i in $(seq 1 50); do
       echo "Jenkins svc is running on ${JENKINSVC}"
       break
    fi
+   sleep 5
 done
 echo restarting jenkins
 export JENKINS_URL="http://${JENKINSVC}:${JENKINSPORT}/"
 curl -XPOST "${JENKINS_URL}/restart"
+SERVICEREADY=1
 for i in $(seq 1 50); do
-  output="$(curl -sk --connect-timeout 5 --max-time 10 "${JENKINS_URL}")"
+  curl -sk --connect-timeout 5 --max-time 10 "${JENKINS_URL}"
   if [[ $? -eq 0 ]]; then
+        SERVICEREADY=0
         echo "stackrox plugin installation on Jenkins is complete"
         break
   fi
   sleep 5
 done
-echo "Jenkins installation is complete"
+if [[ $SERVICEREADY -eq 0 ]]; then
+       exit 0
+       echo "Jenkins installation is complete"
+   else
+   exit 1
+fi
