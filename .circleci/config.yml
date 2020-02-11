@@ -15,8 +15,6 @@ buildLivenessCheck: &buildLivenessCheck
     command: |
       .circleci/check-workflow-live.sh
 
-
-
 jenkinsDeployment: &jenkinsDeployment
   run:
     name: Jenkins Deployment and wait for jenkins to be setup
@@ -30,7 +28,6 @@ setUpPlugin: &setUpPlugin
     name: Installing the plugin on the Jenkins service
     command: |
       .circleci/setUpJenkinsPlugin.sh
-
 
 waitForJenkins: &waitForJenkinsService
   run:
@@ -52,6 +49,7 @@ waitForJenkins: &waitForJenkinsService
       if [[ "${SUCCESS}" == 1 ]]; then
           kubectl -n qa get pods
           echo "Failed to deploy jenkins server"
+          exit 1
       fi
       echo "JENKINS_URL is set to ${JENKINS_URL}"
 
