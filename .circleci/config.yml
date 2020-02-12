@@ -26,7 +26,7 @@ setUpPlugin: &setUpPlugin
   run:
     name: Installing the plugin on the Jenkins service
     command: |
-       set +e
+      set +e
       .circleci/setUpJenkinsPlugin.sh
 
 waitForJenkins: &waitForJenkinsService
