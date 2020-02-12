@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-
+set -e
 SUCCESS=1
 JENKINSPORT="8080"
 for i in $(seq 1 50); do
@@ -19,7 +19,7 @@ if [[ "${SUCCESS}" == 1 ]]; then
        exit 1
 fi
 kubectl cp /home/circleci/jenkins-plugin/stackrox-container-image-scanner/target/stackrox-container-image-scanner.hpi qa/${JENKINSPOD}:/var/jenkins_home/plugins/.
-output="$(kubectl -n qa  exec -i ${JENKINSPOD} ls /var/jenkins_home/plugins/stackrox-container-image-scanner.hpi)"
+kubectl -n qa  exec -i ${JENKINSPOD} ls /var/jenkins_home/plugins/stackrox-container-image-scanner.hpi
 if [[ $? -eq 0 ]]; then
     echo "Jenkins plugin has been installed"
   else
@@ -54,8 +54,8 @@ for i in $(seq 1 50); do
   sleep 5
 done
 if [[ $SERVICEREADY -eq 0 ]]; then
-       exit 0
        echo "Jenkins installation is complete"
-   else
+       exit 0
+    else
        exit 1
 fi
