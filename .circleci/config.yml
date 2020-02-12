@@ -22,7 +22,6 @@ jenkinsDeployment: &jenkinsDeployment
       kubectl create namespace qa
       kubectl apply -f jenkins
 
-
 setUpPlugin: &setUpPlugin
   run:
     name: Installing the plugin on the Jenkins service
@@ -32,7 +31,6 @@ setUpPlugin: &setUpPlugin
        echo "Halting circleci workflow"
        circleci step halt
      fi
-
 
 waitForJenkins: &waitForJenkinsService
   run:
@@ -44,20 +42,19 @@ waitForJenkins: &waitForJenkinsService
       for i in $(seq 1 50); do
         export JENKINS_SVC="$(kubectl get svc -n qa jenkinsep -o jsonpath="{.status.loadBalancer.ingress[*].ip}")"
         export JENKINS_URL="http://${JENKINS_SVC}:${JENKINS_PORT}/"
-        output="$(curl -sk --connect-timeout 5 --max-time 10 "${JENKINS_URL}")"
-        if [[ $output == *"<title>Dashboard [Jenkins]</title>"* ]]; then
+        curl -sk --connect-timeout 5 --max-time 10 "${JENKINS_URL}"
+        if [[ $? -eq 0 ]]; then
           SUCCESS=0
           break
         fi
         sleep 5
       done
-      if [[ "${SUCCESS}" == 1 ]]; then
+      if [[ $SUCCESS == 1 ]]; then
           kubectl -n qa get pods
           echo "Failed to deploy jenkins server"
           exit 1
       fi
       echo "JENKINS_URL is set to ${JENKINS_URL}"
-
 
 setupGoogleAppCreds: &setupGoogleAppCreds
   run:
@@ -78,7 +75,6 @@ storeK8sLogs: &storeK8sLogs
 collectK8sLogs: &collectK8sLogs
   run:
     name: Collect k8s logs
-
     command: |
       set +e
       ./scripts/collect-service-logs.sh stackrox
@@ -333,10 +329,10 @@ commands:
       - run:
           name: Save cluster config
           command: |
-                  CONFIG_DIR="/home/circleci/jenkins-plugin/.ci-clusters/<< parameters.cluster-id >>"
-                  mkdir -p "$CONFIG_DIR"
-                  echo "$CLUSTER_NAME" >>"${CONFIG_DIR}/name"
-                  gcloud config get-value compute/zone >>"${CONFIG_DIR}/zone"
+            CONFIG_DIR="/home/circleci/jenkins-plugin/.ci-clusters/<< parameters.cluster-id >>"
+            mkdir -p "$CONFIG_DIR"
+            echo "$CLUSTER_NAME" >>"${CONFIG_DIR}/name"
+            gcloud config get-value compute/zone >>"${CONFIG_DIR}/zone"
 
 
       - *buildLivenessCheck
