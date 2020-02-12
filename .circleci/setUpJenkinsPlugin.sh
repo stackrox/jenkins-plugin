@@ -19,13 +19,13 @@ if [[ "${SUCCESS}" == 1 ]]; then
        exit 1
 fi
 kubectl cp /home/circleci/jenkins-plugin/stackrox-container-image-scanner/target/stackrox-container-image-scanner.hpi qa/${JENKINSPOD}:/var/jenkins_home/plugins/.
-kubectl -n qa  exec -i ${JENKINSPOD} ls /var/jenkins_home/plugins/stackrox-container-image-scanner.hpi
 if [[ $? -eq 0 ]]; then
     echo "Jenkins plugin has been installed"
   else
     echo "Jenkins plugin failed to install"
-    exit 1
+  exit 1
 fi
+kubectl -n qa  exec -i ${JENKINSPOD} ls /var/jenkins_home/plugins/stackrox-container-image-scanner.hpi
 GETSVC=1
 for i in $(seq 1 50); do
   export JENKINSVC=$(kubectl get svc -n qa jenkinsep -o jsonpath="{.status.loadBalancer.ingress[*].ip}")
