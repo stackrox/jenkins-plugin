@@ -27,7 +27,12 @@ setUpPlugin: &setUpPlugin
   run:
     name: Installing the plugin on the Jenkins service
     command: |
-      .circleci/setUpJenkinsPlugin.sh
+     result=$(.circleci/setUpJenkinsPlugin.sh)
+     if [[ result -eq 1 ]];then
+       echo "Halting circleci workflow"
+       circleci step halt
+     fi
+
 
 waitForJenkins: &waitForJenkinsService
   run:
