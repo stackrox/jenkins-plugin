@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
 set -e
-SUCCESS=1
+JENKINSAPP=1
 JENKINSPORT="8080"
 for i in $(seq 1 50); do
-   export JENKINSPOD="$(kubectl get pods -n qa  -o=jsonpath='{range .items[*]}{.metadata.name}')"
+   export JENKINSPOD="$(kubectl get pods -n qa  -o=jsonpath='{.items[*].metadata.name}')"
    if [[ -n "${JENKINSPOD}" ]]; then
-      SUCCESS=0
+      JENKINSAPP=0
       echo "JENKINSPOD is running on ${JENKINSPOD}"
       break
    fi
 done
-if [[ "${SUCCESS}" == 1 ]]; then
+if [[ $JENKINSAPP -eq 1 ]]; then
        kubectl -n qa describe deploy
        kubectl -n qa describe rs
        kubectl -n qa get svc

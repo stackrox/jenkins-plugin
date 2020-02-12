@@ -26,6 +26,7 @@ setUpPlugin: &setUpPlugin
   run:
     name: Installing the plugin on the Jenkins service
     command: |
+       set +e
       .circleci/setUpJenkinsPlugin.sh
 
 waitForJenkins: &waitForJenkinsService
@@ -81,18 +82,18 @@ waitForCentral: &waitForCentral
     name: wait for central
     command: |
       pod="$(kubectl get pod -l app=central -n stackrox -o custom-columns=:metadata.name)"
-      SUCCESS=1
+      SUCCESS=0
       for i in $(seq 1 50);do
         status="$(kubectl get pods -n stackrox ${pod}  -o jsonpath="{.status.phase}")"
         echo "waiting for central to come up"
         if [[ $status == "Running" ]]; then
-          SUCCESS=0
+          SUCCESS=1
           echo "Central is up and running"
           break
         fi
         sleep 5
       done
-      if [[ $SUCCESS == 1 ]]; then
+      if [[ $SUCCESS == 0 ]]; then
           echo "Central did not come up"
           exit 1
       fi
