@@ -260,13 +260,6 @@ workflows:
     jobs:
       - build:
           <<: *runOnAllTagsWithDockerIOPullCtx
-      - mirror:
-          context: docker-io-pull
-          filters:
-            branches:
-              ignore: /.*/
-            tags:
-              only: /.*/
       - provision-cluster-qa-tests:
           <<: *runOnAllTagsWithDockerIOPullCtx
       - deploy-stackrox:
