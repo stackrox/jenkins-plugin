@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set +e
+set -e
 JENKINS_DEPLOYED=false
 JENKINSPORT="8080"
 for i in $(seq 1 50); do
@@ -18,7 +18,7 @@ if [[ "${JENKINS_DEPLOYED}" = false  ]]; then
        kubectl -n jenkins get pods
        exit 1
 fi
-kubectl cp /home/circleci/jenkins-plugin/stackrox-container-image-scanner/target/stackrox-container-image-scanner.hpi qa/${JENKINSPOD}:/var/jenkins_home/plugins/.
+kubectl cp /home/circleci/jenkins-plugin/stackrox-container-image-scanner/target/stackrox-container-image-scanner.hpi jenkins/${JENKINSPOD}:/var/jenkins_home/plugins/.
 if [[ $? -eq 0 ]]; then
     echo "Jenkins plugin has been installed"
   else
