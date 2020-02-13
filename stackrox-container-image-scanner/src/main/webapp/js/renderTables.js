@@ -12,6 +12,9 @@ function renderCVETable(tableId, cves) {
                                                }
                     },
                     { title: 'CVSS Score', mData : function (data, type, dataToSet) {
+                                                    if (data.cvssScore == 0) {
+                                                        return `<span>-</span>`
+                                                    }
                                                     return `<span>${data.cvssScore}</span><br></br><span style="font-size: 10px; font-family Arial"> (${data.scoreType})</span>`;
                                                }
                     },
