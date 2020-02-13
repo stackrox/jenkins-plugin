@@ -3,7 +3,7 @@ set -e
 JENKINS_DEPLOYED=false
 JENKINSPORT="8080"
 for i in $(seq 1 50); do
-   export JENKINSPOD="$(kubectl get pods -n jenkins  -o=jsonpath='{.items[*].metadata.name}')"
+   export JENKINSPOD="$(kubectl -n jenkins get pods -o=jsonpath='{.items[*].metadata.name}')"
    if [[ -n "${JENKINS_DEPLOYED}" ]]; then
       JENKINS_DEPLOYED=true
       echo "JENKINSPOD is running on ${JENKINSPOD}"
@@ -26,7 +26,7 @@ if [[ $? -eq 0 ]]; then
     echo "Jenkins plugin failed to install"
   exit 1
 fi
-kubectl -n jenkins  exec -i ${JENKINSPOD} ls /var/jenkins_home/plugins/stackrox-container-image-scanner.hpi
+kubectl -n jenkins exec -i ${JENKINSPOD} ls /var/jenkins_home/plugins/stackrox-container-image-scanner.hpi
 GETSVC=false
 for i in $(seq 1 50); do
   export JENKINSVC=$(kubectl get svc -n jenkins jenkinsep -o jsonpath="{.status.loadBalancer.ingress[*].ip}")
