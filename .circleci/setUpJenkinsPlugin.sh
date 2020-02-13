@@ -6,13 +6,13 @@ for i in $(seq 1 50); do
    export JENKINSPOD="$(kubectl -n jenkins get pods -o=jsonpath='{.items[*].metadata.name}')"
    if [[ -n "${JENKINSPOD}" ]]; then
       JENKINS_DEPLOYED=true
-      echo JENKINS_DEPLOYED is set to $JENKINS_DEPLOYED
       echo "JENKINSPOD is running on ${JENKINSPOD}"
       break
    fi
    sleep 5
 done
-if [[ "$JENKINS_DEPLOYED" = false  ]]; then
+if [[ "${JENKINS_DEPLOYED}" = false  ]]; then
+       echo "false"
        kubectl -n jenkins describe deploy
        kubectl -n jenkins describe rs
        kubectl -n jenkins get svc
@@ -27,7 +27,7 @@ if [[ $? -eq 0 ]]; then
     echo "Jenkins plugin failed to install"
   exit 1
 fi
-kubectl -n jenkins exec -i ${JENKINSPOD} ls /var/jenkins_home/plugins/stackrox-container-image-scanner.hpi
+kubectl -n jenkins exec -i "${JENKINSPOD}" ls /var/jenkins_home/plugins/stackrox-container-image-scanner.hpi
 GETSVC=false
 for i in $(seq 1 50); do
   export JENKINSVC=$(kubectl get svc -n jenkins jenkinsep -o jsonpath="{.status.loadBalancer.ingress[*].ip}")
