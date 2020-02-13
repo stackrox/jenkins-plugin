@@ -46,19 +46,21 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.verb.POST;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.net.HttpURLConnection;
-import java.nio.charset.Charset;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+@SuppressWarnings("unused")
 public class StackroxBuilder extends Builder implements SimpleBuildStep {
     private static String NOT_AVAILABLE = "-";
     private String portalAddress;
@@ -424,6 +426,28 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
             if (!Strings.isNullOrEmpty(portalAddress) && urlValidator.isValid(portalAddress)) {
                 return FormValidation.ok();
             } else {
+                boolean isValid = true;
+                try {
+                    if (Strings.isNullOrEmpty(portalAddress)) {
+                        isValid = false;
+                    }
+
+                   portalAddress.trim();
+
+                    if (!portalAddress.toLowerCase().startsWith(schemes[0])) {
+                        isValid = false;
+                    }
+
+                    URL url = new URL(portalAddress);
+                    url.toURI();
+
+                } catch (MalformedURLException | URISyntaxException ex) {
+                    isValid = false;
+                }
+
+                if (isValid) {
+                    return FormValidation.ok();
+                }
                 return FormValidation.error(Messages.StackroxBuilder_InvalidPortalAddressError());
             }
         }
