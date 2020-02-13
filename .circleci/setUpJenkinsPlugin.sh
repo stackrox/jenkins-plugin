@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
 set -e
-JENKINSAPP=1
+JENKINS_DEPLOYED=false
 JENKINSPORT="8080"
 for i in $(seq 1 50); do
    export JENKINSPOD="$(kubectl get pods -n qa  -o=jsonpath='{.items[*].metadata.name}')"
-   if [[ -n "${JENKINSPOD}" ]]; then
-      JENKINSAPP=0
+   if [[ -n "${JENKINS_DEPLOYED}" ]]; then
+      JENKINS_DEPLOYED=true
       echo "JENKINSPOD is running on ${JENKINSPOD}"
       break
    fi
 done
-if [[ $JENKINSAPP -eq 1 ]]; then
+if [[ "$JENKINS_DEPLOYED" = false  ]]; then
        kubectl -n qa describe deploy
        kubectl -n qa describe rs
        kubectl -n qa get svc
@@ -26,34 +26,34 @@ if [[ $? -eq 0 ]]; then
   exit 1
 fi
 kubectl -n qa  exec -i ${JENKINSPOD} ls /var/jenkins_home/plugins/stackrox-container-image-scanner.hpi
-GETSVC=1
+GETSVC=false
 for i in $(seq 1 50); do
   export JENKINSVC=$(kubectl get svc -n qa jenkinsep -o jsonpath="{.status.loadBalancer.ingress[*].ip}")
-   if [[ -n "${JENKINSVC}" ]]; then
+  if [[ -n "${JENKINSVC}" ]]; then
       echo "Jenkins svc is running on ${JENKINSVC}"
-      GETSVC=0
+      GETSVC=true
       break
-   fi
-   sleep 5
+  fi
+  sleep 5
 done
-if [[ $GETSVC -eq 1 ]]; then
+if [[ "$GETSVC" = false ]]; then
   echo "Jenkins svc failed to come up"
-  exit
+  exit 1
 fi
 echo restarting jenkins
 export JENKINS_URL="http://${JENKINSVC}:${JENKINSPORT}/"
 curl -XPOST "${JENKINS_URL}/restart"
-SERVICEREADY=1
+SERVICEREADY=false
 for i in $(seq 1 50); do
   curl -sk --connect-timeout 5 --max-time 10 "${JENKINS_URL}"
   if [[ $? -eq 0 ]]; then
-        SERVICEREADY=0
+        SERVICEREADY=true
         echo "stackrox plugin installation on Jenkins is complete"
         break
   fi
   sleep 5
 done
-if [[ $SERVICEREADY -eq 0 ]]; then
+if [[ "$SERVICEREADY" = true ]]; then
        echo "Jenkins installation is complete"
        exit 0
     else
