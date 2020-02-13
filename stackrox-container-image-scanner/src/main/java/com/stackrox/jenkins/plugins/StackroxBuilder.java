@@ -60,6 +60,7 @@ import java.util.Comparator;
 import java.util.List;
 
 public class StackroxBuilder extends Builder implements SimpleBuildStep {
+    private static String NOT_AVAILABLE = "-";
     private String portalAddress;
     private Secret apiToken = Secret.fromString("");
     private boolean failOnPolicyEvalFailure;
@@ -279,12 +280,12 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
             for (JsonObject cve : componentCves.getValuesAs(JsonObject.class)) {
                 CVE cveToAdd = CVE.Builder.newInstance()
                         .withId(cve.getString("cve"))
-                        .withCvssScore((float) cve.getJsonNumber("cvss").doubleValue())
-                        .withScoreType(cve.getString("scoreVersion"))
-                        .withPublishDate(cve.getString("publishedOn"))
-                        .withLink(cve.getString("link"))
-                        .inPackage(component.getString("name"))
-                        .inVersion(component.getString("version"))
+                        .withCvssScore(cve.isNull("cvss") ? (float) 0 : (float) cve.getJsonNumber("cvss").doubleValue())
+                        .withScoreType(cve.getString("scoreVersion" , NOT_AVAILABLE))
+                        .withPublishDate(cve.getString("publishedOn", NOT_AVAILABLE))
+                        .withLink(cve.getString("link", NOT_AVAILABLE))
+                        .inPackage(component.getString("name", NOT_AVAILABLE))
+                        .inVersion(component.getString("version", NOT_AVAILABLE))
                         .build();
                 cves.add(cveToAdd);
             }
