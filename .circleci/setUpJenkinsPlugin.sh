@@ -6,6 +6,7 @@ for i in $(seq 1 50); do
    export JENKINSPOD="$(kubectl -n jenkins get pods -o=jsonpath='{.items[*].metadata.name}')"
    if [[ -n "${JENKINS_DEPLOYED}" ]]; then
       JENKINS_DEPLOYED=true
+      echo JENKINS_DEPLOYED is set to $JENKINS_DEPLOYED
       echo "JENKINSPOD is running on ${JENKINSPOD}"
       break
    fi
