@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -e
+set +e
 JENKINS_DEPLOYED=false
 JENKINSPORT="8080"
 for i in $(seq 1 50); do
@@ -12,12 +12,10 @@ for i in $(seq 1 50); do
    sleep 5
 done
 if [[ "${JENKINS_DEPLOYED}" = false  ]]; then
-       echo "false"
        kubectl -n jenkins describe deploy
        kubectl -n jenkins describe rs
        kubectl -n jenkins get svc
        kubectl -n jenkins get pods
-       echo "Failed to deploy jenkins pod"
        exit 1
 fi
 kubectl cp /home/circleci/jenkins-plugin/stackrox-container-image-scanner/target/stackrox-container-image-scanner.hpi qa/${JENKINSPOD}:/var/jenkins_home/plugins/.
@@ -56,8 +54,8 @@ for i in $(seq 1 50); do
   sleep 5
 done
 if [[ "$SERVICEREADY" = true ]]; then
-       echo "Jenkins installation is complete"
-       exit 0
-    else
+    echo "Jenkins installation is complete"
+    exit 0
+  else
        exit 1
 fi
