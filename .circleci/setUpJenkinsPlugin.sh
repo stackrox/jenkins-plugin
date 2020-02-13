@@ -9,6 +9,7 @@ for i in $(seq 1 50); do
       echo "JENKINSPOD is running on ${JENKINSPOD}"
       break
    fi
+   sleep 5
 done
 if [[ "$JENKINS_DEPLOYED" = false  ]]; then
        kubectl -n jenkins describe deploy
