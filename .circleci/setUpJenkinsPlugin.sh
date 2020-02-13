@@ -3,7 +3,7 @@ set -e
 JENKINS_DEPLOYED=false
 JENKINSPORT="8080"
 for i in $(seq 1 50); do
-   export JENKINSPOD="$(kubectl get pods -n qa  -o=jsonpath='{.items[*].metadata.name}')"
+   export JENKINSPOD="$(kubectl get pods -n jenkins  -o=jsonpath='{.items[*].metadata.name}')"
    if [[ -n "${JENKINS_DEPLOYED}" ]]; then
       JENKINS_DEPLOYED=true
       echo "JENKINSPOD is running on ${JENKINSPOD}"
@@ -11,10 +11,10 @@ for i in $(seq 1 50); do
    fi
 done
 if [[ "$JENKINS_DEPLOYED" = false  ]]; then
-       kubectl -n qa describe deploy
-       kubectl -n qa describe rs
-       kubectl -n qa get svc
-       kubectl -n qa get pods
+       kubectl -n jenkins describe deploy
+       kubectl -n jenkins describe rs
+       kubectl -n jenkins get svc
+       kubectl -n jenkins get pods
        echo "Failed to deploy jenkins pod"
        exit 1
 fi
@@ -25,10 +25,10 @@ if [[ $? -eq 0 ]]; then
     echo "Jenkins plugin failed to install"
   exit 1
 fi
-kubectl -n qa  exec -i ${JENKINSPOD} ls /var/jenkins_home/plugins/stackrox-container-image-scanner.hpi
+kubectl -n jenkins  exec -i ${JENKINSPOD} ls /var/jenkins_home/plugins/stackrox-container-image-scanner.hpi
 GETSVC=false
 for i in $(seq 1 50); do
-  export JENKINSVC=$(kubectl get svc -n qa jenkinsep -o jsonpath="{.status.loadBalancer.ingress[*].ip}")
+  export JENKINSVC=$(kubectl get svc -n jenkins jenkinsep -o jsonpath="{.status.loadBalancer.ingress[*].ip}")
   if [[ -n "${JENKINSVC}" ]]; then
       echo "Jenkins svc is running on ${JENKINSVC}"
       GETSVC=true
