@@ -3,7 +3,8 @@ set -e
 JENKINS_DEPLOYED=false
 JENKINSPORT="8080"
 for i in $(seq 1 50); do
-   export JENKINSPOD="$(kubectl -n jenkins get pods -o=jsonpath='{.items[*].metadata.name}')"
+   JENKINSPOD="$(kubectl -n jenkins get pods -o=jsonpath='{.items[*].metadata.name}')"
+   export JENKINSPOD
    if [[ -n "${JENKINSPOD}" ]]; then
       JENKINS_DEPLOYED=true
       echo "JENKINSPOD is running on ${JENKINSPOD}"
@@ -18,8 +19,9 @@ if [[ "${JENKINS_DEPLOYED}" = false  ]]; then
        kubectl -n jenkins get pods
        exit 1
 fi
-kubectl cp /home/circleci/jenkins-plugin/stackrox-container-image-scanner/target/stackrox-container-image-scanner.hpi jenkins/${JENKINSPOD}:/var/jenkins_home/plugins/.
-if [[ $? -eq 0 ]]; then
+kubectl cp /home/circleci/jenkins-plugin/stackrox-container-image-scanner/target/stackrox-container-image-scanner.hpi jenkins/"${JENKINSPOD}":/var/jenkins_home/plugins/.
+result=$?
+if [[ $result -eq 0 ]]; then
     echo "Jenkins plugin has been installed"
   else
     echo "Jenkins plugin failed to install"
@@ -28,7 +30,9 @@ fi
 kubectl -n jenkins exec -i "${JENKINSPOD}" ls /var/jenkins_home/plugins/stackrox-container-image-scanner.hpi
 GETSVC=false
 for i in $(seq 1 50); do
-  export JENKINSVC=$(kubectl get svc -n jenkins jenkinsep -o jsonpath="{.status.loadBalancer.ingress[*].ip}")
+  echo "in ${i} iteration"
+  JENKINSVC=$(kubectl get svc -n jenkins jenkinsep -o jsonpath="{.status.loadBalancer.ingress[*].ip}")
+  export JENKINSVC
   if [[ -n "${JENKINSVC}" ]]; then
       echo "Jenkins svc is running on ${JENKINSVC}"
       GETSVC=true
@@ -46,7 +50,8 @@ curl -XPOST "${JENKINS_URL}/restart"
 SERVICEREADY=false
 for i in $(seq 1 50); do
   curl -sk --connect-timeout 5 --max-time 10 "${JENKINS_URL}"
-  if [[ $? -eq 0 ]]; then
+  result=$?
+  if [[ $result -eq 0 ]]; then
         SERVICEREADY=true
         echo "stackrox plugin installation on Jenkins is complete"
         break
