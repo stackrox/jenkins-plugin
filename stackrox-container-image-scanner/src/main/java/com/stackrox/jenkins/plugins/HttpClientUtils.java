@@ -12,7 +12,6 @@ import org.apache.http.ssl.SSLContextBuilder;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.SocketException;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
