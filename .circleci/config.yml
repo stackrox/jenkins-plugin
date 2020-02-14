@@ -34,7 +34,6 @@ storeK8sLogs: &storeK8sLogs
 collectK8sLogs: &collectK8sLogs
   run:
     name: Collect k8s logs
-
     command: |
       set +e
       ./scripts/collect-service-logs.sh stackrox
@@ -95,6 +94,10 @@ jobs:
       - store_artifacts:
           path: /home/circleci/jenkins-plugin/stackrox-container-image-scanner/target/stackrox-container-image-scanner.hpi
           destination: artifacts
+      - persist_to_workspace:
+          root: /home/circleci/jenkins-plugin/
+          paths:
+            - stackrox-container-image-scanner/target/stackrox-container-image-scanner.hpi
   provision-cluster-qa-tests:
    docker:
       - image: docker.io/stackrox/apollo-ci:0.2.8-2-g1e9382b6d6
@@ -185,6 +188,19 @@ jobs:
 
       - *waitForCentral
       - *connectToCentral
+      - run:
+          name: Deploy Jenkins
+          command: |
+            kubectl create namespace jenkins
+            kubectl apply -f jenkins
+      - run:
+          name: wait for Jenkins service
+          command: |
+            .circleci/waitForJenkinService.sh
+      - run:
+          name: wait For set up plugin
+          command: |
+            .circleci/setUpJenkinsPlugin.sh
       - *collectK8sLogs
       - *storeK8sLogs
       - *deleteClusterk8s
@@ -223,6 +239,7 @@ workflows:
           orchestrator-flavor: k8s
           requires:
             - provision-cluster-qa-tests
+            - build
 
 
 commands:
@@ -288,10 +305,10 @@ commands:
       - run:
           name: Save cluster config
           command: |
-                  CONFIG_DIR="/home/circleci/jenkins-plugin/.ci-clusters/<< parameters.cluster-id >>"
-                  mkdir -p "$CONFIG_DIR"
-                  echo "$CLUSTER_NAME" >>"${CONFIG_DIR}/name"
-                  gcloud config get-value compute/zone >>"${CONFIG_DIR}/zone"
+            CONFIG_DIR="/home/circleci/jenkins-plugin/.ci-clusters/<< parameters.cluster-id >>"
+            mkdir -p "$CONFIG_DIR"
+            echo "$CLUSTER_NAME" >>"${CONFIG_DIR}/name"
+            gcloud config get-value compute/zone >>"${CONFIG_DIR}/zone"
 
 
       - *buildLivenessCheck
