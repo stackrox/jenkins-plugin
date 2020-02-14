@@ -32,6 +32,7 @@
             </script>
             <j:if test="${!empty(it.results)}">
                 <h3 style="margin-bottom: 30px;">StackRox Image Security Report</h3>
+
                 <div id="accordion">
                     <j:forEach items="${it.results}" var="result" indexVar="index">
                         <h5 class="collapsible-header">
@@ -45,35 +46,48 @@
                             </j:if>
                         </h5>
 
-                        <div>
-                            <div>
-                                <h6>Policy Violations</h6>
-                                <j:if test="${!empty(result.violatedPoliciesJson)}">
-                                    <table id="policy_table_${index}"
-                                           class="table table-striped table-bordered dataTable no-footer"
-                                           style="width: 100%;"></table>
-                                    <script type="text/javascript">
-                                        renderPolicyViolationTable("#policy_table_${index}",
-                                        ${result.violatedPoliciesJson});
-                                    </script>
-                                </j:if>
-                                <j:if test="${empty(result.violatedPoliciesJson)}">
-                                    <p>No policy violations found.</p>
-                                </j:if>
-                            </div>
-                            <div>
-                                <h6>Vulnerabilities</h6>
-                                <j:if test="${!empty(result.cvesJson)}">
-                                    <table id="cve_table_${index}"
-                                           class="table table-striped table-bordered dataTable no-footer"
-                                           style="width: 100%;"></table>
-                                    <script type="text/javascript">
-                                        renderCVETable("#cve_table_${index}", ${result.cvesJson});
-                                    </script>
-                                </j:if>
-                                <j:if test="${empty(result.cvesJson)}">
-                                    <p>No CVEs found.</p>
-                                </j:if>
+                        <div class="collapsible-container">
+                            <div class="tabs-nav-wrap">
+                                <ul class="tabs-nav">
+                                    <li class="tab-nav-link" data-target="#tab_policy_violations_${index}">Policy Violations</li>
+                                    <li class="tab-nav-link" data-target="#tab_vulnerabilities_${index}">Vulnerabilities</li>
+                                </ul>
+                                <script type="text/javascript">renderTabs();</script>
+                            </div><!-- ends tabs-nav-wrap -->
+
+                            <div class="tabs-main-content">
+                                <div id="tab_policy_violations_${index}" class="tab-content">
+                                    <div class="tab-inner">
+                                        <j:if test="${!empty(result.violatedPoliciesJson)}">
+                                            <table id="policy_table_${index}"
+                                                   class="table table-striped table-bordered dataTable no-footer"
+                                                   style="width: 100%;"></table>
+                                            <script type="text/javascript">
+                                                renderPolicyViolationTable("#policy_table_${index}",
+                                                ${result.violatedPoliciesJson});
+                                            </script>
+                                        </j:if>
+                                        <j:if test="${empty(result.violatedPoliciesJson)}">
+                                            <p>No policy violations found.</p>
+                                        </j:if>
+                                    </div>
+                                </div>
+                                <div id="tab_vulnerabilities_${index}" class="tab-content">
+                                    <div class="tab-inner">
+                                        <j:if test="${!empty(result.cvesJson)}">
+                                                <table id="cve_table_${index}"
+                                                       class="table table-striped table-bordered dataTable no-footer"
+                                                       style="width: 100%;"></table>
+                                                <script type="text/javascript">
+                                                    renderCVETable("#cve_table_${index}", ${result.cvesJson});
+                                                </script>
+                                        </j:if>
+                                        <j:if test="${empty(result.cvesJson)}">
+                                            <p>No vulnerabilities found.</p>
+                                        </j:if>
+                                    </div>
+                                </div>
+                                <script type="text/javascript">renderTabs();</script>
                             </div>
                         </div>
                     </j:forEach>
