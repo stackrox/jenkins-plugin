@@ -18,9 +18,8 @@ buildLivenessCheck: &buildLivenessCheck
 jenkinsDeployment: &jenkinsDeployment
   run:
     name: Jenkins Deployment and wait for jenkins to be setup
-    command: |
-      kubectl create namespace jenkins
-      kubectl apply -f jenkins
+    command: kubectl create namespace jenkins
+             kubectl apply -f jenkins
 
 setUpPlugin: &setUpPlugin
   run:

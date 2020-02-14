@@ -19,7 +19,7 @@ if [[ "${JENKINS_DEPLOYED}" = false  ]]; then
        kubectl -n jenkins get pods
        exit 1
 fi
-kubectl cp /home/circleci/jenkins-plugin/stackrox-container-image-scanner/target/stackrox-container-image-scanner.hpi jenkins/"${JENKINSPOD}":/var/jenkins_home/plugins/.
+kubectl cp "$PWD"/jenkins-plugin/stackrox-container-image-scanner/target/stackrox-container-image-scanner.hpi jenkins/"${JENKINSPOD}":/var/jenkins_home/plugins/.
 result=$?
 if [[ $result -eq 0 ]]; then
     echo "Jenkins plugin has been installed"
@@ -31,7 +31,7 @@ kubectl -n jenkins exec -i "${JENKINSPOD}" ls /var/jenkins_home/plugins/stackrox
 GETSVC=false
 for i in $(seq 1 50); do
   echo "in ${i} iteration"
-  JENKINSVC=$(kubectl get svc -n jenkins jenkinsep -o jsonpath="{.status.loadBalancer.ingress[*].ip}")
+  JENKINSVC=$(kubectl get svc -n jenkins jenkins -o jsonpath="{.status.loadBalancer.ingress[*].ip}")
   export JENKINSVC
   if [[ -n "${JENKINSVC}" ]]; then
       echo "Jenkins svc is running on ${JENKINSVC}"
