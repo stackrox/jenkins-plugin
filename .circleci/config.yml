@@ -18,20 +18,19 @@ buildLivenessCheck: &buildLivenessCheck
 jenkinsDeployment: &jenkinsDeployment
   run:
     name: Jenkins Deployment and wait for jenkins to be setup
-    command: kubectl create namespace jenkins
-             kubectl apply -f jenkins
+    command: |
+      kubectl create namespace jenkins
+      kubectl apply -f jenkins
 
 setUpPlugin: &setUpPlugin
   run:
     name: Installing the plugin on the Jenkins service
     command: .circleci/setUpJenkinsPlugin.sh
 
-
 waitForJenkins: &waitForJenkinsService
   run:
     name: Wait for the Jenkins server to come up
     command: .circleci/waitForJenkinService.sh
-
 
 setupGoogleAppCreds: &setupGoogleAppCreds
   run:
