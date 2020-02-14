@@ -1,5 +1,79 @@
 version: 2.1
 
+runOnAllTags: &runOnAllTags
+  filters:
+    tags:
+      only: /.*/
+
+runOnAllTagsWithDockerIOPullCtx: &runOnAllTagsWithDockerIOPullCtx
+  <<: *runOnAllTags
+  context: docker-io-pull
+
+buildLivenessCheck: &buildLivenessCheck
+  run:
+    name: Ensure workflow is still live
+    command: |
+      .circleci/check-workflow-live.sh
+
+setupGoogleAppCreds: &setupGoogleAppCreds
+  run:
+    name: Setup GCloud Service Account
+    command: |
+      touch /tmp/gcp.json
+      chmod 0600 /tmp/gcp.json
+      echo "$GCLOUD_SERVICE_ACCOUNT_CIRCLECI_ROX" >/tmp/gcp.json
+      cci-export GOOGLE_APPLICATION_CREDENTIALS /tmp/gcp.json
+      gcloud auth activate-service-account --key-file /tmp/gcp.json
+      gcloud auth list
+
+storeK8sLogs: &storeK8sLogs
+  store_artifacts:
+    path: /tmp/k8s-service-logs
+    destination: k8s-service-logs
+
+collectK8sLogs: &collectK8sLogs
+  run:
+    name: Collect k8s logs
+    command: |
+      set +e
+      ./scripts/collect-service-logs.sh stackrox
+    when: always
+
+waitForCentral: &waitForCentral
+  run:
+    name: wait for central
+    command: |
+      pod="$(kubectl get pod -l app=central -n stackrox -o custom-columns=:metadata.name)"
+      SUCCESS=0
+      for i in $(seq 1 50);do
+        status="$(kubectl get pods -n stackrox ${pod}  -o jsonpath="{.status.phase}")"
+        echo "waiting for central to come up"
+        if [[ $status == "Running" ]]; then
+          SUCCESS=1
+          echo "Central is up and running"
+          break
+        fi
+        sleep 5
+      done
+      if [[ $SUCCESS == 0 ]]; then
+          echo "Central did not come up"
+          exit 1
+      fi
+
+connectToCentral: &connectToCentral
+  run:
+    name: Connect to central via port-forward on 443
+    command: |
+      set +e
+      nohup kubectl -n 'stackrox' port-forward service/central '8000:443' 1>/dev/null 2>&1 &
+
+deleteClusterk8s: &deleteClusterk8s
+  run:  
+    name: Tear down cluster upon failure
+    command: |
+      gcloud container clusters delete "$CLUSTER_NAME" --async
+    when: always
+
 jobs:
   build:
     docker:
@@ -10,25 +84,262 @@ jobs:
     working_directory: /home/circleci/jenkins-plugin
     steps:
       - checkout
-
       - run:
           name: Build and package the Jenkins plugin
           command: |
-            cd stackrox-k8s-security-platform
+            cd stackrox-container-image-scanner
             mvn package
             mvn hpi:hpi
 
       - store_artifacts:
-          path: /home/circleci/jenkins-plugin/stackrox-k8s-security-platform/target/stackrox-k8s-security-platform.hpi
+          path: /home/circleci/jenkins-plugin/stackrox-container-image-scanner/target/stackrox-container-image-scanner.hpi
           destination: artifacts
+      - persist_to_workspace:
+          root: /home/circleci/jenkins-plugin/
+          paths:
+            - stackrox-container-image-scanner/target/stackrox-container-image-scanner.hpi
+  provision-cluster-qa-tests:
+   docker:
+      - image: docker.io/stackrox/apollo-ci:0.2.8-2-g1e9382b6d6
+        auth:
+          username: $DOCKER_IO_PULL_USERNAME
+          password: $DOCKER_IO_PULL_PASSWORD
+   environment:
+     - GCP_IMAGE_TYPE: "COS"
+   working_directory: /home/circleci/jenkins-plugin
+   steps:
+    - checkout
+    - setup_remote_docker
+    - provision-gke-cluster:
+        cluster-id: qa-tests
+        num-nodes: 1
 
+  deploy-stackrox:
+    docker:
+      - image: docker.io/stackrox/apollo-ci:0.2.8-2-g1e9382b6d6
+        auth:
+          username: $DOCKER_IO_PULL_USERNAME
+          password: $DOCKER_IO_PULL_PASSWORD
+    parameters:
+      orchestrator-flavor:
+        type: string
+        default: k8s
+      require-cluster-admin:
+        type: boolean
+        default: false
+      validate-autoupgrade-label:
+        type: boolean
+        default: false
+
+    steps:
+      - setup-gcp:
+            docker-login: false
+      - attach_workspace:
+          at: /home/circleci/jenkins-plugin/
+      - setup_remote_docker
+      - attach-gke-cluster:
+            cluster-id: qa-tests
+      - checkout
+      - run:
+          name: Get Roxctl binary and set the image name
+          command: |
+            cci-export IMAGE_NAME "stackrox/main:3.0.38.1"
+            docker login -u "$DOCKER_IO_PULL_USERNAME" -p "$DOCKER_IO_PULL_PASSWORD"
+            cci-export REGISTRY_USERNAME "$DOCKER_IO_PULL_USERNAME"
+            cci-export REGISTRY_PASSWORD "$DOCKER_IO_PULL_PASSWORD"
+            containerId=$(docker create "${IMAGE_NAME}")
+            docker cp $containerId:/assets/downloads/cli/roxctl-linux ./roxctl
+            docker rm ${containerId}
+
+      - *setupGoogleAppCreds
+
+      - run:
+          name: Creating License Key
+          command: |
+            export ROX_LICENSE_KEY="$(./licenses/ci.sh)"
+            touch /tmp/data.lic
+            chmod 0600 /tmp/data.lic
+            echo $ROX_LICENSE_KEY >> /tmp/data.lic
+
+
+      - run:
+          name: Generate central bundle
+          command: |
+            ./roxctl central generate k8s pvc \
+              --license /tmp/data.lic \
+              --main-image "${IMAGE_NAME}" \
+              --scanner-image docker.io/stackrox/scanner:2.0.4 \
+              --scanner-db-image docker.io/stackrox/scanner-db:2.0.4
+            export ROX_PASSWORD="$(cat central-bundle/password)"
+            cci-export ROX_USERNAME "admin"
+            cci-export ROX_PASSWORD "$ROX_PASSWORD"
+
+      - run:
+          name: Deploy central to remote cluster
+          command: |
+            central-bundle/central/scripts/setup.sh
+            kubectl create -R -f central-bundle/central
+
+      - run:
+          name: Deploy scanner to remote cluster
+          command:  |
+            central-bundle/scanner/scripts/setup.sh
+            kubectl create -R -f central-bundle/scanner
+
+      - *waitForCentral
+      - *connectToCentral
+      - run:
+          name: Deploy Jenkins
+          command: |
+            kubectl create namespace jenkins
+            kubectl apply -f jenkins
+      - run:
+          name: wait for Jenkins service
+          command: |
+            .circleci/waitForJenkinService.sh
+      - run:
+          name: wait For set up plugin
+          command: |
+            .circleci/setUpJenkinsPlugin.sh
+      - *collectK8sLogs
+      - *storeK8sLogs
+      - *deleteClusterk8s
+
+
+  mirror:
+    docker:
+      - image: docker.io/stackrox/apollo-ci:jenkins-plugin-0.2.8-1-ga776a448ee
+        auth:
+          username: $DOCKER_IO_PULL_USERNAME
+          password: $DOCKER_IO_PULL_PASSWORD
+    working_directory: /home/circleci/jenkins-plugin
+    steps:
+      - checkout
+      - run:
+          name: Mirror to public JenkinsCI repo
+          command: .circleci/mirror-repository
 
 workflows:
   version: 2
   build:
     jobs:
       - build:
+          <<: *runOnAllTagsWithDockerIOPullCtx
+      - mirror:
           context: docker-io-pull
           filters:
+            branches:
+              ignore: /.*/
             tags:
               only: /.*/
+      - provision-cluster-qa-tests:
+          <<: *runOnAllTagsWithDockerIOPullCtx
+      - deploy-stackrox:
+          <<: *runOnAllTagsWithDockerIOPullCtx
+          orchestrator-flavor: k8s
+          requires:
+            - provision-cluster-qa-tests
+            - build
+
+
+commands:
+  setup-gcp:
+    parameters:
+      docker-login:
+        type: boolean
+        default: true
+
+    steps:
+      - run:
+          name: Setup deployment env
+          command: |
+            <<# parameters.docker-login >>
+            docker login -u "$DOCKER_IO_PULL_USERNAME" -p "$DOCKER_IO_PULL_PASSWORD"
+            <</ parameters.docker-login >>
+            cci-export REGISTRY_USERNAME "$DOCKER_IO_PULL_USERNAME"
+            cci-export REGISTRY_PASSWORD "$DOCKER_IO_PULL_PASSWORD"
+            gcloud auth activate-service-account --key-file <(echo "$GCLOUD_SERVICE_ACCOUNT_CIRCLECI_ROX")
+            gcloud auth list
+            gcloud config set project stackrox-ci
+            gcloud config set compute/region us-central1
+            gcloud config set core/disable_prompts True
+
+  create-gke:
+    parameters:
+      wait:
+        type: boolean
+        default: true
+
+    steps:
+      - run:
+          name: Create GKE cluster
+          command: |
+            source .circleci/create-cluster.sh && create-cluster
+            <<# parameters.wait >>
+            wait-for-cluster
+            <</ parameters.wait >>
+
+  provision-gke-cluster:
+    parameters:
+      cluster-id:
+        type: string
+      num-nodes:
+        type: integer
+        default: 1
+    steps:
+      - setup-gcp:
+          docker-login: false
+      - run:
+          name: Assign environment variables
+          command: |
+            CLUSTER_NAME="rox-jenkins-<< parameters.cluster-id >>-${CIRCLE_BUILD_NUM}"
+            cci-export CLUSTER_NAME "$CLUSTER_NAME"
+            echo "Assigned cluster name is $CLUSTER_NAME"
+            NUM_NODES="<< parameters.num-nodes >>"
+            cci-export NUM_NODES "$NUM_NODES"
+            echo "Number of nodes for cluster is $NUM_NODES"
+
+      - create-gke:
+          wait: false
+
+      - run:
+          name: Save cluster config
+          command: |
+            CONFIG_DIR="/home/circleci/jenkins-plugin/.ci-clusters/<< parameters.cluster-id >>"
+            mkdir -p "$CONFIG_DIR"
+            echo "$CLUSTER_NAME" >>"${CONFIG_DIR}/name"
+            gcloud config get-value compute/zone >>"${CONFIG_DIR}/zone"
+
+
+      - *buildLivenessCheck
+
+      - persist_to_workspace:
+          root: /home/circleci/jenkins-plugin/
+          paths:
+            - .ci-clusters/<< parameters.cluster-id >>
+
+  attach-gke-cluster:
+    parameters:
+      cluster-id:
+        type: string
+
+    steps:
+      - run:
+          name: Restore config for << parameters.cluster-id >> cluster
+          command: |
+            CONFIG_DIR="/home/circleci/jenkins-plugin/.ci-clusters/<< parameters.cluster-id >>"
+            CLUSTER_NAME="$(cat "${CONFIG_DIR}/name")"
+            [[ -n "$CLUSTER_NAME" ]]
+            ZONE="$(cat "${CONFIG_DIR}/zone")"
+            [[ -n "$ZONE" ]]
+            gcloud config set compute/zone "$ZONE"
+            cmd=(gcloud container clusters get-credentials --project stackrox-ci --zone "$ZONE" "$CLUSTER_NAME")
+            "${cmd[@]}"
+            echo "Restored config for cluster ${CLUSTER_NAME}"
+            cci-export CLUSTER_NAME "$CLUSTER_NAME"
+            echo
+            echo "Run the following command to attach to the cluster:"
+            echo
+            printf " %q" "${cmd[@]}"
+            echo
+

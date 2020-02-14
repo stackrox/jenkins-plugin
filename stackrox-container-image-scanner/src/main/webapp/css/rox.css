@@ -1,0 +1,32 @@
+ table.dataTable thead .sorting:after {
+    content: "▾" !important;
+ }
+
+ table.dataTable thead .sorting_asc:after {
+     content: "▾" !important;
+     transform: rotate(180deg);
+ }
+
+ .chipPassed {
+    display: inline-block;
+    padding: 0 25px;
+    height: 50px;
+    font-size: 16px;
+    line-height: 50px;
+    border-radius: 25px;
+    background-color: #2fc528;
+ }
+
+  .chipFailed {
+    display: inline-block;
+    padding: 0 25px;
+    height: 50px;
+    font-size: 16px;
+    line-height: 50px;
+    border-radius: 25px;
+    background-color: #ea190f;
+  }
+
+  .collapsible-header {
+    display: flex;
+  }
