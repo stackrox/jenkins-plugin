@@ -52,9 +52,9 @@ for i in $(seq 1 50); do
   curl -sk --connect-timeout 5 --max-time 10 "${JENKINS_URL}"
   result=$?
   if [[ $result -eq 0 ]]; then
-        SERVICEREADY=true
-        echo "stackrox plugin installation on Jenkins is complete"
-        break
+    SERVICEREADY=true
+    echo "stackrox plugin installation on Jenkins is complete"
+    break
   fi
   sleep 5
 done
