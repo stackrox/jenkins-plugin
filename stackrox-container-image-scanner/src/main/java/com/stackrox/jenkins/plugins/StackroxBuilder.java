@@ -1,7 +1,6 @@
 package com.stackrox.jenkins.plugins;
 
 import com.google.common.base.CharMatcher;
-import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
@@ -28,6 +27,7 @@ import net.sf.json.JSONObject;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.QuoteMode;
+import org.apache.commons.validator.routines.RegexValidator;
 import org.apache.commons.validator.routines.UrlValidator;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHeaders;
@@ -46,19 +46,18 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.verb.POST;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.net.HttpURLConnection;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+@SuppressWarnings("unused")
 public class StackroxBuilder extends Builder implements SimpleBuildStep {
     private static String NOT_AVAILABLE = "-";
     private String portalAddress;
@@ -281,7 +280,7 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
                 CVE cveToAdd = CVE.Builder.newInstance()
                         .withId(cve.getString("cve"))
                         .withCvssScore(cve.isNull("cvss") ? (float) 0 : (float) cve.getJsonNumber("cvss").doubleValue())
-                        .withScoreType(cve.getString("scoreVersion" , NOT_AVAILABLE))
+                        .withScoreType(cve.getString("scoreVersion", NOT_AVAILABLE))
                         .withPublishDate(cve.getString("publishedOn", NOT_AVAILABLE))
                         .withLink(cve.getString("link", NOT_AVAILABLE))
                         .inPackage(component.getString("name", NOT_AVAILABLE))
@@ -342,7 +341,7 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
                 FilePath policyViolationsCsv = new FilePath(imageResultDir, "policyViolations.csv");
 
                 if (!result.getCves().isEmpty()) {
-                    try (CSVPrinter printer = new CSVPrinter(new OutputStreamWriter(new FileOutputStream(imageCveCsv.getRemote()),StandardCharsets.UTF_8), CSVFormat.EXCEL.withQuoteMode(QuoteMode.NON_NUMERIC))) {
+                    try (CSVPrinter printer = new CSVPrinter(new OutputStreamWriter(new FileOutputStream(imageCveCsv.getRemote()), StandardCharsets.UTF_8), CSVFormat.EXCEL.withQuoteMode(QuoteMode.NON_NUMERIC))) {
                         printer.printRecord("CVE ID", "CVSS Score", "Score Type", "Package Name", "Package Version", "Fixable", "Publish Date", "Link");
                         for (CVE cve : result.getCves()) {
                             printer.printRecord(cve.getId(), cve.getCvssScore(), cve.getScoreType(), cve.getPackageName(), cve.getPackageVersion(), cve.isFixable(), cve.getPublishDate(), cve.getLink());
@@ -424,6 +423,11 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
             if (!Strings.isNullOrEmpty(portalAddress) && urlValidator.isValid(portalAddress)) {
                 return FormValidation.ok();
             } else {
+                // To allow non standard TLDs
+                UrlValidator regexUrlValidator = new UrlValidator(schemes, new RegexValidator("^([\\\\p{Alnum}\\\\-\\\\.]*)(:\\\\d*)?(.*)?"), UrlValidator.ALLOW_LOCAL_URLS);
+                if (regexUrlValidator.isValid(portalAddress)) {
+                    return FormValidation.ok();
+                }
                 return FormValidation.error(Messages.StackroxBuilder_InvalidPortalAddressError());
             }
         }
