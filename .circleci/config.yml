@@ -15,23 +15,6 @@ buildLivenessCheck: &buildLivenessCheck
     command: |
       .circleci/check-workflow-live.sh
 
-jenkinsDeployment: &jenkinsDeployment
-  run:
-    name: Jenkins Deployment and wait for jenkins to be setup
-    command: |
-      kubectl create namespace jenkins
-      kubectl apply -f jenkins
-
-setUpPlugin: &setUpPlugin
-  run:
-    name: Installing the plugin on the Jenkins service
-    command: .circleci/setUpJenkinsPlugin.sh
-
-waitForJenkins: &waitForJenkinsService
-  run:
-    name: Wait for the Jenkins server to come up
-    command: .circleci/waitForJenkinService.sh
-
 setupGoogleAppCreds: &setupGoogleAppCreds
   run:
     name: Setup GCloud Service Account
@@ -205,9 +188,19 @@ jobs:
 
       - *waitForCentral
       - *connectToCentral
-      - *jenkinsDeployment
-      - *waitForJenkinsService
-      - *setUpPlugin
+      - run:
+          name: Deploy Jenkins
+          command: |
+            kubectl create namespace jenkins
+            kubectl apply -f jenkins
+      - run:
+          name: wait for Jenkins service
+          command: |
+            .circleci/waitForJenkinService.sh
+      - run:
+          name: wait For set up plugin
+          command: |
+            .circleci/setUpJenkinsPlugin.sh
       - *collectK8sLogs
       - *storeK8sLogs
       - *deleteClusterk8s
