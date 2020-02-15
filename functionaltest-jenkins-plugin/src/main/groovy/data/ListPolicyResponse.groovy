@@ -8,7 +8,6 @@ class ListPolicyResponse {
     String description
     Severity severity
     Boolean disabled
-    //LifecycleStages lifecycleStages
     String [] notifiers
     JsonElement last_updated
     EnforcementAction enforcementAction

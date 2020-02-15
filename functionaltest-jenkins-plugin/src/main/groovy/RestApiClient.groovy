@@ -42,6 +42,7 @@ class RestApiClient {
         Response response =  CreateRequestSpecification("Authorization", encodedpassword)
                              .body(gson.toJson(requestObj))
                              .post(url)
+        println(response.asString())
         Alerts alerts = gson.fromJson(response.asString(), Alerts)
         return alerts
     }
@@ -117,7 +118,6 @@ class RestApiClient {
                 def url = "${Constants.jenkinsProtocol}://${loadBalancer}:${Constants.jenkinsPort}/job/${job}/lastBuild/api/json"
                 response = given().when()
                            .post(url)
-                println response.asString()
                 }
 
                catch (Exception ex) {
