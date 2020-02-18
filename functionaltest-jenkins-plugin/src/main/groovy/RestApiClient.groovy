@@ -30,10 +30,7 @@ class RestApiClient {
     }
 
     String getToken(Object tokenObj) {
-        def env=System.getenv()
-        println env
         String url = Constants.baseurl + Constants.tokenGenerate
-        println password
         Response response =  CreateRequestSpecification("Authorization", encodedpassword)
                              .body(gson.toJson(tokenObj))
                              .post(url)
