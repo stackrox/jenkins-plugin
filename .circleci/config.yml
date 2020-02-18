@@ -161,8 +161,6 @@ jobs:
             touch /tmp/data.lic
             chmod 0600 /tmp/data.lic
             echo $ROX_LICENSE_KEY >> /tmp/data.lic
-
-
       - run:
           name: Generate central bundle
           command: |
@@ -207,6 +205,7 @@ jobs:
       - run:
           name: wait For set up plugin
           command: |
+            export METADATA_URL="https://localhost:8000/v1/metadata"
             metadata="$(curl -sk --connect-timeout 5 --max-time 10 "${METADATA_URL}")"
             echo $metadata
             if [[ $? -eq 0 && "$(jq '.licenseStatus' -r \<<<"$metadata")" != "RESTARTING" ]]; then
