@@ -210,7 +210,7 @@ jobs:
             cd functionaltest-jenkins-plugin
             java -version
             gradle -v
-            gradle :cleanTest :test
+            gradle :cleanTest :test  --stacktrace
       - *deleteClusterk8s
 
 
