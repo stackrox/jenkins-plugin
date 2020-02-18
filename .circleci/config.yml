@@ -66,10 +66,7 @@ connectToCentral: &connectToCentral
     name: Connect to central via port-forward on 443
     command: |
       set +e
-      touch /tmp/ouput
-      chmod 777 /tmp/ouput
-      nohup kubectl -n 'stackrox' port-forward service/central '8000:443' > /tmp/ouput
-      cat /tmp/output
+      nohup kubectl -n 'stackrox' port-forward service/central '8000:443' 1>/dev/null 2>&1 &
 
 deleteClusterk8s: &deleteClusterk8s
   run:  
@@ -210,10 +207,21 @@ jobs:
       - run:
           name: wait For set up plugin
           command: |
+            export METADATA_URL="https://localhost:8000/v1/metadata"
+            for i in $(seq 1 25); do
+              metadata="$(curl -sk --connect-timeout 5 --max-time 10 "${METADATA_URL}")"
+              if [[ $? -eq 0 && "$(jq '.licenseStatus' -r \<<<"$metadata")" != "RESTARTING" ]]; then
+                SUCCESS=1
+                break
+              fi
+              sleep 5
+            done
             cd functionaltest-jenkins-plugin
             java -version
             gradle -v
-            gradle :cleanTest :test  --debug
+            gradle :cleanTest :test --debug
+
+
       - *deleteClusterk8s
   mirror:
     docker:
