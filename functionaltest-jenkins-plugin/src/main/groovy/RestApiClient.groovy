@@ -17,7 +17,7 @@ class RestApiClient {
     public Gson gson
     public JSONParser parser
     def env=System.getenv()
-    def password=env['PASSWORD']
+    def password=env['ROX_PASSWORD']
     def encodedpassword = "Basic " + DataUtil.base64Encode(common.Constants.cluserUserName+":"+ password)
 
     RestApiClient() {
@@ -30,6 +30,8 @@ class RestApiClient {
     }
 
     String getToken(Object tokenObj) {
+        println("Printing encoded token object")
+        println(encodedpassword)
         String url = Constants.baseurl + Constants.tokenGenerate
         Response response =  CreateRequestSpecification("Authorization", encodedpassword)
                              .body(gson.toJson(tokenObj))
