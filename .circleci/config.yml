@@ -207,21 +207,16 @@ jobs:
       - run:
           name: wait For set up plugin
           command: |
-            export METADATA_URL="https://localhost:8000/v1/metadata"
-            for i in $(seq 1 25); do
-              metadata="$(curl -sk --connect-timeout 5 --max-time 10 "${METADATA_URL}")"
-              if [[ $? -eq 0 && "$(jq '.licenseStatus' -r \<<<"$metadata")" != "RESTARTING" ]]; then
-                SUCCESS=1
-                break
-              fi
-              sleep 5
-            done
+            metadata="$(curl -sk --connect-timeout 5 --max-time 10 "${METADATA_URL}")"
+            echo $metadata
+            if [[ $? -eq 0 && "$(jq '.licenseStatus' -r \<<<"$metadata")" != "RESTARTING" ]]; then
+              SUCCESS=1
+              break
+            fi
             cd functionaltest-jenkins-plugin
             java -version
             gradle -v
             gradle :cleanTest :test --debug
-
-
       - *deleteClusterk8s
   mirror:
     docker:
