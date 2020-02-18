@@ -9,6 +9,12 @@ runOnAllTagsWithDockerIOPullCtx: &runOnAllTagsWithDockerIOPullCtx
   <<: *runOnAllTags
   context: docker-io-pull
 
+runQaTests:  &runQaTests
+  cd functionaltest-jenkins-plugin
+  java -version
+  gradle -v
+  gradle :cleanTest :test
+
 buildLivenessCheck: &buildLivenessCheck
   run:
     name: Ensure workflow is still live
@@ -203,6 +209,7 @@ jobs:
             .circleci/setUpJenkinsPlugin.sh
       - *collectK8sLogs
       - *storeK8sLogs
+      - *runQaTests
       - *deleteClusterk8s
 
 
