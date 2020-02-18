@@ -9,11 +9,14 @@ runOnAllTagsWithDockerIOPullCtx: &runOnAllTagsWithDockerIOPullCtx
   <<: *runOnAllTags
   context: docker-io-pull
 
-runQaTests:  &runQaTests
-  cd functionaltest-jenkins-plugin
-  java -version
-  gradle -v
-  gradle :cleanTest :test
+runQaTests: &runQaTests
+  run:
+    name: Run Gradle Tests
+    command: |
+      cd functionaltest-jenkins-plugin
+      java -version
+      gradle -v
+      gradle :cleanTest :test
 
 buildLivenessCheck: &buildLivenessCheck
   run:
