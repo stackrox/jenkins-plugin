@@ -210,10 +210,8 @@ jobs:
             cd functionaltest-jenkins-plugin
             java -version
             gradle -v
-            gradle :cleanTest :test  --stacktrace
+            gradle :cleanTest :test  --debug
       - *deleteClusterk8s
-
-
   mirror:
     docker:
       - image: docker.io/stackrox/apollo-ci:jenkins-plugin-0.2.8-1-ga776a448ee
