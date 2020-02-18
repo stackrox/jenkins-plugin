@@ -9,14 +9,6 @@ runOnAllTagsWithDockerIOPullCtx: &runOnAllTagsWithDockerIOPullCtx
   <<: *runOnAllTags
   context: docker-io-pull
 
-runQaTests: &runQaTests
-  run:
-    name: Run Gradle Tests
-    command: |
-      cd functionaltest-jenkins-plugin
-      java -version
-      gradle -v
-      gradle :cleanTest :test
 
 buildLivenessCheck: &buildLivenessCheck
   run:
@@ -212,7 +204,13 @@ jobs:
             .circleci/setUpJenkinsPlugin.sh
       - *collectK8sLogs
       - *storeK8sLogs
-      - *runQaTests
+      - run:
+          name: wait For set up plugin
+          command: |
+            cd functionaltest-jenkins-plugin
+            java -version
+            gradle -v
+            gradle :cleanTest :test
       - *deleteClusterk8s
 
 
