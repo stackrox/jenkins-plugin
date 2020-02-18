@@ -16,7 +16,9 @@ class RestApiClient {
 
     public Gson gson
     public JSONParser parser
-    private final static encodedpassword = "Basic " + DataUtil.base64Encode(common.Constants.cluserUserName+":"+common.Constants.clusterPassword)
+    def env=System.getenv()
+    def password=env['PASSWORD']
+    def encodedpassword = "Basic " + DataUtil.base64Encode(common.Constants.cluserUserName+":"+ password)
 
     RestApiClient() {
         gson = new Gson()
@@ -28,7 +30,10 @@ class RestApiClient {
     }
 
     String getToken(Object tokenObj) {
+        def env=System.getenv()
+        println env
         String url = Constants.baseurl + Constants.tokenGenerate
+        println password
         Response response =  CreateRequestSpecification("Authorization", encodedpassword)
                              .body(gson.toJson(tokenObj))
                              .post(url)
