@@ -206,6 +206,7 @@ jobs:
       - run:
           name: Run qa tests.
           command: |
+            set -x
             METADATA_URL="https://localhost:8000/v1/metadata"
             metadata="$(curl -sk --connect-timeout 5 --max-time 10 "${METADATA_URL}")"
             echo $metadata
