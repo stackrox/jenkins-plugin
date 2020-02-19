@@ -61,17 +61,6 @@ waitForCentral: &waitForCentral
           exit 1
       fi
 
-connectToCentral: &connectToCentral
-  run:
-    name: Connect to central via port-forward on 443
-    command: |
-      set +e
-      POD="$(kubectl get pod -l app=central -n stackrox -o custom-columns=:metadata.name --no-headers)"
-      kubectl -n stackrox wait --for=condition=ready "pod/${POD}" --timeout=3m
-      kubectl get pods -n stackrox
-      nohup kubectl -n 'stackrox' port-forward service/central '8000:443' 1>/dev/null 2>&1 &
-
-
 deleteClusterk8s: &deleteClusterk8s
   run:  
     name: Tear down cluster upon failure
