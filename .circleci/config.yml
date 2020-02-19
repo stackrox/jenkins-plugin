@@ -145,7 +145,7 @@ jobs:
       - run:
           name: Get Roxctl binary and set the image name
           command: |
-            cci-export IMAGE_NAME "stackrox/main:3.0.38.1"
+            cci-export IMAGE_NAME "stackrox/main:3.0.38.2-0-gd83dbccae8"
             docker login -u "$DOCKER_IO_PULL_USERNAME" -p "$DOCKER_IO_PULL_PASSWORD"
             cci-export REGISTRY_USERNAME "$DOCKER_IO_PULL_USERNAME"
             cci-export REGISTRY_PASSWORD "$DOCKER_IO_PULL_PASSWORD"
@@ -158,7 +158,7 @@ jobs:
       - run:
           name: Creating License Key
           command: |
-            export ROX_LICENSE_KEY="$(./licenses/ci.sh)"
+            export ROX_LICENSE_KEY="$(./licenses/ci.sh  --not-valid-after +6h)"
             touch /tmp/data.lic
             chmod 0600 /tmp/data.lic
             echo $ROX_LICENSE_KEY >> /tmp/data.lic
@@ -201,16 +201,15 @@ jobs:
           name: wait For set up plugin
           command: |
             .circleci/setUpJenkinsPlugin.sh
-      - *collectK8sLogs
-      - *storeK8sLogs
       - run:
-          name: wait For set up plugin
+          name: Run qa tests.
           command: |
-            sleep 120
             cd functionaltest-jenkins-plugin
             java -version
             gradle -v
             gradle :cleanTest :test --debug
+      - *collectK8sLogs
+      - *storeK8sLogs
       - *deleteClusterk8s
   mirror:
     docker:
