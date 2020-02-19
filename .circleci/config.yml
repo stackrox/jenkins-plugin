@@ -211,7 +211,7 @@ jobs:
             gradle :cleanTest :test --debug
       - *collectK8sLogs
       - *storeK8sLogs
-      # - *deleteClusterk8s
+      - *deleteClusterk8s
   mirror:
     docker:
       - image: docker.io/stackrox/apollo-ci:jenkins-plugin-0.2.8-1-ga776a448ee
