@@ -182,7 +182,7 @@ jobs:
       - *waitForCentral
       - run:
         name: Connect to central via port-forward on 443
-          command: |
+          command:  |
             set +e
             POD="$(kubectl get pod -l app=central -n stackrox -o custom-columns=:metadata.name --no-headers)"
             kubectl -n stackrox wait --for=condition=ready "pod/${POD}" --timeout=3m
