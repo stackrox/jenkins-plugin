@@ -206,13 +206,7 @@ jobs:
       - run:
           name: wait For set up plugin
           command: |
-            export METADATA_URL="https://localhost:8000/v1/metadata"
-            metadata="$(curl -sk --connect-timeout 5 --max-time 10 "${METADATA_URL}")"
-            echo $metadata
-            if [[ $? -eq 0 && "$(jq '.licenseStatus' -r \<<<"$metadata")" != "RESTARTING" ]]; then
-              SUCCESS=1
-              break
-            fi
+            sleep 120
             cd functionaltest-jenkins-plugin
             java -version
             gradle -v
