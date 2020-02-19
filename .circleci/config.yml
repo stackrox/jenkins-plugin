@@ -66,9 +66,9 @@ connectToCentral: &connectToCentral
     name: Connect to central via port-forward on 443
     command: |
       set +e
-      kubectl get pods -n stackrox
       POD="$(kubectl get pod -l app=central -n stackrox -o custom-columns=:metadata.name --no-headers)"
       kubectl -n stackrox wait --for=condition=ready "pod/${POD}" --timeout=3m
+      kubectl get pods -n stackrox
       nohup kubectl -n 'stackrox' port-forward service/central '8000:443' &
       cat nohup.out
 
