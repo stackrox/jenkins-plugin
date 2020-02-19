@@ -184,7 +184,7 @@ jobs:
             POD="$(kubectl get pod -l app=central -n stackrox -o custom-columns=:metadata.name --no-headers)"
             kubectl -n stackrox wait --for=condition=ready "pod/${POD}" --timeout=3m
             kubectl get pods -n stackrox
-            nohup kubectl -n 'stackrox' port-forward service/central '8000:443' 1>/dev/null 2>&1 &s
+            nohup kubectl -n 'stackrox' port-forward service/central '8000:443' 1>/dev/null 2>&1 &
       - run:
           name: Deploy Jenkins
           command: |
