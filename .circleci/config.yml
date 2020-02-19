@@ -69,7 +69,8 @@ connectToCentral: &connectToCentral
       kubectl get pods -n stackrox
       POD="$(kubectl get pod -l app=central -n stackrox -o custom-columns=:metadata.name --no-headers)"
       kubectl -n stackrox wait --for=condition=ready "pod/${POD}" --timeout=3m
-      nohup kubectl -n 'stackrox' port-forward service/central '8000:443' 1>/dev/null 2>&1 &
+      nohup kubectl -n 'stackrox' port-forward service/central '8000:443' &
+      cat nohup.out
 
 deleteClusterk8s: &deleteClusterk8s
   run:  
@@ -187,7 +188,6 @@ jobs:
           command:  |
             central-bundle/scanner/scripts/setup.sh
             kubectl create -R -f central-bundle/scanner
-
       - *waitForCentral
       - *connectToCentral
       - run:
@@ -206,6 +206,9 @@ jobs:
       - run:
           name: Run qa tests.
           command: |
+            METADATA_URL="https://localhost:8000/v1/metadata"
+            metadata="$(curl -sk --connect-timeout 5 --max-time 10 "${METADATA_URL}")"
+            echo $metadata
             cd functionaltest-jenkins-plugin
             java -version
             gradle -v
