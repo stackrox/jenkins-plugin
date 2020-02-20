@@ -203,7 +203,7 @@ jobs:
             for i in $(seq 1 50);do
               METADATA_URL="https://"${API_HOST_NAME}":"${API_PORT}"/v1/metadata"
               licenseStatus="$(curl -sk $METADATA_URL | jq '.licenseStatus')"
-              if [[ $licenseStatus == "VALID" ]];
+              if [[ $licenseStatus == "VALID" ]];then
                 PORT_FORWARD=true
               fi
               sleep 5
