@@ -197,10 +197,19 @@ jobs:
             POD="$(kubectl get pod -l app=central -n stackrox -o custom-columns=:metadata.name --no-headers)"
             kubectl -n stackrox wait --for=condition=ready "pod/${POD}" --timeout=3m
             nohup kubectl -n 'stackrox' port-forward service/central '8000:443' 1>/dev/null 2>&1 &
-            sleep 60
-            METADATA_URL="https://localhost:8000/v1/metadata"
-            metadata="$(curl -sk --connect-timeout 5 --max-time 10 "${METADATA_URL}")"
-            echo $metadata
+            export API_HOST_NAME="localhost"
+            export API_PORT=8000
+            PORT_FORWARD=false
+            for i in $(seq 1 50);do
+              METADATA_URL="https://"${API_HOST_NAME}":"${API_PORT}"/v1/metadata"
+              licenseStatus="curl -sk "https://localhost:8000/v1/metadata" | jq '.licenseStatus'"
+              if [[ $licenseStatus == "VALID" ]];
+                  PORT_FORWARD=true
+              sleep 5
+            done
+            if [[ $PORT_FORWARD = false ]]; then
+                echo "Port forwarding is not up
+            fi 
             cd functionaltest-jenkins-plugin
             java -version
             gradle -v
