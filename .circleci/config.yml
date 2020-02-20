@@ -202,14 +202,15 @@ jobs:
             PORT_FORWARD=false
             for i in $(seq 1 50);do
               METADATA_URL="https://"${API_HOST_NAME}":"${API_PORT}"/v1/metadata"
-              licenseStatus="curl -sk "https://localhost:8000/v1/metadata" | jq '.licenseStatus'"
+              licenseStatus="$(curl -sk $METADATA_URL | jq '.licenseStatus')"
               if [[ $licenseStatus == "VALID" ]];
-                  PORT_FORWARD=true
+                PORT_FORWARD=true
+              fi
               sleep 5
             done
             if [[ $PORT_FORWARD = false ]]; then
                 echo "Port forwarding is not up
-            fi 
+            fi
             cd functionaltest-jenkins-plugin
             java -version
             gradle -v
