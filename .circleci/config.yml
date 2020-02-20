@@ -197,6 +197,7 @@ jobs:
             POD="$(kubectl get pod -l app=central -n stackrox -o custom-columns=:metadata.name --no-headers)"
             kubectl -n stackrox wait --for=condition=ready "pod/${POD}" --timeout=3m
             nohup kubectl -n 'stackrox' port-forward service/central '8000:443' 1>/dev/null 2>&1 &
+            sleep 60
             METADATA_URL="https://localhost:8000/v1/metadata"
             metadata="$(curl -sk --connect-timeout 5 --max-time 10 "${METADATA_URL}")"
             echo $metadata
