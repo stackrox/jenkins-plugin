@@ -48,6 +48,7 @@ echo restarting jenkins
 export JENKINS_URL="http://${JENKINSVC}:${JENKINSPORT}/"
 curl -XPOST "${JENKINS_URL}/restart"
 SERVICEREADY=false
+sleep 60
 for i in $(seq 1 50); do
   curl -sk --connect-timeout 5 --max-time 10 "${JENKINS_URL}"
   result=$?
