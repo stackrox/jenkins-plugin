@@ -109,11 +109,6 @@ jobs:
         num-nodes: 1
 
   deploy-stackrox:
-    docker:
-      - image: docker.io/stackrox/apollo-ci:0.2.8-2-g1e9382b6d6
-        auth:
-          username: $DOCKER_IO_PULL_USERNAME
-          password: $DOCKER_IO_PULL_PASSWORD
     parameters:
       orchestrator-flavor:
         type: string
@@ -177,14 +172,7 @@ jobs:
           command:  |
             central-bundle/scanner/scripts/setup.sh
             kubectl create -R -f central-bundle/scanner
-      - run:
-          name: Connect to central via port-forward on 443
-          command:  |
-            set +e
-            POD="$(kubectl get pod -l app=central -n stackrox -o custom-columns=:metadata.name --no-headers)"
-            kubectl -n stackrox wait --for=condition=ready "pod/${POD}" --timeout=3m
-            kubectl get pods -n stackrox
-            nohup kubectl -n 'stackrox' port-forward service/central '8000:443' 1>/dev/null 2>&1 &
+
       - run:
           name: Deploy Jenkins
           command: |
@@ -201,7 +189,10 @@ jobs:
       - run:
           name: Run qa tests.
           command: |
-            set -x
+            POD="$(kubectl get pod -l app=central -n stackrox -o custom-columns=:metadata.name --no-headers)"
+            kubectl -n stackrox wait --for=condition=ready "pod/${POD}" --timeout=3m
+            nohup kubectl -n 'stackrox' port-forward service/central '8000:443' 1>/dev/null 2>&1 &
+            sleep 60
             METADATA_URL="https://localhost:8000/v1/metadata"
             metadata="$(curl -sk --connect-timeout 5 --max-time 10 "${METADATA_URL}")"
             echo $metadata
@@ -209,6 +200,7 @@ jobs:
             java -version
             gradle -v
             gradle :cleanTest :test --debug
+
       - *collectK8sLogs
       - *storeK8sLogs
       - *deleteClusterk8s
