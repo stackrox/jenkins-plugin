@@ -109,7 +109,11 @@ jobs:
         num-nodes: 1
 
   deploy-stackrox:
-    machine: true
+    docker:
+      - image: docker.io/stackrox/apollo-ci:jenkins-plugin-0.2.8-1-ga776a448ee
+        auth:
+          username: $DOCKER_IO_PULL_USERNAME
+          password: $DOCKER_IO_PULL_PASSWORD
     parameters:
       orchestrator-flavor:
         type: string
