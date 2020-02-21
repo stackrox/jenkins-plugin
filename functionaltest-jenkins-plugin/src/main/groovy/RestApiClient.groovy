@@ -2,48 +2,43 @@ import data.DataUtil
 import data.Alerts
 import data.Policy
 import data.Policies
+import data.TokenResponse
 import util.Timer
 import com.google.gson.Gson
 import com.jayway.restassured.specification.RequestSpecification
 import common.Constants
 import static com.jayway.restassured.RestAssured.given
 import com.jayway.restassured.response.Response
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser
 
 
 class RestApiClient {
 
     public Gson gson
-    public JSONParser parser
     def env=System.getenv()
     def password=env['ROX_PASSWORD']
     def encodedpassword = "Basic " + DataUtil.base64Encode(common.Constants.cluserUserName+":"+ password)
 
     RestApiClient() {
         gson = new Gson()
-        parser = new JSONParser()
     }
 
-    protected RequestSpecification CreateRequestSpecification(String header, String value) {
+    protected RequestSpecification createRequestSpecification(String header, String value) {
         return given().relaxedHTTPSValidation().header(header, value)
     }
 
     String getToken(Object tokenObj) {
-        println("Printing encoded token object")
-        println(encodedpassword)
         String url = Constants.baseurl + Constants.tokenGenerate
-        Response response =  CreateRequestSpecification("Authorization", encodedpassword)
+        Response response =  createRequestSpecification("Authorization", encodedpassword)
                              .body(gson.toJson(tokenObj))
                              .post(url)
-        JSONObject jsonObject = (JSONObject) parser.parse(response.asString())
-        return jsonObject.get("token")
+        TokenResponse token = gson.fromJson(response.asString(),TokenResponse )
+        return token.token
 
     }
 
     protected Alerts getAlerts(Object requestObj) {
         String url = Constants.baseurl + Constants.buildDetect
-        Response response =  CreateRequestSpecification("Authorization", encodedpassword)
+        Response response =  createRequestSpecification("Authorization", encodedpassword)
                              .body(gson.toJson(requestObj))
                              .post(url)
         println(response.asString())
@@ -53,7 +48,7 @@ class RestApiClient {
 
      Policy createPolicy(Object policyObj) {
         def url = Constants.baseurl + Constants.postPolicy
-        Response response =  CreateRequestSpecification("Authorization", encodedpassword)
+        Response response =  createRequestSpecification("Authorization", encodedpassword)
                 .body(gson.toJson(policyObj))
                 .post(url)
         Policy policy = gson.fromJson(response.asString(), Policy)
@@ -62,7 +57,7 @@ class RestApiClient {
 
      Policies getPolicies() {
         def url = Constants.baseurl + Constants.getPolicies
-        Response response =  CreateRequestSpecification("Authorization", encodedpassword)
+        Response response =  createRequestSpecification("Authorization", encodedpassword)
                              .get(url)
         Policies policies = gson.fromJson(response.asString(), Policies)
         return policies
@@ -71,7 +66,7 @@ class RestApiClient {
 
     def updatePolicy(Object policyObj, String id) {
         def url = Constants.baseurl + Constants.putPolicy.replace("{id}",id)
-        Response response =  CreateRequestSpecification("Authorization", encodedpassword)
+        Response response =  createRequestSpecification("Authorization", encodedpassword)
                 .body(gson.toJson(policyObj))
                 .put(url)
         Policy policy = gson.fromJson(response.asString(), Policy)
@@ -80,7 +75,7 @@ class RestApiClient {
 
     def getPolicy(String id) {
         def url = Constants.baseurl + Constants.putPolicy.replace("{id}",id)
-        Response response =  CreateRequestSpecification("Authorization", encodedpassword)
+        Response response =  createRequestSpecification("Authorization", encodedpassword)
                 .get(url)
         Policy policy = gson.fromJson(response.asString(), Policy)
         return policy

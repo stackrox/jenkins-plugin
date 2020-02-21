@@ -27,7 +27,6 @@ sourceSets.each { ss ->
 
 
 dependencies {
-    compile group: 'com.googlecode.json-simple', name: 'json-simple', version: '1.1.1'
     compile 'com.google.code.gson:gson:2.7'
     compile 'com.google.code.gson:gson:2.7'
     compile 'io.fabric8:kubernetes-client:4.1.2'
