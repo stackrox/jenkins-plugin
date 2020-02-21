@@ -1,5 +1,4 @@
 version: 2.1
-
 runOnAllTags: &runOnAllTags
   filters:
     tags:
@@ -17,11 +16,9 @@ buildLivenessCheck: &buildLivenessCheck
       .circleci/check-workflow-live.sh
 
 storetestArtifacts: &storetestArtifacts
-  run:
-    name: Store the test artifacts
-    command: |
-      path: /home/circleci/jenkins-plugin/functionaltest-jenkins-plugin/build/test-results
-      destination: artifacts
+  store_artifacts:
+    path: /home/circleci/jenkins-plugin/functionaltest-jenkins-plugin/build/test-results
+    destination: artifacts
 
 
 setupGoogleAppCreds: &setupGoogleAppCreds
