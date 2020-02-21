@@ -16,6 +16,14 @@ buildLivenessCheck: &buildLivenessCheck
     command: |
       .circleci/check-workflow-live.sh
 
+storetestArtifacts: &storetestArtifacts
+  run:
+    name: Store the test artifacts
+    command: |
+      path: /home/circleci/jenkins-plugin/functionaltest-jenkins-plugin/build/test-results
+      destination: artifacts
+
+
 setupGoogleAppCreds: &setupGoogleAppCreds
   run:
     name: Setup GCloud Service Account
@@ -108,7 +116,7 @@ jobs:
         cluster-id: qa-tests
         num-nodes: 1
 
-  deploy-stackrox:
+  deploy-stackrox-and-run-qa-tests:
     docker:
       - image: docker.io/stackrox/apollo-ci:0.2.8-2-g1e9382b6d6
         auth:
@@ -217,6 +225,7 @@ jobs:
             gradle -v
             gradle :cleanTest :test
 
+      - *storetestArtifacts
       - *collectK8sLogs
       - *storeK8sLogs
       - *deleteClusterk8s
@@ -248,7 +257,7 @@ workflows:
               only: /.*/
       - provision-cluster-qa-tests:
           <<: *runOnAllTagsWithDockerIOPullCtx
-      - deploy-stackrox:
+      - deploy-stackrox-and-run-qa-tests:
           <<: *runOnAllTagsWithDockerIOPullCtx
           orchestrator-flavor: k8s
           requires:
