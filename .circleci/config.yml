@@ -17,7 +17,7 @@ buildLivenessCheck: &buildLivenessCheck
 
 storetestArtifacts: &storetestArtifacts
   store_artifacts:
-    path: /home/circleci/jenkins-plugin/functionaltest-jenkins-plugin/build/
+    path: /home/circleci/jenkins-plugin/functionaltest-jenkins-plugin/
     destination: artifacts
 
 
