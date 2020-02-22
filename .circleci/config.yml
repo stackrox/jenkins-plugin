@@ -17,7 +17,7 @@ buildLivenessCheck: &buildLivenessCheck
 
 storetestArtifacts: &storetestArtifacts
   store_artifacts:
-    path: /home/circleci/jenkins-plugin/functionaltest-jenkins-plugin/build/test-results
+    path: /home/circleci/jenkins-plugin/functionaltest-jenkins-plugin/build/
     destination: artifacts
 
 
@@ -221,6 +221,7 @@ jobs:
             java -version
             gradle -v
             gradle :cleanTest :test
+            ls /home/circleci/jenkins-plugin/functionaltest-jenkins-plugin/build/
 
       - *storetestArtifacts
       - *collectK8sLogs
