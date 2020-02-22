@@ -221,7 +221,7 @@ jobs:
             java -version
             gradle -v
             gradle :cleanTest :test
-            ls /home/circleci/jenkins-plugin/functionaltest-jenkins-plugin/build/
+            ls -R .
 
       - *storetestArtifacts
       - *collectK8sLogs
