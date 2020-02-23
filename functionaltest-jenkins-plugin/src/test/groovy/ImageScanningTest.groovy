@@ -79,7 +79,7 @@ class ImageScanningTest extends BaseSpecification {
         where:
         "data inputs are: "
         imageName | test
-        "ngixn:latest" | "Tesing nginx with latest tag"
+        "nginx:latest" | "Tesing nginx with latest tag"
         "jenkins/jenkins:lts" | "testing jenkins image with latest tag"
     }
 

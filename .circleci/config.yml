@@ -15,9 +15,9 @@ buildLivenessCheck: &buildLivenessCheck
     command: |
       .circleci/check-workflow-live.sh
 
-storetestArtifacts: &storetestArtifacts
+storetestArtifacts: &storeTestArtifacts
   store_artifacts:
-    path: /home/circleci/jenkins-plugin/functionaltest-jenkins-plugin/
+    path: ./build/test-results/test
     destination: artifacts
 
 
@@ -208,9 +208,10 @@ jobs:
             PORT_FORWARD=false
             for i in $(seq 1 50);do
               METADATA_URL="https://"${API_HOST_NAME}":"${API_PORT}"/v1/metadata"
-              licenseStatus="$(curl -sk $METADATA_URL | jq '.licenseStatus')"
-              if [[ $licenseStatus = \"VALID\" ]];then
+              licenseStatus="$(curl -sk $METADATA_URL | jq  '.licenseStatus' -r)"
+              if [[ $licenseStatus = "VALID" ]];then
                 PORT_FORWARD=true
+                break
               fi
               sleep 5
             done
@@ -222,8 +223,9 @@ jobs:
             gradle -v
             gradle :cleanTest :test
             ls -R .
+            PWD
 
-      - *storetestArtifacts
+      - *storeTestArtifacts
       - *collectK8sLogs
       - *storeK8sLogs
       - *deleteClusterk8s
