@@ -218,6 +218,9 @@ jobs:
             if [[ $PORT_FORWARD = false ]]; then
                 echo "Port forwarding is not up"
             fi
+      - run:
+          name: Run qa tests.
+          command: |
             cd functionaltest-jenkins-plugin
             gradle :cleanTest :test
             ls -R . && pwd
