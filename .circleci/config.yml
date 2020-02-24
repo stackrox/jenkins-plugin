@@ -219,8 +219,6 @@ jobs:
                 echo "Port forwarding is not up"
             fi
             cd functionaltest-jenkins-plugin
-            java -version
-            gradle -v
             gradle :cleanTest :test
             ls -R .
             PWD

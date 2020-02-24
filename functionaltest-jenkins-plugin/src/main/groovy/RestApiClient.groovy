@@ -13,13 +13,14 @@ import com.jayway.restassured.response.Response
 
 class RestApiClient {
 
-    public Gson gson
-    def env=System.getenv()
-    def password=env['ROX_PASSWORD']
-    def encodedpassword = "Basic " + DataUtil.base64Encode(common.Constants.cluserUserName+":"+ password)
+    Gson gson
+    String encodedpassword
 
     RestApiClient() {
         gson = new Gson()
+        def env=System.getenv()
+        def password=env['ROX_PASSWORD']
+        encodedpassword = "Basic " + DataUtil.base64Encode(common.Constants.clusterUserName+":"+ password)
     }
 
     protected RequestSpecification createRequestSpecification(String header, String value) {
@@ -107,7 +108,7 @@ class RestApiClient {
     }
 
     String getJenkinsBuildStatus(String job, int timeout, String loadBalancer) {
-        println("/n" +"Getting build status of ${job}")
+        println("\n" +"Getting build status of ${job}")
         int interval = 1
         int iterations = timeout/interval
         Response response
