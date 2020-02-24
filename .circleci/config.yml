@@ -207,7 +207,7 @@ jobs:
             export API_PORT=8000
             PORT_FORWARD=false
             for i in $(seq 1 50);do
-              METADATA_URL="https://"${API_HOST_NAME}":"${API_PORT}"/v1/metadata"
+              METADATA_URL="https://"${API_HOST_NAME}":"${API_PORT}"/v1/metadata" || true
               licenseStatus="$(curl -sk $METADATA_URL | jq  '.licenseStatus' -r)"
               if [[ $licenseStatus = "VALID" ]];then
                 PORT_FORWARD=true
@@ -223,7 +223,7 @@ jobs:
           command: |
             cd functionaltest-jenkins-plugin
             gradle :cleanTest :test
-        
+
       - *storeTestArtifacts
       - *collectK8sLogs
       - *storeK8sLogs
