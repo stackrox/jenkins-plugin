@@ -27,6 +27,7 @@ class Service {
                 loadBalancerIP = service.status.loadBalancer.ingress.get(0).
                         ip ?: service.status.loadBalancer.ingress.get(0).hostname
                 println "LB IP: " + loadBalancerIP
+                break
             }
         }
         return loadBalancerIP

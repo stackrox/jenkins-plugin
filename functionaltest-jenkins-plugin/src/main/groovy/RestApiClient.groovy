@@ -82,9 +82,9 @@ class RestApiClient {
         return policy
     }
 
-    String createJenkinsJob(String loadBalancer, File file) {
+    String createJenkinsJob(String jenkinsAddress, File file) {
         def jobName = "testjob" + new Random().nextInt()
-        def url = "${Constants.jenkinsProtocol}://${loadBalancer}:${Constants.jenkinsPort}/createItem?name=${jobName}"
+        def url = "${Constants.jenkinsProtocol}://${jenkinsAddress}:${Constants.jenkinsPort}/createItem?name=${jobName}"
         FileInputStream fileInputStream = new FileInputStream(file)
         byte[] bytes = fileInputStream.bytes
         println("Creating Jenkins job  ${jobName}")
@@ -97,9 +97,9 @@ class RestApiClient {
         return jobName
     }
 
-    void startJenkinsBuild(String job, String loadBalancer) {
+    void startJenkinsBuild(String job, String jenkinsAddress) {
         println("Starting Jenkins job ${job}")
-        def url = "${Constants.jenkinsProtocol}://${loadBalancer}:${Constants.jenkinsPort}/job/${job}/build"
+        def url = "${Constants.jenkinsProtocol}://${jenkinsAddress}:${Constants.jenkinsPort}/job/${job}/build"
         print url
         given().when()
                 .post(url)
@@ -107,7 +107,7 @@ class RestApiClient {
 
     }
 
-    String getJenkinsBuildStatus(String job, int timeout, String loadBalancer) {
+    String getJenkinsBuildStatus(String job, int timeout, String jenkinsAddress) {
         println("\n" + "Getting build status of ${job}")
         int interval = 1
         int iterations = timeout / interval
@@ -115,7 +115,7 @@ class RestApiClient {
         Timer timer = new Timer(iterations, interval)
         while ((response?.body() == null || response?.asString()?.startsWith("<") || response?.jsonPath()?.get("result") == null) && timer.IsValid()) {
             try {
-                def url = "${Constants.jenkinsProtocol}://${loadBalancer}:${Constants.jenkinsPort}/job/${job}/lastBuild/api/json"
+                def url = "${Constants.jenkinsProtocol}://${jenkinsAddress}:${Constants.jenkinsPort}/job/${job}/lastBuild/api/json"
                 response = given().when()
                         .post(url)
             }
