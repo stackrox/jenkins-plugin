@@ -223,8 +223,7 @@ jobs:
           command: |
             cd functionaltest-jenkins-plugin
             gradle :cleanTest :test
-            ls -R . && pwd
-
+        
       - *storeTestArtifacts
       - *collectK8sLogs
       - *storeK8sLogs
