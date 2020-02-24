@@ -197,7 +197,7 @@ jobs:
           command: |
             .circleci/setUpJenkinsPlugin.sh
       - run:
-          name: Run qa tests.
+          name: Set Up Port-Forwarding.
           command: |
             set +e
             POD="$(kubectl get pod -l app=central -n stackrox -o custom-columns=:metadata.name --no-headers)"
@@ -208,7 +208,7 @@ jobs:
             PORT_FORWARD=false
             for i in $(seq 1 50);do
               METADATA_URL="https://"${API_HOST_NAME}":"${API_PORT}"/v1/metadata" || true
-              licenseStatus="$(curl -sk $METADATA_URL | jq  '.licenseStatus' -r)"
+              licenseStatus="$(curl -sk $METADATA_URL | jq  '.licenseStatus' -r)" || true
               if [[ $licenseStatus = "VALID" ]];then
                 PORT_FORWARD=true
                 break
