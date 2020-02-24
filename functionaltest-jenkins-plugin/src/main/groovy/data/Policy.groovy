@@ -9,8 +9,8 @@ class Policy {
     Boolean disabled
     String[] categories
     PolicyFields fields
-    ArrayList <String> lifecycle_stages
-    String [] scope
+    ArrayList<String> lifecycle_stages
+    String[] scope
     String severity
     ArrayList<String> enforcement_actions
     String[] notifiers

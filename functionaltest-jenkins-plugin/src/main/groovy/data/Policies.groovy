@@ -1,5 +1,5 @@
 package data
 
 class Policies {
-    public ListPolicyResponse [] policies;
+    public ListPolicyResponse[] policies
 }

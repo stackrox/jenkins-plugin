@@ -17,11 +17,11 @@ class Service {
         this.client = new DefaultKubernetesClient()
     }
 
-    String getLoadBalancer(int timeout ) {
+    String getLoadBalancer(int timeout) {
         int interval = 1
-        int iterations = timeout/interval
-        Timer timer = new Timer(iterations,interval)
-        while (loadBalancerIP == null &&  timer.IsValid()) {
+        int iterations = timeout / interval
+        Timer timer = new Timer(iterations, interval)
+        while (loadBalancerIP == null && timer.IsValid()) {
             service = client.services().inNamespace(namespace).withName(serviceName).get()
             if (service?.status?.loadBalancer?.ingress?.size()) {
                 loadBalancerIP = service.status.loadBalancer.ingress.get(0).

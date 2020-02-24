@@ -1,6 +1,6 @@
 package data
 
 class Token {
-   String name
-   String role
+    String name
+    String role
 }
