@@ -6,6 +6,7 @@ import data.Token
 class BaseSpecification extends Specification {
     RestApiClient restApiClient
     public String token
+    public jenkinsAddress
 
     def setup() {
         restApiClient = new RestApiClient()
@@ -13,9 +14,14 @@ class BaseSpecification extends Specification {
         tokenobject.setName("automation")
         tokenobject.setRole("Continuous Integration")
         token = restApiClient.getToken(tokenobject)
+        Service svc = new Service("jenkins", "jenkins")
+        jenkinsAddress = svc.getLoadBalancer(60)
     }
 
     def cleanup() {
-        DataUtil.deleteFileFromDisk("src/test/resources/temp.xml")
+        def checkDeleted = DataUtil.deleteFileFromDisk("src/test/resources/temp.xml")
+        if (checkDeleted) {
+            println("Test completed and file deleted")
+        }
     }
 }

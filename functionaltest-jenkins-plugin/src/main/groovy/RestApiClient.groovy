@@ -82,10 +82,10 @@ class RestApiClient {
         return policy
     }
 
-    String createJenkinsJob(String jenkinsAddress, File file) {
+    String createJenkinsJob(String jenkinsAddress, File configfile) {
         def jobName = "testjob" + new Random().nextInt()
         def url = "${Constants.jenkinsProtocol}://${jenkinsAddress}:${Constants.jenkinsPort}/createItem?name=${jobName}"
-        FileInputStream fileInputStream = new FileInputStream(file)
+        FileInputStream fileInputStream = new FileInputStream(configfile)
         byte[] bytes = fileInputStream.bytes
         println("Creating Jenkins job  ${jobName}")
         given().content(bytes)

@@ -16,13 +16,11 @@ class ImageScanningTest extends BaseSpecification {
         "Jenkins is setup"
         then:
         println("Testing image ${imageName} and ${test}")
-        Service svc = new Service("jenkins", "jenkins")
-        def jenkinsEp = svc.getLoadBalancer(60)
         DataUtil.createJenkinsConfig(imageName, "https://central.stackrox:443", token, true, true)
         File tempJenkinsConfigFile = new File("src/test/resources/temp.xml")
-        String jobName = restApiClient.createJenkinsJob(jenkinsEp, tempJenkinsConfigFile)
-        restApiClient.startJenkinsBuild(jobName, jenkinsEp)
-        String status = restApiClient.getJenkinsBuildStatus(jobName, 60, jenkinsEp)
+        String jobName = restApiClient.createJenkinsJob(jenkinsAddress, tempJenkinsConfigFile)
+        restApiClient.startJenkinsBuild(jobName, jenkinsAddress)
+        String status = restApiClient.getJenkinsBuildStatus(jobName, 60, jenkinsAddress)
         BuildDetectRequest buildDetectRequest = new BuildDetectRequest()
         buildDetectRequest.setProperty("image_name", imageName)
         Alerts alerts = restApiClient.getAlerts(buildDetectRequest)
@@ -70,13 +68,11 @@ class ImageScanningTest extends BaseSpecification {
                 restApiClient.updatePolicy(newpolicy, policy.id)
             }
         }
-        Service svc = new Service("jenkins", "jenkins")
-        def jenkinsEp = svc.getLoadBalancer(60)
         DataUtil.createJenkinsConfig(imageName, "https://central.stackrox:443", token, true, true)
         File tempJenkinsConfigFile = new File("src/test/resources/temp.xml")
-        String jobName = restApiClient.createJenkinsJob(jenkinsEp, tempJenkinsConfigFile)
-        restApiClient.startJenkinsBuild(jobName, jenkinsEp)
-        String status = restApiClient.getJenkinsBuildStatus(jobName, 60, jenkinsEp)
+        String jobName = restApiClient.createJenkinsJob(jenkinsAddress, tempJenkinsConfigFile)
+        restApiClient.startJenkinsBuild(jobName, jenkinsAddress)
+        String status = restApiClient.getJenkinsBuildStatus(jobName, 60, jenkinsAddress)
         assert status == "FAILURE"
         where:
         "data inputs are: "
@@ -93,13 +89,11 @@ class ImageScanningTest extends BaseSpecification {
         "Jenkins is setup"
         then:
         println("Testing image ${imageName} and ${test}")
-        Service svc = new Service("jenkins", "jenkins")
-        def jenkinsEp = svc.getLoadBalancer(60)
         DataUtil.createJenkinsConfig(imageName, "https://central.stackrox:443", token, false, failOnCriticalPluginError)
         File tempJenkinsConfigFile = new File("src/test/resources/temp.xml")
-        String jobName = restApiClient.createJenkinsJob(jenkinsEp, tempJenkinsConfigFile)
-        restApiClient.startJenkinsBuild(jobName, jenkinsEp)
-        String status = restApiClient.getJenkinsBuildStatus(jobName, 60, jenkinsEp)
+        String jobName = restApiClient.createJenkinsJob(jenkinsAddress, tempJenkinsConfigFile)
+        restApiClient.startJenkinsBuild(jobName, jenkinsAddress)
+        String status = restApiClient.getJenkinsBuildStatus(jobName, 60, jenkinsAddress)
         assert status == "SUCCESS"
         where:
         "data inputs are: "
