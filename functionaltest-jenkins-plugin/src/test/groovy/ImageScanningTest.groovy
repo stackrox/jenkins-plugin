@@ -1,6 +1,4 @@
 import data.BuildDetectRequest
-import data.Alerts
-import data.Alert
 import data.DataUtil
 import data.ListPolicyResponse
 import data.Policy
@@ -8,6 +6,8 @@ import data.Policies
 import spock.lang.Unroll
 
 class ImageScanningTest extends BaseSpecification {
+
+    final String cachedJenkinsIp = getJenkinsAddress()
 
     def "image scanning test with the docker image + scenarios"() {
         given:
@@ -18,20 +18,12 @@ class ImageScanningTest extends BaseSpecification {
         println("Testing image ${imageName} and ${test}")
         DataUtil.createJenkinsConfig(imageName, "https://central.stackrox:443", token, true, true)
         File tempJenkinsConfigFile = new File("src/test/resources/temp.xml")
-        String jobName = restApiClient.createJenkinsJob(jenkinsAddress, tempJenkinsConfigFile)
-        restApiClient.startJenkinsBuild(jobName, jenkinsAddress)
+        String jobName = restApiClient.createJenkinsJob(cachedJenkinsIp, tempJenkinsConfigFile)
+        restApiClient.startJenkinsBuild(jenkinsAddress,  jobName)
         String status = restApiClient.getJenkinsBuildStatus(jobName, 60, jenkinsAddress)
         BuildDetectRequest buildDetectRequest = new BuildDetectRequest()
         buildDetectRequest.setProperty("image_name", imageName)
-        Alerts alerts = restApiClient.getAlerts(buildDetectRequest)
-        def policyEnforcement = true
-        for (Alert alert : alerts.alerts) {
-            if (alert.policy.enforcement_actions == null) {
-                policyEnforcement = false
-            }
-        }
         assert status == "SUCCESS"
-        assert policyEnforcement == false
         where:
         "data inputs are: "
         imageName                            | test
@@ -70,14 +62,14 @@ class ImageScanningTest extends BaseSpecification {
         }
         DataUtil.createJenkinsConfig(imageName, "https://central.stackrox:443", token, true, true)
         File tempJenkinsConfigFile = new File("src/test/resources/temp.xml")
-        String jobName = restApiClient.createJenkinsJob(jenkinsAddress, tempJenkinsConfigFile)
-        restApiClient.startJenkinsBuild(jobName, jenkinsAddress)
-        String status = restApiClient.getJenkinsBuildStatus(jobName, 60, jenkinsAddress)
+        String jobName = restApiClient.createJenkinsJob(cachedJenkinsIp, tempJenkinsConfigFile)
+        restApiClient.startJenkinsBuild(cachedJenkinsIp, jobName)
+        String status = restApiClient.getJenkinsBuildStatus(jobName, 60, cachedJenkinsIp)
         assert status == "FAILURE"
         where:
         "data inputs are: "
         imageName             | test
-        "nginx:latest"        | "Tesing nginx with latest tag"
+        "nginx:latest"        | "Testing nginx with latest tag"
         "jenkins/jenkins:lts" | "testing jenkins image with latest tag"
     }
 
@@ -91,14 +83,16 @@ class ImageScanningTest extends BaseSpecification {
         println("Testing image ${imageName} and ${test}")
         DataUtil.createJenkinsConfig(imageName, "https://central.stackrox:443", token, false, failOnCriticalPluginError)
         File tempJenkinsConfigFile = new File("src/test/resources/temp.xml")
-        String jobName = restApiClient.createJenkinsJob(jenkinsAddress, tempJenkinsConfigFile)
-        restApiClient.startJenkinsBuild(jobName, jenkinsAddress)
-        String status = restApiClient.getJenkinsBuildStatus(jobName, 60, jenkinsAddress)
-        assert status == "SUCCESS"
+        String jobName = restApiClient.createJenkinsJob(cachedJenkinsIp, tempJenkinsConfigFile)
+        restApiClient.startJenkinsBuild(cachedJenkinsIp, jobName)
+        String status = restApiClient.getJenkinsBuildStatus(jobName, 60, cachedJenkinsIp)
+        assert status == endStatus
         where:
         "data inputs are: "
-        imageName             | failOnCriticalPluginError | test
-        "jenkins/jenkins:lts" | true                      | "testing jenkins image with latest tag"
-        "jenkins/jenkins:lts" | false                     | "testing jenkins image with latest tag"
+        imageName             | failOnCriticalPluginError | test                                  | endStatus
+        "jenkins/jenkins:lts" | true                      | "testing jenkins image with lts tag"  | "SUCCESS"
+        "mis-spelled:lts"     | true                      | "testing jenkins image with lts tag"  | "FAILURE"
+        "mis-spelled:lts"     | false                     | "testing jenkins image with lts tag"  | "SUCCESS"
+
     }
 }

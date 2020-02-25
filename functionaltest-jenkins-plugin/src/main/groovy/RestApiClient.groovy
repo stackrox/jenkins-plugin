@@ -15,16 +15,23 @@ class RestApiClient {
 
     Gson gson
     String encodedpassword
+    static String jenkinsAddress
 
     RestApiClient() {
         gson = new Gson()
         def env = System.getenv()
         def password = env['ROX_PASSWORD']
         encodedpassword = "Basic " + DataUtil.base64Encode(common.Constants.clusterUserName + ":" + password)
-    }
+     }
 
     protected RequestSpecification createRequestSpecification(String header, String value) {
         return given().relaxedHTTPSValidation().header(header, value)
+    }
+
+    final static String getCachedIp(){
+        Service svc = new Service("jenkins","jenkins");
+        jenkinsAddress = svc.getLoadBalancer(60)
+        return jenkinsAddress
     }
 
     String getToken(Object tokenObj) {
@@ -97,7 +104,7 @@ class RestApiClient {
         return jobName
     }
 
-    void startJenkinsBuild(String job, String jenkinsAddress) {
+    void startJenkinsBuild(String jenkinsAddress, String job) {
         println("Starting Jenkins job ${job}")
         def url = "${Constants.jenkinsProtocol}://${jenkinsAddress}:${Constants.jenkinsPort}/job/${job}/build"
         print url

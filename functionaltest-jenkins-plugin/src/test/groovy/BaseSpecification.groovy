@@ -6,7 +6,7 @@ import data.Token
 class BaseSpecification extends Specification {
     RestApiClient restApiClient
     public String token
-    public jenkinsAddress
+    public static String jenkinsAddress
 
     def setup() {
         restApiClient = new RestApiClient()
@@ -14,8 +14,15 @@ class BaseSpecification extends Specification {
         tokenobject.setName("automation")
         tokenobject.setRole("Continuous Integration")
         token = restApiClient.getToken(tokenobject)
-        Service svc = new Service("jenkins", "jenkins")
-        jenkinsAddress = svc.getLoadBalancer(60)
+    }
+
+    final static setJenkinsAddress() {
+      jenkinsAddress = RestApiClient.getCachedIp()
+    }
+
+    final static getJenkinsAddress() {
+        setJenkinsAddress()
+        return jenkinsAddress
     }
 
     def cleanup() {
