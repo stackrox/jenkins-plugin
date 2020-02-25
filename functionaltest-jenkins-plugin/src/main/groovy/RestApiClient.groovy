@@ -28,7 +28,7 @@ class RestApiClient {
         return given().relaxedHTTPSValidation().header(header, value)
     }
 
-    final static String getCachedIp(){
+    final static String getCachedIp() {
         Service svc = new Service("jenkins","jenkins");
         jenkinsAddress = svc.getLoadBalancer(60)
         return jenkinsAddress
