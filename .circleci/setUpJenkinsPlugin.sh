@@ -19,7 +19,7 @@ if [[ "${JENKINS_DEPLOYED}" = false  ]]; then
        kubectl -n jenkins get pods
        exit 1
 fi
-kubectl cp /home/circleci/jenkins-plugin/stackrox-container-image-scanner/target/stackrox-container-image-scanner.hpi jenkins/"${JENKINSPOD}":/var/jenkins_home/plugins/.
+kubectl cp "${BASE_DIR}"/stackrox-container-image-scanner/target/stackrox-container-image-scanner.hpi jenkins/"${JENKINSPOD}":/var/jenkins_home/plugins/.
 result=$?
 if [[ $result -eq 0 ]]; then
     echo "Jenkins plugin has been installed"
