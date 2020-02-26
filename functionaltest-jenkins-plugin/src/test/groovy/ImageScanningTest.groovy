@@ -68,7 +68,26 @@ class ImageScanningTest extends BaseSpecification {
         "data inputs are: "
         imageName             | test
         "nginx:latest"        | "Testing nginx with latest tag"
-        "jenkins/jenkins:lts" | "testing jenkins image with latest tag"
+    }
+
+    @Unroll
+    def "image scanning test with docker hub images -ve scenario"() {
+        given:
+        "a repo with images in the scanner repo"
+        when:
+        "Jenkins is setup"
+        then:
+        println("Testing image ${imageName} and ${test}")
+        DataUtil.createJenkinsConfig(imageName, "https://central.stackrox:443", token, true, true)
+        File tempJenkinsConfigFile = new File("src/test/resources/temp.xml")
+        String jobName = restApiClient.createJenkinsJob(cachedJenkinsIp, tempJenkinsConfigFile)
+        restApiClient.startJenkinsBuild(cachedJenkinsIp, jobName)
+        String status = restApiClient.getJenkinsBuildStatus(jobName, 60, cachedJenkinsIp)
+        assert status == "FAILURE"
+        where:
+        "data inputs are: "
+        imageName             | test
+        "jenkins/jenkins:lts" | "Testing jenkins/jenkins:lts for policy Fixable CVSS >= 7"
     }
 
     @Unroll
