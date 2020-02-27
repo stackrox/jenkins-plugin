@@ -4,12 +4,14 @@ import data.ListPolicyResponse
 import data.Policy
 import data.Policies
 import spock.lang.Unroll
+import data.Alerts
+import data.Alert
 
 class ImageScanningTest extends BaseSpecification {
 
     final String cachedJenkinsIp = getJenkinsAddress()
 
-    def "image scanning test with the docker image + scenarios"() {
+    def "image scanning test with the docker image + scenarios(#imageName, #test)"() {
         given:
         "a repo with images in the scanner repo"
         when:
@@ -22,6 +24,12 @@ class ImageScanningTest extends BaseSpecification {
         restApiClient.startJenkinsBuild(jenkinsAddress,  jobName)
         String status = restApiClient.getJenkinsBuildStatus(jobName, 60, jenkinsAddress)
         assert status == "SUCCESS"
+        BuildDetectRequest buildDetectRequest = new BuildDetectRequest()
+        buildDetectRequest.setProperty("image_name", imageName)
+        Alerts alerts = restApiClient.getAlerts(buildDetectRequest)
+        for (Alert alert : alerts.alerts) {
+              assert alert.enforcement == null
+        }
         where:
         "data inputs are: "
         imageName                            | test
@@ -29,7 +37,7 @@ class ImageScanningTest extends BaseSpecification {
     }
 
     @Unroll
-    def "image scanning test with the docker image -ve scenarios"() {
+    def "image scanning test with the docker image -ve scenarios(#imageName, #test)"() {
         given:
         "a repo with images in the scanner repo"
         when:
@@ -71,7 +79,7 @@ class ImageScanningTest extends BaseSpecification {
     }
 
     @Unroll
-    def "image scanning test with docker hub images -ve scenario"() {
+    def "image scanning test with docker hub images -ve scenario(#imageName, #test)"() {
         given:
         "a repo with images in the scanner repo"
         when:
@@ -91,7 +99,7 @@ class ImageScanningTest extends BaseSpecification {
     }
 
     @Unroll
-    def "image scanning test with the docker image -ve scenarios with ignore policy eval check"() {
+    def "image scanning test with the docker image -ve scenarios with fail plugin error(#imageName, #failOnCriticalPluginError, #test, #endStatus)"() {
         given:
         "a repo with images in the scanner repo"
         when:

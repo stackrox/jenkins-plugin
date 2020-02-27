@@ -7,14 +7,14 @@ class Alert {
     public String id
     public Policy policy
     LifecycleStages lifecyleStages
-    Object Deployment
+    Object deployment
     Violation[] violations
-    public Object ProcessViolation
-    EnforcementAction enforcementaction
-    public String Time
-    public String FirstOccurred
-    public String State
-    public String SnoozeTill
+    public Object processViolation
+    public String enforcement
+    public String time
+    public String firstOccurred
+    public String state
+    public String snoozeTill
 
     enum LifecycleStages {
         DEPLOY,
@@ -37,18 +37,18 @@ class Violation {
 }
 
 class Component {
-    public String Name
-    public String Version
+    public String name
+    public String version
 }
 
 class Whitelist {
-    public String Name
-    public Deployment Deployment
-    public JsonElement Image
-    public String Expiration
+    public String name
+    public Deployment deployment
+    public JsonElement image
+    public String expiration
     class Deployment {
-        public String Name
-        public Scope Scope
+        public String name
+        public Scope scope
     }
 
     class Scope {

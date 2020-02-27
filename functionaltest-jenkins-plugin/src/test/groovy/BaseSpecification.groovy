@@ -26,9 +26,6 @@ class BaseSpecification extends Specification {
     }
 
     def cleanup() {
-        def checkDeleted = DataUtil.deleteFileFromDisk("src/test/resources/temp.xml")
-        if (checkDeleted) {
-            println("Test completed and file deleted")
-        }
+        new File("testtemp.xml").delete()
     }
 }

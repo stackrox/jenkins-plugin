@@ -34,13 +34,4 @@ class DataUtil {
         def serializedXml = XmlUtil.serialize(parsexml)
         file.write(serializedXml)
     }
-
-
-    static Boolean deleteFileFromDisk(String filename) {
-        boolean fileSuccessfullyDeleted = new File(filename).delete()
-        if (fileSuccessfullyDeleted) {
-            return true
-        }
-        return false
-    }
 }

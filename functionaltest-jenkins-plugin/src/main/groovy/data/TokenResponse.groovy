@@ -2,7 +2,7 @@ package data
 
 class TokenResponse {
     String token
-    class metaData {
+    class MetaData {
         String id
         String name
         String role
