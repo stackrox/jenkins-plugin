@@ -9,6 +9,6 @@ class BuildDetectRequest {
         public String registry
         public String remote
         public String tag
-        public String full_name
+        public String fullName
     }
 }
