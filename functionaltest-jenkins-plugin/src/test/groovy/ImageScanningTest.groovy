@@ -55,9 +55,9 @@ class ImageScanningTest extends BaseSpecification {
             rationale = "Make sure the builds are latest"
             categories = ["Image Assurance"]
             fields = policyFields
-            lifecycle_stages = ["BUILD"]
+            lifecycleStages = ["BUILD"]
             severity = "MEDIUM_SEVERITY"
-            enforcement_actions = ["FAIL_BUILD_ENFORCEMENT"]
+            enforcementActions= ["FAIL_BUILD_ENFORCEMENT"]
         }
         Policies policies = restApiClient.getPolicies()
         for (ListPolicyResponse policy : policies.policies) {
