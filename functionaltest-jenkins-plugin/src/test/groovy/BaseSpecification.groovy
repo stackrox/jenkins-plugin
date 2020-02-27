@@ -26,6 +26,6 @@ class BaseSpecification extends Specification {
     }
 
     def cleanup() {
-        new File("testtemp.xml").delete()
+        new File("src/test/resources/temp.xml").delete()
     }
 }
