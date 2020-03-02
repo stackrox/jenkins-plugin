@@ -9,7 +9,7 @@ class ListPolicyResponse {
     Severity severity
     Boolean disabled
     String[] notifiers
-    JsonElement last_updated
+    JsonElement lastUpdated
     EnforcementAction enforcementAction
 
     enum EnforcementAction {
