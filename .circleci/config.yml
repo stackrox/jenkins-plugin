@@ -207,10 +207,10 @@ jobs:
             export API_HOST_NAME="localhost"
             export API_PORT=8000
             PORT_FORWARD=false
-            for i in $(seq 1 50);do
-              METADATA_URL="https://"${API_HOST_NAME}":"${API_PORT}"/v1/metadata" || true
-              licenseStatus="$(curl -sk $METADATA_URL | jq  '.licenseStatus' -r)" || true
-              if [[ $licenseStatus = "VALID" ]];then
+            for i in $(seq 1 50); do
+              METADATA_URL=$("https://${API_HOST_NAME}:${API_PORT}/v1/metadata || true)"
+              licenseStatus="$(curl -sk $METADATA_URL | jq  '.licenseStatus' -r || true)"
+              if [[ $licenseStatus = "VALID" ]]; then
                 PORT_FORWARD=true
                 break
               fi
