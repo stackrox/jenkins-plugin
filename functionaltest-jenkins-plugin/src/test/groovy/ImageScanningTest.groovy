@@ -24,7 +24,7 @@ class ImageScanningTest extends BaseSpecification {
         String status = restApiClient.getJenkinsBuildStatus(jobName, 60, jenkinsAddress)
         assert status == "SUCCESS"
         BuildDetectRequest buildDetectRequest = new BuildDetectRequest()
-        buildDetectRequest.setProperty("image_name", imageName)
+        buildDetectRequest.setProperty("imageName", imageName)
         Alerts alerts = restApiClient.getAlerts(buildDetectRequest)
         for (Alert alert : alerts.alerts) {
               assert alert.enforcement == null

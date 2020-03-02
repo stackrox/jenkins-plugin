@@ -3,7 +3,7 @@ package data
 class BuildDetectRequest {
 
     public Name name
-    public String image_name
+    public String imageName
 
     class Name {
         public String registry
