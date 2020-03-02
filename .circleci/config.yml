@@ -208,12 +208,14 @@ jobs:
             export API_PORT=8000
             PORT_FORWARD=false
             for i in $(seq 1 50); do
-              export API_ENDPOINT="${API_HOSTNAME}:${API_PORT}"
+              export API_ENDPOINT="${API_HOST_NAME}:${API_PORT}" || true
+              echo $API_ENDPOINT
               export METADATA_URL="https://${API_ENDPOINT}/v1/metadata" || true
-              licenseStatus="$(curl -sk $METADATA_URL | jq  '.licenseStatus' -r) || true)"
+              echo $METADATA_URL
+              licenseStatus="$(curl -sk $METADATA_URL | jq  '.licenseStatus' -r || true)"
               if [[ $licenseStatus = "VALID" ]]; then
-                PORT_FORWARD=true
-                break
+                 PORT_FORWARD=true
+                 break
               fi
               sleep 5
             done
