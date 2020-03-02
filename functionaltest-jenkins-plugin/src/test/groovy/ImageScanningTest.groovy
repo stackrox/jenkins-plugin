@@ -85,7 +85,6 @@ class ImageScanningTest extends BaseSpecification {
         then:
         println("Testing image ${imageName} and ${test}")
         File configFile = DataUtil.createJenkinsConfig(imageName, "https://central.stackrox:443", token, true, true)
-        File tempJenkinsConfigFile = new File("src/test/resources/temp.xml")
         String jobName = restApiClient.createJenkinsJob(cachedJenkinsIp, configFile)
         restApiClient.startJenkinsBuild(cachedJenkinsIp, jobName)
         String status = restApiClient.getJenkinsBuildStatus(jobName, 60, cachedJenkinsIp)
