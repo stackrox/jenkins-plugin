@@ -18,9 +18,8 @@ class ImageScanningTest extends BaseSpecification {
         "Jenkins is setup"
         then:
         println("Testing image ${imageName} and ${test}")
-        DataUtil.createJenkinsConfig(imageName, "https://central.stackrox:443", token, true, true)
-        File tempJenkinsConfigFile = new File("src/test/resources/temp.xml")
-        String jobName = restApiClient.createJenkinsJob(cachedJenkinsIp, tempJenkinsConfigFile)
+        File configfile = DataUtil.createJenkinsConfig(imageName, "https://central.stackrox:443", token, true, true)
+        String jobName = restApiClient.createJenkinsJob(cachedJenkinsIp, configfile)
         restApiClient.startJenkinsBuild(jenkinsAddress,  jobName)
         String status = restApiClient.getJenkinsBuildStatus(jobName, 60, jenkinsAddress)
         assert status == "SUCCESS"
@@ -66,9 +65,8 @@ class ImageScanningTest extends BaseSpecification {
                 restApiClient.updatePolicy(newpolicy, policy.id)
             }
         }
-        DataUtil.createJenkinsConfig(imageName, "https://central.stackrox:443", token, true, true)
-        File tempJenkinsConfigFile = new File("src/test/resources/temp.xml")
-        String jobName = restApiClient.createJenkinsJob(cachedJenkinsIp, tempJenkinsConfigFile)
+        File configfile =  DataUtil.createJenkinsConfig(imageName, "https://central.stackrox:443", token, true, true)
+        String jobName = restApiClient.createJenkinsJob(cachedJenkinsIp, configfile)
         restApiClient.startJenkinsBuild(cachedJenkinsIp, jobName)
         String status = restApiClient.getJenkinsBuildStatus(jobName, 60, cachedJenkinsIp)
         assert status == "FAILURE"
@@ -86,9 +84,9 @@ class ImageScanningTest extends BaseSpecification {
         "Jenkins is setup"
         then:
         println("Testing image ${imageName} and ${test}")
-        DataUtil.createJenkinsConfig(imageName, "https://central.stackrox:443", token, true, true)
+        File configFile = DataUtil.createJenkinsConfig(imageName, "https://central.stackrox:443", token, true, true)
         File tempJenkinsConfigFile = new File("src/test/resources/temp.xml")
-        String jobName = restApiClient.createJenkinsJob(cachedJenkinsIp, tempJenkinsConfigFile)
+        String jobName = restApiClient.createJenkinsJob(cachedJenkinsIp, configFile)
         restApiClient.startJenkinsBuild(cachedJenkinsIp, jobName)
         String status = restApiClient.getJenkinsBuildStatus(jobName, 60, cachedJenkinsIp)
         assert status == "FAILURE"
@@ -106,9 +104,8 @@ class ImageScanningTest extends BaseSpecification {
         "Jenkins is setup"
         then:
         println("Testing image ${imageName} and ${test}")
-        DataUtil.createJenkinsConfig(imageName, "https://central.stackrox:443", token, false, failOnCriticalPluginError)
-        File tempJenkinsConfigFile = new File("src/test/resources/temp.xml")
-        String jobName = restApiClient.createJenkinsJob(cachedJenkinsIp, tempJenkinsConfigFile)
+        File configFile = DataUtil.createJenkinsConfig(imageName, "https://central.stackrox:443", token, false, failOnCriticalPluginError)
+        String jobName = restApiClient.createJenkinsJob(cachedJenkinsIp, configFile)
         restApiClient.startJenkinsBuild(cachedJenkinsIp, jobName)
         String status = restApiClient.getJenkinsBuildStatus(jobName, 60, cachedJenkinsIp)
         assert status == endStatus

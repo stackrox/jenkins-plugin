@@ -22,6 +22,7 @@ class RestApiClient {
         def env = System.getenv()
         def password = env['ROX_PASSWORD']
         encodedpassword = "Basic " + DataUtil.base64Encode(common.Constants.clusterUserName + ":" + password)
+        println encodedpassword
      }
 
     protected RequestSpecification createRequestSpecification(String header, String value) {
@@ -41,7 +42,6 @@ class RestApiClient {
                 .post(url)
         TokenResponse token = gson.fromJson(response.asString(), TokenResponse)
         return token.token
-
     }
 
     protected Alerts getAlerts(Object requestObj) {

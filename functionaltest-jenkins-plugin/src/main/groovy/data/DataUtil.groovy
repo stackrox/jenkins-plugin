@@ -9,7 +9,7 @@ class DataUtil {
         return output
     }
 
-    static void createJenkinsConfig(String imageName, String portalAddress, String token, Boolean policyEvalCheck, Boolean failOnCriticalPluginError) {
+    static File createJenkinsConfig(String imageName, String portalAddress, String token, Boolean policyEvalCheck, Boolean failOnCriticalPluginError) {
         String path = "src/test/resources/template.xml"
         String xml = new File(path).text
         def param = [:]
@@ -30,8 +30,9 @@ class DataUtil {
 
         }
         println("Writing to a temp file")
-        File file = new File("src/test/resources/temp.xml")
+        File file = File.createTempFile("temp",".xml",new File("."))
         def serializedXml = XmlUtil.serialize(parsexml)
         file.write(serializedXml)
+        return file
     }
 }

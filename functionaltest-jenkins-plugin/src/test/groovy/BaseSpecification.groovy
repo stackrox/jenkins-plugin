@@ -2,6 +2,7 @@ import com.google.gson.Gson
 import spock.lang.Specification
 import data.DataUtil
 import data.Token
+import groovy.io.FileType
 
 class BaseSpecification extends Specification {
     RestApiClient restApiClient
@@ -26,6 +27,9 @@ class BaseSpecification extends Specification {
     }
 
     def cleanup() {
-        new File("src/test/resources/temp.xml").delete()
+        def folderPath = "."
+        new File(folderPath).eachFile (FileType.FILES) { file ->
+            if (file.name.contains('temp')) file.delete()
+        }
     }
 }
