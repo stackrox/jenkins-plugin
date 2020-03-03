@@ -102,7 +102,7 @@ class ImageScanningTest extends BaseSpecification {
         when:
         "Jenkins is setup"
         then:
-        println("Testing image ${imageName} and ${test}")
+        println("Testing image ${imageName} and ${test} and failOnCriticalPluginError configuration set to ${failOnCriticalPluginError}")
         File configFile = DataUtil.createJenkinsConfig(imageName, "https://central.stackrox:443", token, false, failOnCriticalPluginError)
         String jobName = restApiClient.createJenkinsJob(cachedJenkinsIp, configFile)
         restApiClient.startJenkinsBuild(cachedJenkinsIp, jobName)
