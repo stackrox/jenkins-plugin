@@ -10,7 +10,7 @@ class DataUtil {
     }
 
     static File createJenkinsConfig(String imageName, String portalAddress, String token, Boolean policyEvalCheck, Boolean failOnCriticalPluginError) {
-        String path = "src/test/resources/template.xml"
+        String path = "resources/template.xml"
         String xml = new File(path).text
         def param = [:]
         param["command"] = """mkdir \$BUILD_TAG
