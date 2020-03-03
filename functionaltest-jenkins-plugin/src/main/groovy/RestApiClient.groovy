@@ -25,7 +25,9 @@ class RestApiClient {
         println encodedpassword
      }
 
-    protected RequestSpecification createRequestSpecification(String header, String value) {
+    protected RequestSpecification createRequestSpecification() {
+        String header = "Authorization"
+        String value = encodedpassword
         return given().relaxedHTTPSValidation().header(header, value)
     }
 
@@ -37,7 +39,7 @@ class RestApiClient {
 
     String getToken(Object tokenObj) {
         String url = Constants.baseurl + Constants.tokenGenerate
-        Response response = createRequestSpecification("Authorization", encodedpassword)
+        Response response = createRequestSpecification()
                 .body(gson.toJson(tokenObj))
                 .post(url)
         TokenResponse token = gson.fromJson(response.asString(), TokenResponse)
@@ -46,7 +48,7 @@ class RestApiClient {
 
     protected Alerts getAlerts(Object requestObj) {
         String url = Constants.baseurl + Constants.buildDetect
-        Response response = createRequestSpecification("Authorization", encodedpassword)
+        Response response = createRequestSpecification()
                 .body(gson.toJson(requestObj))
                 .post(url)
         println(response.asString())
@@ -56,7 +58,7 @@ class RestApiClient {
 
     Policy createPolicy(Object policyObj) {
         def url = Constants.baseurl + Constants.postPolicy
-        Response response = createRequestSpecification("Authorization", encodedpassword)
+        Response response = createRequestSpecification()
                 .body(gson.toJson(policyObj))
                 .post(url)
         Policy policy = gson.fromJson(response.asString(), Policy)
@@ -65,7 +67,7 @@ class RestApiClient {
 
     Policies getPolicies() {
         def url = Constants.baseurl + Constants.getPolicies
-        Response response = createRequestSpecification("Authorization", encodedpassword)
+        Response response = createRequestSpecification()
                 .get(url)
         Policies policies = gson.fromJson(response.asString(), Policies)
         return policies
@@ -74,7 +76,7 @@ class RestApiClient {
 
     def updatePolicy(Object policyObj, String id) {
         def url = Constants.baseurl + Constants.putPolicy.replace("{id}", id)
-        Response response = createRequestSpecification("Authorization", encodedpassword)
+        Response response = createRequestSpecification()
                 .body(gson.toJson(policyObj))
                 .put(url)
         Policy policy = gson.fromJson(response.asString(), Policy)
@@ -83,7 +85,7 @@ class RestApiClient {
 
     def getPolicy(String id) {
         def url = Constants.baseurl + Constants.putPolicy.replace("{id}", id)
-        Response response = createRequestSpecification("Authorization", encodedpassword)
+        Response response = createRequestSpecification()
                 .get(url)
         Policy policy = gson.fromJson(response.asString(), Policy)
         return policy

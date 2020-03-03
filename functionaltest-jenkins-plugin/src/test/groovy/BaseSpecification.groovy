@@ -1,6 +1,4 @@
-import com.google.gson.Gson
 import spock.lang.Specification
-import data.DataUtil
 import data.Token
 import groovy.io.FileType
 
