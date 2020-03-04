@@ -45,7 +45,7 @@ class ImageScanningTest extends BaseSpecification {
         then:
         Policy updatedPolicy = new Policy()
         updatedPolicy.with {
-            lifecycleStages = ["BUILD","DEPLOY"]
+            lifecycleStages = ["BUILD"]
             enforcementActions= ["FAIL_BUILD_ENFORCEMENT"]
         }
         Policies policies = restApiClient.getPolicies()
