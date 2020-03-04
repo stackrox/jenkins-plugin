@@ -11,6 +11,7 @@ class ImageScanningTest extends BaseSpecification {
 
     final String cachedJenkinsIp = getJenkinsAddress()
 
+    @Unroll
     def "image scanning test with the docker image + scenarios(#imageName, #test)"() {
         given:
         "a repo with images in the scanner repo"
@@ -36,54 +37,26 @@ class ImageScanningTest extends BaseSpecification {
     }
 
     @Unroll
-    def "image scanning test with the docker image -ve scenarios(#imageName, #test)"() {
+    def "image scanning test with docker hub images -ve scenario(#imageName, #test, #policyName, #lifecycleStage)"() {
         given:
         "a repo with images in the scanner repo"
         when:
         "Jenkins is setup"
         then:
-        println("Testing image ${imageName} and ${test}")
-        Policy newpolicy = new Policy()
-        Policy.PolicyFields policyFields = new Policy.PolicyFields()
-        Policy.PolicyFields.ImageNamePolicy imageNamePolicy = new Policy.PolicyFields.ImageNamePolicy()
-        policyFields.setImage_name(imageNamePolicy)
-        imageNamePolicy.setTag("latest")
-        newpolicy.with {
-            name = "Latest tag"
-            description = "Violation against latest tag"
-            rationale = "Make sure the builds are latest"
-            categories = ["Image Assurance"]
-            fields = policyFields
-            lifecycleStages = ["BUILD"]
-            severity = "MEDIUM_SEVERITY"
+        Policy updatedPolicy = new Policy()
+        updatedPolicy.with {
+            lifecycleStages = [lifecycleStage]
             enforcementActions= ["FAIL_BUILD_ENFORCEMENT"]
         }
         Policies policies = restApiClient.getPolicies()
         for (ListPolicyResponse policy : policies.policies) {
-            if (policy.name == "Latest tag") {
-                println("Updating the latest tag policy")
-                restApiClient.updatePolicy(newpolicy, policy.id)
+            if (policy.name == policyName) {
+                println("Updating the policy $policyName")
+                restApiClient.updatePolicy(updatedPolicy, policy.id)
+                Policy checkPolicy = restApiClient.getPolicy(policy.id)
+                assert checkPolicy.lifecycleStages == lifecycleStage
             }
         }
-        File configfile =  DataUtil.createJenkinsConfig(imageName, "https://central.stackrox:443", token, true, true)
-        String jobName = restApiClient.createJenkinsJob(cachedJenkinsIp, configfile)
-        restApiClient.startJenkinsBuild(cachedJenkinsIp, jobName)
-        String status = restApiClient.getJenkinsBuildStatus(jobName, 60, cachedJenkinsIp)
-        assert status == "FAILURE"
-        where:
-        "data inputs are: "
-        imageName             | test
-        "nginx:latest"        | "Testing nginx with latest tag"
-    }
-
-    @Unroll
-    def "image scanning test with docker hub images -ve scenario(#imageName, #test)"() {
-        given:
-        "a repo with images in the scanner repo"
-        when:
-        "Jenkins is setup"
-        then:
-        println("Testing image ${imageName} and ${test}")
         File configFile = DataUtil.createJenkinsConfig(imageName, "https://central.stackrox:443", token, true, true)
         String jobName = restApiClient.createJenkinsJob(cachedJenkinsIp, configFile)
         restApiClient.startJenkinsBuild(cachedJenkinsIp, jobName)
@@ -91,8 +64,9 @@ class ImageScanningTest extends BaseSpecification {
         assert status == "FAILURE"
         where:
         "data inputs are: "
-        imageName             | test
-        "jenkins/jenkins:lts" | "Testing jenkins/jenkins:lts for policy Fixable CVSS >= 7"
+        imageName                               | test                                                       | policyName           | lifecycleStage
+        "jenkins/jenkins:lts"                   | "Testing jenkins/jenkins:lts for policy Fixable CVSS >= 7" | "Fixable CVSS >= 7"  |  "BUILD"
+        "docker.io/library/nginx:latest"        | "Testing nginx with latest tag"                            | "Latest tag"         |  "BUILD"
     }
 
     @Unroll
@@ -102,7 +76,6 @@ class ImageScanningTest extends BaseSpecification {
         when:
         "Jenkins is setup"
         then:
-        println("Testing image ${imageName} and ${test} and failOnCriticalPluginError configuration set to ${failOnCriticalPluginError}")
         File configFile = DataUtil.createJenkinsConfig(imageName, "https://central.stackrox:443", token, false, failOnCriticalPluginError)
         String jobName = restApiClient.createJenkinsJob(cachedJenkinsIp, configFile)
         restApiClient.startJenkinsBuild(cachedJenkinsIp, jobName)
