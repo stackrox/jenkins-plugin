@@ -88,6 +88,7 @@ class RestApiClient {
         println url
         Response response = createRequestSpecification()
                 .get(url)
+        println response.asString()
         Policy policy = gson.fromJson(response.asString(), Policy)
         return policy
     }
