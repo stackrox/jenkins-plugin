@@ -53,8 +53,6 @@ class ImageScanningTest extends BaseSpecification {
             if (policy.name == policyName) {
                 println("Updating the policy $policyName")
                 restApiClient.updatePolicy(updatedPolicy, policy.id)
-                Policy checkPolicy = restApiClient.getPolicy(policy.id)
-                assert checkPolicy.lifecycleStages == lifecycleStage
             }
         }
         File configFile = DataUtil.createJenkinsConfig(imageName, "https://central.stackrox:443", token, true, true)
