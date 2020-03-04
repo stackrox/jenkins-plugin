@@ -4,8 +4,6 @@ import data.ListPolicyResponse
 import data.Policy
 import data.Policies
 import spock.lang.Unroll
-import data.Alerts
-import data.Alert
 
 class ImageScanningTest extends BaseSpecification {
 
@@ -37,12 +35,6 @@ class ImageScanningTest extends BaseSpecification {
                 println("Updating the policy $policyName")
                 restApiClient.updatePolicy(updatedPolicy, policy.id)
             }
-        }
-        BuildDetectRequest buildDetectRequest = new BuildDetectRequest()
-        buildDetectRequest.setProperty("imageName", imageName)
-        Alerts alerts = restApiClient.getAlerts(buildDetectRequest)
-        for (Alert alert : alerts.alerts) {
-            assert alert.enforcement == null
         }
         println("Testing image ${imageName} and ${test}")
         File configfile = DataUtil.createJenkinsConfig(imageName, "https://central.stackrox:443", token, true, true)
