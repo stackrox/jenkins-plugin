@@ -18,41 +18,72 @@ class ImageScanningTest extends BaseSpecification {
         when:
         "Jenkins is setup"
         then:
-        println("Testing image ${imageName} and ${test}")
-        File configfile = DataUtil.createJenkinsConfig(imageName, "https://central.stackrox:443", token, true, true)
-        String jobName = restApiClient.createJenkinsJob(cachedJenkinsIp, configfile)
-        restApiClient.startJenkinsBuild(jenkinsAddress,  jobName)
-        String status = restApiClient.getJenkinsBuildStatus(jobName, 60, jenkinsAddress)
-        assert status == "SUCCESS"
-        BuildDetectRequest buildDetectRequest = new BuildDetectRequest()
-        buildDetectRequest.setProperty("imageName", imageName)
-        Alerts alerts = restApiClient.getAlerts(buildDetectRequest)
-        for (Alert alert : alerts.alerts) {
-              assert alert.enforcement == null
-        }
-        where:
-        "data inputs are: "
-        imageName                            | test
-        "k8s.gcr.io/prometheus-to-sd:v0.4.2" | "Test prometheus image used in stackrox"
-    }
-
-    @Unroll
-    def "image scanning test with docker hub images -ve scenario(#imageName, #test, #policyName)"() {
-        given:
-        "a repo with images in the scanner repo"
-        when:
-        "Jenkins is setup"
-        then:
         Policy updatedPolicy = new Policy()
+        Policy.PolicyFields policyFields = new Policy.PolicyFields()
+        Policy.PolicyFields.ImageNamePolicy imageNamePolicy = new Policy.PolicyFields.ImageNamePolicy()
+        policyFields.setImage_name(imageNamePolicy)
+        imageNamePolicy.setTag("v0.4.2")
         updatedPolicy.with {
+            name = policyName  //fields below are required.
             lifecycleStages = ["BUILD"]
-            enforcementActions= ["FAIL_BUILD_ENFORCEMENT"]
+            severity = "MEDIUM_SEVERITY"
+            fields = policyFields
+            categories = ["Image Assurance"]
+            enforcementActions = ["UNSET_ENFORCEMENT"]
         }
         Policies policies = restApiClient.getPolicies()
         for (ListPolicyResponse policy : policies.policies) {
             if (policy.name == policyName) {
                 println("Updating the policy $policyName")
                 restApiClient.updatePolicy(updatedPolicy, policy.id)
+            }
+        }
+        BuildDetectRequest buildDetectRequest = new BuildDetectRequest()
+        buildDetectRequest.setProperty("imageName", imageName)
+        Alerts alerts = restApiClient.getAlerts(buildDetectRequest)
+        for (Alert alert : alerts.alerts) {
+            assert alert.enforcement == null
+        }
+        println("Testing image ${imageName} and ${test}")
+        File configfile = DataUtil.createJenkinsConfig(imageName, "https://central.stackrox:443", token, true, true)
+        String jobName = restApiClient.createJenkinsJob(cachedJenkinsIp, configfile)
+        restApiClient.startJenkinsBuild(jenkinsAddress,  jobName)
+        String status = restApiClient.getJenkinsBuildStatus(jobName, 60, jenkinsAddress)
+        assert status == "SUCCESS"
+        where:
+        "data inputs are: "
+        imageName                            | test                                        |  policyName
+        "k8s.gcr.io/prometheus-to-sd:v0.4.2" | "Test prometheus image used in stackrox"    |  "90-Day Image Age"
+    }
+
+    @Unroll
+    def "image scanning test with docker hub images -ve scenario(#imageName, #test, #policyName, #Enforcement, #tag)"() {
+        given:
+        "a repo with images in the scanner repo"
+        when:
+        "Jenkins is setup"
+        then:
+        Policy updatedPolicy = new Policy()
+        Policy.PolicyFields policyFields = new Policy.PolicyFields()
+        Policy.PolicyFields.ImageNamePolicy imageNamePolicy = new Policy.PolicyFields.ImageNamePolicy()
+        policyFields.setImage_name(imageNamePolicy)
+        imageNamePolicy.setTag(tag)
+        updatedPolicy.with {
+            name = policyName  //fields below are required.
+            lifecycleStages = ["BUILD"]
+            severity = "MEDIUM_SEVERITY"
+            fields = policyFields
+            categories = ["Image Assurance"]
+            enforcementActions = ["FAIL_BUILD_ENFORCEMENT"]
+        }
+        Policies policies = restApiClient.getPolicies()
+        for (ListPolicyResponse policy : policies.policies) {
+            if (policy.name == policyName) {
+                println("Updating the policy $policyName")
+                restApiClient.updatePolicy(updatedPolicy, policy.id)
+                Policy enforcementPolicy  =  restApiClient.getPolicy(policy.id)
+                enforcementPolicy.enforcementActions == ["FAIL_BUILD_ENFORCEMENT"]
+                enforcementPolicy.lifecycleStages == ['BUILD']
             }
         }
         File configFile = DataUtil.createJenkinsConfig(imageName, "https://central.stackrox:443", token, true, true)
@@ -62,9 +93,9 @@ class ImageScanningTest extends BaseSpecification {
         assert status == "FAILURE"
         where:
         "data inputs are: "
-        imageName                               | test                                                       | policyName
-        "jenkins/jenkins:lts"                   | "Testing jenkins/jenkins:lts for policy Fixable CVSS >= 7" | "Fixable CVSS >= 7"
-        "docker.io/library/nginx:latest"        | "Testing nginx with latest tag"                            | "Latest tag"
+        imageName                               | test                                                       | policyName           | tag
+        "jenkins/jenkins:lts"                   | "Testing jenkins/jenkins:lts for policy Fixable CVSS >= 7" | "Fixable CVSS >= 7"  | "lts"
+        "nginx:latest"                          | "Testing nginx with latest tag"                            | "Latest tag"         | "latest"
     }
 
     @Unroll
