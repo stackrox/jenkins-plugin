@@ -37,7 +37,7 @@ class ImageScanningTest extends BaseSpecification {
     }
 
     @Unroll
-    def "image scanning test with docker hub images -ve scenario(#imageName, #test, #policyName, #lifecycleStage)"() {
+    def "image scanning test with docker hub images -ve scenario(#imageName, #test, #policyName)"() {
         given:
         "a repo with images in the scanner repo"
         when:
@@ -45,7 +45,7 @@ class ImageScanningTest extends BaseSpecification {
         then:
         Policy updatedPolicy = new Policy()
         updatedPolicy.with {
-            lifecycleStages = [lifecycleStage]
+            lifecycleStages = ["BUILD","DEPLOY"]
             enforcementActions= ["FAIL_BUILD_ENFORCEMENT"]
         }
         Policies policies = restApiClient.getPolicies()
@@ -64,9 +64,9 @@ class ImageScanningTest extends BaseSpecification {
         assert status == "FAILURE"
         where:
         "data inputs are: "
-        imageName                               | test                                                       | policyName           | lifecycleStage
-        "jenkins/jenkins:lts"                   | "Testing jenkins/jenkins:lts for policy Fixable CVSS >= 7" | "Fixable CVSS >= 7"  |  "BUILD"
-        "docker.io/library/nginx:latest"        | "Testing nginx with latest tag"                            | "Latest tag"         |  "BUILD"
+        imageName                               | test                                                       | policyName
+        "jenkins/jenkins:lts"                   | "Testing jenkins/jenkins:lts for policy Fixable CVSS >= 7" | "Fixable CVSS >= 7"
+        "docker.io/library/nginx:latest"        | "Testing nginx with latest tag"                            | "Latest tag"
     }
 
     @Unroll
