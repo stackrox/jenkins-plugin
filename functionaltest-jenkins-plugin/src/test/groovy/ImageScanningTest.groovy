@@ -1,4 +1,3 @@
-import data.BuildDetectRequest
 import data.DataUtil
 import data.ListPolicyResponse
 import data.Policy
@@ -34,6 +33,9 @@ class ImageScanningTest extends BaseSpecification {
             if (policy.name == policyName) {
                 println("Updating the policy $policyName")
                 restApiClient.updatePolicy(updatedPolicy, policy.id)
+                Policy enforcementPolicy  =  restApiClient.getPolicy(policy.id)
+                assert enforcementPolicy.enforcementActions == ["UNSET_ENFORCEMENT"]
+                assert enforcementPolicy.lifecycleStages == ['BUILD']
             }
         }
         println("Testing image ${imageName} and ${test}")
