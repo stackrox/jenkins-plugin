@@ -30,7 +30,6 @@ class ImageScanningTest extends BaseSpecification {
                 assert enforcementPolicy.lifecycleStages == ['BUILD']
             }
         }
-        println("Testing image ${imageName} and ${test}")
         File configfile = DataUtil.createJenkinsConfig(imageName, "https://central.stackrox:443", token, true, true)
         String jobName = restApiClient.createJenkinsJob(cachedJenkinsIp, configfile)
         restApiClient.startJenkinsBuild(jenkinsAddress, jobName)
