@@ -15,28 +15,32 @@ class ImageScanningTest extends BaseSpecification {
         when:
         "Jenkins is setup"
         then:
-        Policy updatedPolicy = policyObj.getUpdatedPolicy(policyName, "v0.4.2", enforcement )
+        Policy updatedPolicy = policyObj.getUpdatedPolicy(policyName, "v0.4.2", enforcement)
         Policies policies = restApiClient.getPolicies()
         for (ListPolicyResponse policy : policies.policies) {
             if (policy.name == policyName) {
                 println("Updating the policy $policyName")
                 restApiClient.updatePolicy(updatedPolicy, policy.id)
-                Policy enforcementPolicy  = restApiClient.getPolicy(policy.id)
-                assert enforcementPolicy.enforcementActions.empty == true
+                Policy enforcementPolicy = restApiClient.getPolicy(policy.id)
+                if (enforcement == "UNSET_ENFORCEMENT") {
+                    assert enforcementPolicy.enforcementActions.empty == true
+                } else {
+                    assert enforcementPolicy.enforcementActions == ["FAIL_BUILD_ENFORCEMENT"]
+                }
                 assert enforcementPolicy.lifecycleStages == ['BUILD']
             }
         }
         println("Testing image ${imageName} and ${test}")
         File configfile = DataUtil.createJenkinsConfig(imageName, "https://central.stackrox:443", token, true, true)
         String jobName = restApiClient.createJenkinsJob(cachedJenkinsIp, configfile)
-        restApiClient.startJenkinsBuild(jenkinsAddress,  jobName)
+        restApiClient.startJenkinsBuild(jenkinsAddress, jobName)
         String status = restApiClient.getJenkinsBuildStatus(jobName, 60, jenkinsAddress)
         assert status == endStatus
         where:
         "data inputs are: "
-        imageName                            | test                                        |  policyName             | enforcement              | endStatus
-        "k8s.gcr.io/prometheus-to-sd:v0.4.2" | "Test prometheus image used in stackrox"    |  "90-Day Image Age"     | "UNSET_ENFORCEMENT"      | "SUCCESS"
-        "k8s.gcr.io/prometheus-to-sd:v0.4.2" | "Test prometheus image used in stackrox"    |  "90-Day Image Age"     | "FAIL_BUILD_ENFORCEMENT" | "FAILURE"
+        imageName                            | test                                     | policyName         | enforcement              | endStatus
+        "k8s.gcr.io/prometheus-to-sd:v0.4.2" | "Test prometheus image used in stackrox" | "90-Day Image Age" | "UNSET_ENFORCEMENT"      | "SUCCESS"
+        "k8s.gcr.io/prometheus-to-sd:v0.4.2" | "Test prometheus image used in stackrox" | "90-Day Image Age" | "FAIL_BUILD_ENFORCEMENT" | "FAILURE"
     }
 
     @Unroll
@@ -52,7 +56,7 @@ class ImageScanningTest extends BaseSpecification {
             if (policy.name == policyName) {
                 println("Updating the policy $policyName")
                 restApiClient.updatePolicy(updatedPolicy, policy.id)
-                Policy enforcementPolicy  = restApiClient.getPolicy(policy.id)
+                Policy enforcementPolicy = restApiClient.getPolicy(policy.id)
                 assert enforcementPolicy.enforcementActions == ["FAIL_BUILD_ENFORCEMENT"]
                 assert enforcementPolicy.lifecycleStages == ['BUILD']
             }
@@ -64,9 +68,9 @@ class ImageScanningTest extends BaseSpecification {
         assert status == "FAILURE"
         where:
         "data inputs are: "
-        imageName                               | test                                                       | policyName           | tag       | enforcement
-        "jenkins/jenkins:lts"                   | "Testing jenkins/jenkins:lts for policy Fixable CVSS >= 7" | "Fixable CVSS >= 7"  | "lts"     | "FAIL_BUILD_ENFORCEMENT"
-        "nginx:latest"                          | "Testing nginx with latest tag"                            | "Latest tag"         | "latest"  | "FAIL_BUILD_ENFORCEMENT"
+        imageName             | test                                                       | policyName          | tag      | enforcement
+        "jenkins/jenkins:lts" | "Testing jenkins/jenkins:lts for policy Fixable CVSS >= 7" | "Fixable CVSS >= 7" | "lts"    | "FAIL_BUILD_ENFORCEMENT"
+        "nginx:latest"        | "Testing nginx with latest tag"                            | "Latest tag"        | "latest" | "FAIL_BUILD_ENFORCEMENT"
     }
 
     @Unroll
@@ -83,10 +87,10 @@ class ImageScanningTest extends BaseSpecification {
         assert status == endStatus
         where:
         "data inputs are: "
-        imageName             | failOnCriticalPluginError | test                                  | endStatus
-        "jenkins/jenkins:lts" | true                      | "testing jenkins image with lts tag"  | "SUCCESS"
-        "mis-spelled:lts"     | true                      | "testing jenkins image with lts tag"  | "FAILURE"
-        "mis-spelled:lts"     | false                     | "testing jenkins image with lts tag"  | "SUCCESS"
+        imageName             | failOnCriticalPluginError | test                                 | endStatus
+        "jenkins/jenkins:lts" | true                      | "testing jenkins image with lts tag" | "SUCCESS"
+        "mis-spelled:lts"     | true                      | "testing jenkins image with lts tag" | "FAILURE"
+        "mis-spelled:lts"     | false                     | "testing jenkins image with lts tag" | "SUCCESS"
 
     }
 }
