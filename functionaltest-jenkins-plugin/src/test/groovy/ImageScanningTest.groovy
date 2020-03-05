@@ -7,7 +7,7 @@ import spock.lang.Unroll
 class ImageScanningTest extends BaseSpecification {
 
     final String cachedJenkinsIp = getJenkinsAddress()
-
+    final String buildLifeCycleStage = "BUILD"
     @Unroll
     def "image scanning test with the docker image + scenarios(#imageName, #test, #policyName, #enforcement)"() {
         given:
@@ -27,7 +27,7 @@ class ImageScanningTest extends BaseSpecification {
                 } else {
                     assert enforcementPolicy.enforcementActions == ["FAIL_BUILD_ENFORCEMENT"]
                 }
-                assert enforcementPolicy.lifecycleStages == ['BUILD']
+                assert enforcementPolicy.lifecycleStages == [buildLifeCycleStage]
             }
         }
         File configfile = DataUtil.createJenkinsConfig(imageName, "https://central.stackrox:443", token, true, true)
@@ -43,7 +43,7 @@ class ImageScanningTest extends BaseSpecification {
     }
 
     @Unroll
-    def "image scanning test with docker hub images -ve scenario(#imageName, #test, #policyName, #Enforcement, #tag, #enforcement)"() {
+    def "image scanning test with docker hub images -ve scenario(#imageName, #test, #policyName, #tag, #enforcement)"() {
         given:
         "a repo with images in the scanner repo"
         when:
@@ -56,8 +56,8 @@ class ImageScanningTest extends BaseSpecification {
                 println("Updating the policy $policyName")
                 restApiClient.updatePolicy(updatedPolicy, policy.id)
                 Policy enforcementPolicy = restApiClient.getPolicy(policy.id)
-                assert enforcementPolicy.enforcementActions == ["FAIL_BUILD_ENFORCEMENT"]
-                assert enforcementPolicy.lifecycleStages == ['BUILD']
+                assert enforcementPolicy.enforcementActions == [enforcement]
+                assert enforcementPolicy.lifecycleStages == [buildLifeCycleStage]
             }
         }
         File configFile = DataUtil.createJenkinsConfig(imageName, "https://central.stackrox:443", token, true, true)
