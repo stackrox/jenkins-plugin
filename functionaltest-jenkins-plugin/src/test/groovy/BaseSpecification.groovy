@@ -1,3 +1,5 @@
+import data.DataUtil
+import data.Policy
 import spock.lang.Specification
 import data.Token
 import groovy.io.FileType
@@ -6,6 +8,8 @@ class BaseSpecification extends Specification {
     RestApiClient restApiClient
     public String token
     public static String jenkinsAddress
+    public String dataUtil
+    public Policy policyObj
 
     def setup() {
         restApiClient = new RestApiClient()
@@ -13,6 +17,7 @@ class BaseSpecification extends Specification {
         tokenobject.setName("automation")
         tokenobject.setRole("Continuous Integration")
         token = restApiClient.getToken(tokenobject)
+        policyObj = new Policy();
     }
 
     final static setJenkinsAddress() {

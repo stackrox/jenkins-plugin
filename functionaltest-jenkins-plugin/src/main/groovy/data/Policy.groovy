@@ -56,5 +56,22 @@ class Policy {
         BUILD,
         RUNTIME
     }
+
+     Policy getUpdatedPolicy(String policyName, String tag, String enforcement) {
+        Policy updatedPolicy = new Policy()
+        Policy.PolicyFields policyFields = new Policy.PolicyFields()
+        Policy.PolicyFields.ImageNamePolicy imageNamePolicy = new Policy.PolicyFields.ImageNamePolicy()
+        policyFields.setImage_name(imageNamePolicy)
+        imageNamePolicy.setTag(tag)
+        updatedPolicy.with {
+            name = policyName  //fields below are required.
+            lifecycleStages = ["BUILD"]
+            severity = "MEDIUM_SEVERITY"
+            fields = policyFields
+            categories = ["Image Assurance"]
+            enforcementActions = [enforcement]
+        }
+        return updatedPolicy
+    }
 }
 

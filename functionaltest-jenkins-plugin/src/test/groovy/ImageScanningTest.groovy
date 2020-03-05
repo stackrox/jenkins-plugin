@@ -9,25 +9,13 @@ class ImageScanningTest extends BaseSpecification {
     final String cachedJenkinsIp = getJenkinsAddress()
 
     @Unroll
-    def "image scanning test with the docker image + scenarios(#imageName, #test)"() {
+    def "image scanning test with the docker image + scenarios(#imageName, #test, #policyName, #enforcement)"() {
         given:
-        "a repo with images in the scanner repo"
+        "a scanner repo with images"
         when:
         "Jenkins is setup"
         then:
-        Policy updatedPolicy = new Policy()
-        Policy.PolicyFields policyFields = new Policy.PolicyFields()
-        Policy.PolicyFields.ImageNamePolicy imageNamePolicy = new Policy.PolicyFields.ImageNamePolicy()
-        policyFields.setImage_name(imageNamePolicy)
-        imageNamePolicy.setTag("v0.4.2")
-        updatedPolicy.with {
-            name = policyName  //fields below are required.
-            lifecycleStages = ["BUILD"]
-            severity = "MEDIUM_SEVERITY"
-            fields = policyFields
-            categories = ["Image Assurance"]
-            enforcementActions = ["UNSET_ENFORCEMENT"]
-        }
+        Policy updatedPolicy = policyObj.getUpdatedPolicy(policyName, "v0.4.2", enforcement )
         Policies policies = restApiClient.getPolicies()
         for (ListPolicyResponse policy : policies.policies) {
             if (policy.name == policyName) {
@@ -43,39 +31,28 @@ class ImageScanningTest extends BaseSpecification {
         String jobName = restApiClient.createJenkinsJob(cachedJenkinsIp, configfile)
         restApiClient.startJenkinsBuild(jenkinsAddress,  jobName)
         String status = restApiClient.getJenkinsBuildStatus(jobName, 60, jenkinsAddress)
-        assert status == "SUCCESS"
+        assert status == endStatus
         where:
         "data inputs are: "
-        imageName                            | test                                        |  policyName
-        "k8s.gcr.io/prometheus-to-sd:v0.4.2" | "Test prometheus image used in stackrox"    |  "90-Day Image Age"
+        imageName                            | test                                        |  policyName             | enforcement              | endStatus
+        "k8s.gcr.io/prometheus-to-sd:v0.4.2" | "Test prometheus image used in stackrox"    |  "90-Day Image Age"     | "UNSET_ENFORCEMENT"      | "SUCCESS"
+        "k8s.gcr.io/prometheus-to-sd:v0.4.2" | "Test prometheus image used in stackrox"    |  "90-Day Image Age"     | "FAIL_BUILD_ENFORCEMENT" | "FAILURE"
     }
 
     @Unroll
-    def "image scanning test with docker hub images -ve scenario(#imageName, #test, #policyName, #Enforcement, #tag)"() {
+    def "image scanning test with docker hub images -ve scenario(#imageName, #test, #policyName, #Enforcement, #tag, #enforcement)"() {
         given:
         "a repo with images in the scanner repo"
         when:
         "Jenkins is setup"
         then:
-        Policy updatedPolicy = new Policy()
-        Policy.PolicyFields policyFields = new Policy.PolicyFields()
-        Policy.PolicyFields.ImageNamePolicy imageNamePolicy = new Policy.PolicyFields.ImageNamePolicy()
-        policyFields.setImage_name(imageNamePolicy)
-        imageNamePolicy.setTag(tag)
-        updatedPolicy.with {
-            name = policyName  //fields below are required.
-            lifecycleStages = ["BUILD"]
-            severity = "MEDIUM_SEVERITY"
-            fields = policyFields
-            categories = ["Image Assurance"]
-            enforcementActions = ["FAIL_BUILD_ENFORCEMENT"]
-        }
+        Policy updatedPolicy = policyObj.getUpdatedPolicy(policyName, tag, enforcement)
         Policies policies = restApiClient.getPolicies()
         for (ListPolicyResponse policy : policies.policies) {
             if (policy.name == policyName) {
                 println("Updating the policy $policyName")
                 restApiClient.updatePolicy(updatedPolicy, policy.id)
-                Policy enforcementPolicy  =  restApiClient.getPolicy(policy.id)
+                Policy enforcementPolicy  = restApiClient.getPolicy(policy.id)
                 assert enforcementPolicy.enforcementActions == ["FAIL_BUILD_ENFORCEMENT"]
                 assert enforcementPolicy.lifecycleStages == ['BUILD']
             }
@@ -87,9 +64,9 @@ class ImageScanningTest extends BaseSpecification {
         assert status == "FAILURE"
         where:
         "data inputs are: "
-        imageName                               | test                                                       | policyName           | tag
-        "jenkins/jenkins:lts"                   | "Testing jenkins/jenkins:lts for policy Fixable CVSS >= 7" | "Fixable CVSS >= 7"  | "lts"
-        "nginx:latest"                          | "Testing nginx with latest tag"                            | "Latest tag"         | "latest"
+        imageName                               | test                                                       | policyName           | tag       | enforcement
+        "jenkins/jenkins:lts"                   | "Testing jenkins/jenkins:lts for policy Fixable CVSS >= 7" | "Fixable CVSS >= 7"  | "lts"     | "FAIL_BUILD_ENFORCEMENT"
+        "nginx:latest"                          | "Testing nginx with latest tag"                            | "Latest tag"         | "latest"  | "FAIL_BUILD_ENFORCEMENT"
     }
 
     @Unroll
