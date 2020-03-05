@@ -8,7 +8,6 @@ class BaseSpecification extends Specification {
     RestApiClient restApiClient
     public String token
     public static String jenkinsAddress
-    public String dataUtil
     public Policy policyObj
 
     def setup() {
