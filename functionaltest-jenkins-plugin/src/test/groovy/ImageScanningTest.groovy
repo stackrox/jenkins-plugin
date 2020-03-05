@@ -33,8 +33,8 @@ class ImageScanningTest extends BaseSpecification {
             if (policy.name == policyName) {
                 println("Updating the policy $policyName")
                 restApiClient.updatePolicy(updatedPolicy, policy.id)
-                Policy enforcementPolicy  =  restApiClient.getPolicy(policy.id)
-                assert enforcementPolicy.enforcementActions == ["UNSET_ENFORCEMENT"]
+                Policy enforcementPolicy  = restApiClient.getPolicy(policy.id)
+                assert enforcementPolicy.enforcementActions.empty == true
                 assert enforcementPolicy.lifecycleStages == ['BUILD']
             }
         }
