@@ -40,7 +40,7 @@ class ImageScanningTest extends BaseSpecification {
         imageName                            | test                                     | policyName         | enforcement              | endStatus
         "k8s.gcr.io/prometheus-to-sd:v0.4.2" | "Test prometheus image used in stackrox" | "90-Day Image Age" | "UNSET_ENFORCEMENT"      | "SUCCESS"
         "k8s.gcr.io/prometheus-to-sd:v0.4.2" | "Test prometheus image used in stackrox" | "90-Day Image Age" | "FAIL_BUILD_ENFORCEMENT" | "FAILURE"
-            "us.icr.io/external/etcd:v3.3.8"     | "Test etcd image"
+        
     }
 
     @Unroll
