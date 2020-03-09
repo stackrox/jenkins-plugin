@@ -9,7 +9,7 @@ class ImageScanningTest extends BaseSpecification {
     final String cachedJenkinsIp = getJenkinsAddress()
     final String buildLifeCycleStage = "BUILD"
     @Unroll
-    def "image scanning test with the docker image + scenarios(#imageName, #test, #policyName, #enforcement)"() {
+    def "image scanning test with toggle enforcement(#imageName, #test, #policyName, #enforcement)"() {
         given:
         "a scanner repo with images"
         when:
@@ -40,10 +40,11 @@ class ImageScanningTest extends BaseSpecification {
         imageName                            | test                                     | policyName         | enforcement              | endStatus
         "k8s.gcr.io/prometheus-to-sd:v0.4.2" | "Test prometheus image used in stackrox" | "90-Day Image Age" | "UNSET_ENFORCEMENT"      | "SUCCESS"
         "k8s.gcr.io/prometheus-to-sd:v0.4.2" | "Test prometheus image used in stackrox" | "90-Day Image Age" | "FAIL_BUILD_ENFORCEMENT" | "FAILURE"
+            "us.icr.io/external/etcd:v3.3.8"     | "Test etcd image"
     }
 
     @Unroll
-    def "image scanning test with docker hub images -ve scenario(#imageName, #test, #policyName, #tag, #enforcement)"() {
+    def "image scanning test with images enforcement turned on (#imageName, #test, #policyName, #tag, #enforcement)"() {
         given:
         "a repo with images in the scanner repo"
         when:

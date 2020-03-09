@@ -32,7 +32,7 @@ class RestApiClient {
     }
 
     final static String getCachedIp() {
-        Service svc = new Service("jenkins","jenkins");
+        Service svc = new Service("jenkins", "jenkins");
         jenkinsAddress = svc.getLoadBalancer(60)
         return jenkinsAddress
     }
@@ -119,7 +119,7 @@ class RestApiClient {
     }
 
     String getJenkinsBuildStatus(String job, int timeout, String jenkinsAddress) {
-        println("\n" + "Getting build status of ${job}")
+        println("\nGetting build status of ${job}")
         int interval = 1
         int iterations = timeout / interval
         Response response
