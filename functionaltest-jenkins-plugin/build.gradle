@@ -32,7 +32,6 @@ sourceSets.each { ss ->
 
 dependencies {
     compile 'com.google.code.gson:gson:2.7'
-    compile 'com.google.code.gson:gson:2.7'
     compile 'io.fabric8:kubernetes-client:4.1.2'
     compile 'io.kubernetes:client-java:2.0.0-beta1'
     compile 'org.codehaus.groovy:groovy-all:2.2.2'

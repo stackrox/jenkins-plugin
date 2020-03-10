@@ -14,20 +14,19 @@ import com.jayway.restassured.response.Response
 class RestApiClient {
 
     Gson gson
-    String encodedpassword
+    String authHeaderValue
     static String jenkinsAddress
 
     RestApiClient() {
         gson = new Gson()
         def env = System.getenv()
         def password = env['ROX_PASSWORD']
-        encodedpassword = "Basic " + DataUtil.base64Encode(common.Constants.clusterUserName + ":" + password)
-        println encodedpassword
+        authHeaderValue = "Basic " + DataUtil.base64Encode(common.Constants.clusterUserName + ":" + password)
      }
 
     protected RequestSpecification createRequestSpecification() {
         String header = "Authorization"
-        String value = encodedpassword
+        String value = authHeaderValue
         return given().relaxedHTTPSValidation().header(header, value)
     }
 

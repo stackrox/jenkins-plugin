@@ -22,10 +22,10 @@ class ImageScanningTest extends BaseSpecification {
                 println("Updating the policy $policyName")
                 restApiClient.updatePolicy(updatedPolicy, policy.id)
                 Policy enforcementPolicy = restApiClient.getPolicy(policy.id)
-                if (enforcement == "UNSET_ENFORCEMENT") {
-                    assert enforcementPolicy.enforcementActions.empty == true
+                if (enforcement == Policy.EnforcementAction.UNSET_ENFORCEMENT) {
+                    assert enforcementPolicy.enforcementActions.empty
                 } else {
-                    assert enforcementPolicy.enforcementActions == ["FAIL_BUILD_ENFORCEMENT"]
+                    assert enforcementPolicy.enforcementActions == Policy.EnforcementAction.FAIL_BUILD_ENFORCEMENT
                 }
                 assert enforcementPolicy.lifecycleStages == [buildLifeCycleStage]
             }
@@ -40,7 +40,7 @@ class ImageScanningTest extends BaseSpecification {
         imageName                            | test                                     | policyName         | enforcement              | endStatus
         "k8s.gcr.io/prometheus-to-sd:v0.4.2" | "Test prometheus image used in stackrox" | "90-Day Image Age" | "UNSET_ENFORCEMENT"      | "SUCCESS"
         "k8s.gcr.io/prometheus-to-sd:v0.4.2" | "Test prometheus image used in stackrox" | "90-Day Image Age" | "FAIL_BUILD_ENFORCEMENT" | "FAILURE"
-        
+
     }
 
     @Unroll
