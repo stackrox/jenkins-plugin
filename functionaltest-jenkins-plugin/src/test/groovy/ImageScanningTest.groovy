@@ -1,13 +1,13 @@
 import data.DataUtil
-import data.ListPolicyResponse
-import data.Policy
 import data.Policies
+import data.Policy
 import spock.lang.Unroll
 
 class ImageScanningTest extends BaseSpecification {
 
     final String cachedJenkinsIp = getJenkinsAddress()
     final String buildLifeCycleStage = "BUILD"
+
     @Unroll
     def "image scanning test with toggle enforcement(#imageName, #test, #policyName, #enforcement)"() {
         given:
@@ -17,19 +17,15 @@ class ImageScanningTest extends BaseSpecification {
         then:
         Policy updatedPolicy = policyObj.getUpdatedPolicy(policyName, "v0.4.2", enforcement)
         Policies policies = restApiClient.getPolicies()
-        for (ListPolicyResponse policy : policies.policies) {
-            if (policy.name == policyName) {
-                println("Updating the policy $policyName")
-                restApiClient.updatePolicy(updatedPolicy, policy.id)
-                Policy enforcementPolicy = restApiClient.getPolicy(policy.id)
-                if (enforcement == Policy.EnforcementAction.UNSET_ENFORCEMENT) {
-                    assert enforcementPolicy.enforcementActions.empty == true
-                } else {
-                    assert enforcementPolicy.enforcementActions == [Policy.EnforcementAction.FAIL_BUILD_ENFORCEMENT]
-                }
-                assert enforcementPolicy.lifecycleStages == [buildLifeCycleStage]
-            }
+        def id = policies.policies.find { it.name == policyName }?.id
+        restApiClient.updatePolicy(updatedPolicy, id)
+        Policy enforcementPolicy = restApiClient.getPolicy(id)
+        if ( enforcement == "UNSET_ENFORCEMENT") {
+            assert enforcementPolicy.enforcementActions.empty
+        } else {
+            assert enforcementPolicy.enforcementActions == [enforcement]
         }
+        assert enforcementPolicy.lifecycleStages == [buildLifeCycleStage]
         File configfile = DataUtil.createJenkinsConfig(imageName, "https://central.stackrox:443", token, true, true)
         String jobName = restApiClient.createJenkinsJob(cachedJenkinsIp, configfile)
         restApiClient.startJenkinsBuild(jenkinsAddress, jobName)
@@ -52,15 +48,12 @@ class ImageScanningTest extends BaseSpecification {
         then:
         Policy updatedPolicy = policyObj.getUpdatedPolicy(policyName, tag, enforcement)
         Policies policies = restApiClient.getPolicies()
-        for (ListPolicyResponse policy : policies.policies) {
-            if (policy.name == policyName) {
-                println("Updating the policy $policyName")
-                restApiClient.updatePolicy(updatedPolicy, policy.id)
-                Policy enforcementPolicy = restApiClient.getPolicy(policy.id)
-                assert enforcementPolicy.enforcementActions == [enforcement]
-                assert enforcementPolicy.lifecycleStages == [buildLifeCycleStage]
-            }
-        }
+        def id = policies.policies.find { it.name == policyName }?.id
+        println("Updating the policy $policyName")
+        restApiClient.updatePolicy(updatedPolicy, id)
+        Policy enforcementPolicy = restApiClient.getPolicy(id)
+        assert enforcementPolicy.enforcementActions == [enforcement]
+        assert enforcementPolicy.lifecycleStages == [buildLifeCycleStage]
         File configFile = DataUtil.createJenkinsConfig(imageName, "https://central.stackrox:443", token, true, true)
         String jobName = restApiClient.createJenkinsJob(cachedJenkinsIp, configFile)
         restApiClient.startJenkinsBuild(cachedJenkinsIp, jobName)
