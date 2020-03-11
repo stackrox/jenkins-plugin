@@ -23,9 +23,9 @@ class ImageScanningTest extends BaseSpecification {
                 restApiClient.updatePolicy(updatedPolicy, policy.id)
                 Policy enforcementPolicy = restApiClient.getPolicy(policy.id)
                 if (enforcement == Policy.EnforcementAction.UNSET_ENFORCEMENT) {
-                    assert enforcementPolicy.enforcementActions.empty
+                    assert enforcementPolicy.enforcementActions.empty == true
                 } else {
-                    assert enforcementPolicy.enforcementActions == Policy.EnforcementAction.FAIL_BUILD_ENFORCEMENT
+                    assert enforcementPolicy.enforcementActions == [Policy.EnforcementAction.FAIL_BUILD_ENFORCEMENT]
                 }
                 assert enforcementPolicy.lifecycleStages == [buildLifeCycleStage]
             }
