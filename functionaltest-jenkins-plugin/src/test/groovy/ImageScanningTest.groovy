@@ -8,7 +8,6 @@ import javax.validation.constraints.Null
 class ImageScanningTest extends BaseSpecification {
 
     final String cachedJenkinsIp = getJenkinsAddress()
-    final String buildLifeCycleStage = "BUILD"
 
     @Unroll
     def "image scanning test with toggle enforcement(#imageName, #test, #policyName, #enforcement)"() {
@@ -25,7 +24,7 @@ class ImageScanningTest extends BaseSpecification {
         }
         else {
             println("Policy id is null")
-            throw NullPointerException
+            throw new NullPointerException()
         }
         Policy enforcementPolicy = restApiClient.getPolicy(policyId)
         if ( enforcement == "UNSET_ENFORCEMENT") {
@@ -33,7 +32,7 @@ class ImageScanningTest extends BaseSpecification {
         } else {
             assert enforcementPolicy.enforcementActions == [enforcement]
         }
-        assert enforcementPolicy.lifecycleStages == [buildLifeCycleStage]
+        assert enforcementPolicy.lifecycleStages == ["BUILD"]
         File configfile = DataUtil.createJenkinsConfig(imageName, "https://central.stackrox:443", token, true, true)
         String jobName = restApiClient.createJenkinsJob(cachedJenkinsIp, configfile)
         restApiClient.startJenkinsBuild(jenkinsAddress, jobName)
@@ -54,7 +53,7 @@ class ImageScanningTest extends BaseSpecification {
         when:
         "Jenkins is setup"
         then:
-        Policy updatedPolicy = policyObj.getUpdatedPolicy(policyName, tag, enforcement)
+        Policy updatedPolicy = policyObj.getUpdatedPolicy(policyName, tag)
         Policies policies = restApiClient.getPolicies()
         def policyId = policies.policies.find { it.name == policyName }?.id
         println("Updating the policy $policyName")
@@ -63,11 +62,11 @@ class ImageScanningTest extends BaseSpecification {
         }
         else {
             println("Policy id is null")
-            throw NullPointerException
+            throw new NullPointerException()
         }
         Policy enforcementPolicy = restApiClient.getPolicy(policyId)
-        assert enforcementPolicy.enforcementActions == [enforcement]
-        assert enforcementPolicy.lifecycleStages == [buildLifeCycleStage]
+        assert enforcementPolicy.enforcementActions == ["FAIL_BUILD_ENFORCEMENT"]
+        assert enforcementPolicy.lifecycleStages == ["BUILD"]
         File configFile = DataUtil.createJenkinsConfig(imageName, "https://central.stackrox:443", token, true, true)
         String jobName = restApiClient.createJenkinsJob(cachedJenkinsIp, configFile)
         restApiClient.startJenkinsBuild(cachedJenkinsIp, jobName)
@@ -75,13 +74,13 @@ class ImageScanningTest extends BaseSpecification {
         assert status == "FAILURE"
         where:
         "data inputs are: "
-        imageName             | test                                                       | policyName          | tag      | enforcement
-        "jenkins/jenkins:lts" | "Testing jenkins/jenkins:lts for policy Fixable CVSS >= 7" | "Fixable CVSS >= 7" | "lts"    | "FAIL_BUILD_ENFORCEMENT"
-        "nginx:latest"        | "Testing nginx with latest tag"                            | "Latest tag"        | "latest" | "FAIL_BUILD_ENFORCEMENT"
+        imageName             | policyName                     | tag
+        "jenkins/jenkins:lts" |  "Fixable CVSS >= 7"           | "lts"
+        "nginx:latest"        | "Testing nginx with latest tag"| "Latest tag"
     }
 
     @Unroll
-    def "image scanning test with the docker image -ve scenarios with fail plugin error(#imageName, #failOnCriticalPluginError, #test, #endStatus)"() {
+    def "Jenkins plugin image scanning with configuration error"() {
         given:
         "a repo with images in the scanner repo"
         when:

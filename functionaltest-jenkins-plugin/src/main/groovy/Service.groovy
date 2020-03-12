@@ -3,7 +3,6 @@ import io.fabric8.kubernetes.client.DefaultKubernetesClient
 import io.fabric8.kubernetes.api.model.Service as KService
 import util.Timer
 
-
 class Service {
     KService service
     KubernetesClient client

@@ -9,7 +9,8 @@ class DataUtil {
         return output
     }
 
-    static File createJenkinsConfig(String imageName, String portalAddress, String token, Boolean policyEvalCheck, Boolean failOnCriticalPluginError) {
+    static File createJenkinsConfig(String imageName, String portalAddress, String token, Boolean policyEvalCheck,
+                                    Boolean failOnCriticalPluginError) {
         String path = "resources/template.xml"
         String xml = new File(path).text
         def param = [:]
@@ -24,13 +25,13 @@ class DataUtil {
         def parsexml = new XmlSlurper().parseText(xml)
         param.each { key, value ->
             parsexml.'**'.findAll {
-                if (it.name() == key)
+                if (it.name() == key) {
                     it.replaceBody value
+                }
             }
-
         }
         println("Writing to a temp file")
-        File file = File.createTempFile("temp",".xml",new File("."))
+        File file = File.createTempFile("temp", ".xml", new File("."))
         def serializedXml = XmlUtil.serialize(parsexml)
         file.write(serializedXml)
         return file

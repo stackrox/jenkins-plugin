@@ -2,13 +2,13 @@ package data
 
 class BuildDetectRequest {
 
-    public Name name
-    public String imageName
+    Name name
+    String imageName
 
     class Name {
-        public String registry
-        public String remote
-        public String tag
-        public String fullName
+        String registry
+        String remote
+        String tag
+        String fullName
     }
 }

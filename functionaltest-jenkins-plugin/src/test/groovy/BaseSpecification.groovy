@@ -1,4 +1,3 @@
-import data.DataUtil
 import data.Policy
 import spock.lang.Specification
 import data.Token
@@ -6,9 +5,9 @@ import groovy.io.FileType
 
 class BaseSpecification extends Specification {
     RestApiClient restApiClient
-    public String token
-    public static String jenkinsAddress
-    public Policy policyObj
+    String token
+    static String jenkinsAddress
+    Policy policyObj
 
     def setup() {
         restApiClient = new RestApiClient()
@@ -16,11 +15,11 @@ class BaseSpecification extends Specification {
         tokenobject.setName("automation")
         tokenobject.setRole("Continuous Integration")
         token = restApiClient.getToken(tokenobject)
-        policyObj = new Policy();
+        policyObj = new Policy()
     }
 
     final static setJenkinsAddress() {
-      jenkinsAddress = RestApiClient.getCachedIp()
+        jenkinsAddress = RestApiClient.getCachedIp()
     }
 
     final static getJenkinsAddress() {
@@ -31,7 +30,7 @@ class BaseSpecification extends Specification {
     def cleanup() {
         def folderPath = "."
         new File(folderPath).eachFile (FileType.FILES) { file ->
-            if (file.name.contains('temp')) file.delete()
+            if (file.name.contains('temp')) { file.delete() }
         }
     }
 }

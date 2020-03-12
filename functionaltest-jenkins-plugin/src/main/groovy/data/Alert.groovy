@@ -4,17 +4,17 @@ import com.google.gson.JsonElement
 
 class Alert {
 
-    public String id
-    public Policy policy
+    String id
+    Policy policy
     LifecycleStages lifecyleStages
     Object deployment
     Violation[] violations
-    public Object processViolation
-    public String enforcement
-    public String time
-    public String firstOccurred
-    public String state
-    public String snoozeTill
+    Object processViolation
+    String enforcement
+    String time
+    String firstOccurred
+    String state
+    String snoozeTill
 
     enum LifecycleStages {
         DEPLOY,
@@ -33,22 +33,22 @@ class Alert {
 }
 
 class Violation {
-    public JsonElement message
+    JsonElement message
 }
 
 class Component {
-    public String name
-    public String version
+    String name
+    String version
 }
 
 class Whitelist {
-    public String name
-    public Deployment deployment
-    public JsonElement image
-    public String expiration
+    String name
+    Deployment deployment
+    JsonElement image
+    String expiration
     class Deployment {
-        public String name
-        public Scope scope
+        String name
+        Scope scope
     }
 
     class Scope {
@@ -61,7 +61,3 @@ class Whitelist {
         Label label
     }
 }
-
-
-
-

@@ -9,10 +9,10 @@ class Policy {
     Boolean disabled
     String[] categories
     PolicyFields fields
-    ArrayList<String> lifecycleStages
+    List<String> lifecycleStages
     String[] scope
     String severity
-    ArrayList<String> enforcementActions
+    List<String> enforcementActions
     String[] notifiers
 
     class PolicyFields {
@@ -33,7 +33,6 @@ class Policy {
         }
         Label label
     }
-
 
     enum EnforcementAction {
         UNSET_ENFORCEMENT,
@@ -57,7 +56,7 @@ class Policy {
         RUNTIME
     }
 
-     Policy getUpdatedPolicy(String policyName, String tag, String enforcement) {
+    Policy getUpdatedPolicy(String policyName, String tag, String enforcement) {
         Policy updatedPolicy = new Policy()
         Policy.PolicyFields policyFields = new Policy.PolicyFields()
         Policy.PolicyFields.ImageNamePolicy imageNamePolicy = new Policy.PolicyFields.ImageNamePolicy()
@@ -74,4 +73,3 @@ class Policy {
         return updatedPolicy
     }
 }
-

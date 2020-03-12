@@ -1,14 +1,14 @@
 package common
 
 class Constants {
-   public final static baseurl = "https://localhost:8000/v1/"
-   public final static clusterUserName = "admin"
-   public final static jenkinsPort = "8080"
-   public final static jenkinsProtocol = "http"
-   public final static buildDetect = "detect/build"
-   public final static getPolicy = "policies/{id}"
-   public final static putPolicy = "policies/{id}"
-   public final static postPolicy = "policies"
-   public final static getPolicies = "policies"
-   public final static tokenGenerate = "apitokens/generate"
+    public final static BASEURL = "https://localhost:8000/v1/"
+    public final static CLUSTERUSERNAME = "admin"
+    public final static JENKINSPORT = "8080"
+    public final static JENKINSPROTOCOL = "http"
+    public final static BUILDDETECT = "detect/build"
+    public final static GETPOLICY = "policies/{id}"
+    public final static PUTPOLICY = "policies/{id}"
+    public final static POSTPOLICY = "policies"
+    public final static GETPOLICIES = "policies"
+    public final static TOKENGENERATE = "apitokens/generate"
 }

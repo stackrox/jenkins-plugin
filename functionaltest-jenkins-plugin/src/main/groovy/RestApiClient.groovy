@@ -1,3 +1,4 @@
+import static com.jayway.restassured.RestAssured.given
 import data.DataUtil
 import data.Alerts
 import data.Policy
@@ -7,9 +8,8 @@ import util.Timer
 import com.google.gson.Gson
 import com.jayway.restassured.specification.RequestSpecification
 import common.Constants
-import static com.jayway.restassured.RestAssured.given
 import com.jayway.restassured.response.Response
-
+import java.security.SecureRandom
 
 class RestApiClient {
 
@@ -21,7 +21,7 @@ class RestApiClient {
         gson = new Gson()
         def env = System.getenv()
         def password = env['ROX_PASSWORD']
-        authHeaderValue = "Basic " + DataUtil.base64Encode(common.Constants.clusterUserName + ":" + password)
+        authHeaderValue = "Basic " + DataUtil.base64Encode(common.Constants.CLUSTERUSERNAME + ":" + password)
      }
 
     protected RequestSpecification createRequestSpecification() {
@@ -31,13 +31,13 @@ class RestApiClient {
     }
 
     final static String getCachedIp() {
-        Service svc = new Service("jenkins", "jenkins");
+        Service svc = new Service("jenkins", "jenkins")
         jenkinsAddress = svc.getLoadBalancer(60)
         return jenkinsAddress
     }
 
     String getToken(Object tokenObj) {
-        String url = Constants.baseurl + Constants.tokenGenerate
+        String url = Constants.BASEURL + Constants.TOKENGENERATE
         Response response = createRequestSpecification()
                 .body(gson.toJson(tokenObj))
                 .post(url)
@@ -46,7 +46,7 @@ class RestApiClient {
     }
 
     protected Alerts getAlerts(Object requestObj) {
-        String url = Constants.baseurl + Constants.buildDetect
+        String url = Constants.BASEURL + Constants.BUILDDETECT
         Response response = createRequestSpecification()
                 .body(gson.toJson(requestObj))
                 .post(url)
@@ -56,7 +56,7 @@ class RestApiClient {
     }
 
     Policy createPolicy(Object policyObj) {
-        def url = Constants.baseurl + Constants.postPolicy
+        def url = Constants.BASEURL + Constants.POSTPOLICY
         Response response = createRequestSpecification()
                 .body(gson.toJson(policyObj))
                 .post(url)
@@ -65,16 +65,15 @@ class RestApiClient {
     }
 
     Policies getPolicies() {
-        def url = Constants.baseurl + Constants.getPolicies
+        def url = Constants.BASEURL + Constants.GETPOLICIES
         Response response = createRequestSpecification()
                 .get(url)
         Policies policies = gson.fromJson(response.asString(), Policies)
         return policies
     }
 
-
     def updatePolicy(Object policyObj, String id) {
-        def url = Constants.baseurl + Constants.putPolicy.replace("{id}", id)
+        def url = Constants.BASEURL Constants.PUTPOLICY.replace("{id}", id)
         Response response = createRequestSpecification()
                 .body(gson.toJson(policyObj))
                 .put(url)
@@ -83,7 +82,7 @@ class RestApiClient {
     }
 
     Policy getPolicy(String id) {
-        def url = Constants.baseurl + Constants.getPolicy.replace("{id}", id)
+        def url = Constants.BASEURL + Constants.GETPOLICY.replace("{id}", id)
         println url
         Response response = createRequestSpecification()
                 .get(url)
@@ -92,8 +91,8 @@ class RestApiClient {
     }
 
     String createJenkinsJob(String jenkinsAddress, File configfile) {
-        def jobName = "testjob" + new Random().nextInt()
-        def url = "${Constants.jenkinsProtocol}://${jenkinsAddress}:${Constants.jenkinsPort}/createItem?name=${jobName}"
+        def jobName = "testjob" + new SecureRandom().nextInt()
+        def url = "${Constants.JENKINSPROTOCOL}://${jenkinsAddress}:${Constants.JENKINSPORT}/createItem?name=${jobName}"
         FileInputStream fileInputStream = new FileInputStream(configfile)
         byte[] bytes = fileInputStream.bytes
         println("Creating Jenkins job  ${jobName}")
@@ -108,12 +107,11 @@ class RestApiClient {
 
     void startJenkinsBuild(String jenkinsAddress, String job) {
         println("Starting Jenkins job ${job}")
-        def url = "${Constants.jenkinsProtocol}://${jenkinsAddress}:${Constants.jenkinsPort}/job/${job}/build"
+        def url = "${Constants.JENKINSPROTOCOL}://${jenkinsAddress}:${Constants.JENKINSPORT}/job/${job}/build"
         print url
         given().when()
                 .post(url)
                 .then().statusCode(201)
-
     }
 
     String getJenkinsBuildStatus(String job, int timeout, String jenkinsAddress) {
@@ -122,9 +120,11 @@ class RestApiClient {
         int iterations = timeout / interval
         Response response
         Timer timer = new Timer(iterations, interval)
-        while ((response?.body() == null || response?.asString()?.startsWith("<") || response?.jsonPath()?.get("result") == null) && timer.IsValid()) {
+        while ((response?.body() == null || response?.asString()?.startsWith("<") ||
+                response?.jsonPath()?.get("result") == null) && timer.IsValid()) {
             try {
-                def url = "${Constants.jenkinsProtocol}://${jenkinsAddress}:${Constants.jenkinsPort}/job/${job}/lastBuild/api/json"
+                def url = "${Constants.JENKINSPROTOCOL}://${jenkinsAddress}:${Constants.JENKINSPORT}" +
+                          "/job/${job}/lastBuild/api/json"
                 response = given().when()
                         .post(url)
             }
