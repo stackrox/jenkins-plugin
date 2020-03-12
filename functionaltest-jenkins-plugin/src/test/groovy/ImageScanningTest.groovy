@@ -47,7 +47,7 @@ class ImageScanningTest extends BaseSpecification {
     }
 
     @Unroll
-    def "image scanning test with images enforcement turned on (#imageName, #test, #policyName, #tag, #enforcement)"() {
+    def "image scanning test with images enforcement turned on (#imageName, #test, #policyName, #tag)"() {
         given:
         "a repo with images in the scanner repo"
         when:

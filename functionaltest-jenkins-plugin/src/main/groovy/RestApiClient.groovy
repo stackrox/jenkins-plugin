@@ -73,7 +73,7 @@ class RestApiClient {
     }
 
     def updatePolicy(Object policyObj, String id) {
-        def url = Constants.BASEURL+Constants.PUTPOLICY.replace("{id}", id)
+        def url = Constants.BASEURL + Constants.PUTPOLICY.replace("{id}", id)
         Response response = createRequestSpecification()
                 .body(gson.toJson(policyObj))
                 .put(url)
