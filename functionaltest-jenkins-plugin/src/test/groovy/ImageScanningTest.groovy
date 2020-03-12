@@ -3,6 +3,8 @@ import data.Policies
 import data.Policy
 import spock.lang.Unroll
 
+import javax.validation.constraints.Null
+
 class ImageScanningTest extends BaseSpecification {
 
     final String cachedJenkinsIp = getJenkinsAddress()
@@ -17,9 +19,15 @@ class ImageScanningTest extends BaseSpecification {
         then:
         Policy updatedPolicy = policyObj.getUpdatedPolicy(policyName, "v0.4.2", enforcement)
         Policies policies = restApiClient.getPolicies()
-        def id = policies.policies.find { it.name == policyName }?.id
-        restApiClient.updatePolicy(updatedPolicy, id)
-        Policy enforcementPolicy = restApiClient.getPolicy(id)
+        def policyId = policies.policies.find { it.name == policyName }?.id
+        if (policyId != null) {
+            restApiClient.updatePolicy(updatedPolicy, policyId)
+        }
+        else {
+            println("Policy id is null")
+            throw NullPointerException
+        }
+        Policy enforcementPolicy = restApiClient.getPolicy(policyId)
         if ( enforcement == "UNSET_ENFORCEMENT") {
             assert enforcementPolicy.enforcementActions.empty
         } else {
@@ -48,10 +56,16 @@ class ImageScanningTest extends BaseSpecification {
         then:
         Policy updatedPolicy = policyObj.getUpdatedPolicy(policyName, tag, enforcement)
         Policies policies = restApiClient.getPolicies()
-        def id = policies.policies.find { it.name == policyName }?.id
+        def policyId = policies.policies.find { it.name == policyName }?.id
         println("Updating the policy $policyName")
-        restApiClient.updatePolicy(updatedPolicy, id)
-        Policy enforcementPolicy = restApiClient.getPolicy(id)
+        if (policyId != null ) {
+            restApiClient.updatePolicy(updatedPolicy, policyId)
+        }
+        else {
+            println("Id is null")
+            throw NullPointerException
+        }
+        Policy enforcementPolicy = restApiClient.getPolicy(policyId)
         assert enforcementPolicy.enforcementActions == [enforcement]
         assert enforcementPolicy.lifecycleStages == [buildLifeCycleStage]
         File configFile = DataUtil.createJenkinsConfig(imageName, "https://central.stackrox:443", token, true, true)
