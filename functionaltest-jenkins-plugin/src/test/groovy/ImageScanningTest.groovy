@@ -62,7 +62,7 @@ class ImageScanningTest extends BaseSpecification {
             restApiClient.updatePolicy(updatedPolicy, policyId)
         }
         else {
-            println("Id is null")
+            println("Policy id is null")
             throw NullPointerException
         }
         Policy enforcementPolicy = restApiClient.getPolicy(policyId)
