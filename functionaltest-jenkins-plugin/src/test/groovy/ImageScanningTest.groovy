@@ -10,22 +10,16 @@ class ImageScanningTest extends BaseSpecification {
     final String cachedJenkinsIp = getJenkinsAddress()
 
     @Unroll
-    def "image scanning test with toggle enforcement(#imageName, #test, #policyName, #enforcement)"() {
+    def "image scanning test with toggle enforcement(#imageName, #policyName, #enforcement)"() {
         given:
         "a scanner repo with images"
         when:
         "Jenkins is setup"
         then:
         Policy updatedPolicy = policyObj.getUpdatedPolicy(policyName, "v0.4.2", enforcement)
-        Policies policies = restApiClient.getPolicies()
+        Policies policies = restApiClient.getPolicies(updatedPolicy)
         def policyId = policies.policies.find { it.name == policyName }?.id
-        if (policyId != null) {
-            restApiClient.updatePolicy(updatedPolicy, policyId)
-        }
-        else {
-            println("Policy id is null")
-            throw new NullPointerException()
-        }
+        assert policyId !=  null
         Policy enforcementPolicy = restApiClient.getPolicy(policyId)
         if ( enforcement == "UNSET_ENFORCEMENT") {
             assert enforcementPolicy.enforcementActions.empty
@@ -40,30 +34,23 @@ class ImageScanningTest extends BaseSpecification {
         assert status == endStatus
         where:
         "data inputs are: "
-        imageName                            | test                                     | policyName         | enforcement              | endStatus
-        "k8s.gcr.io/prometheus-to-sd:v0.4.2" | "Test prometheus image used in stackrox" | "90-Day Image Age" | "UNSET_ENFORCEMENT"      | "SUCCESS"
-        "k8s.gcr.io/prometheus-to-sd:v0.4.2" | "Test prometheus image used in stackrox" | "90-Day Image Age" | "FAIL_BUILD_ENFORCEMENT" | "FAILURE"
-
+        imageName                            | policyName         | enforcement              | endStatus
+        "k8s.gcr.io/prometheus-to-sd:v0.4.2" | "90-Day Image Age" | "UNSET_ENFORCEMENT"      | "SUCCESS"
+        "k8s.gcr.io/prometheus-to-sd:v0.4.2" | "90-Day Image Age" | "FAIL_BUILD_ENFORCEMENT" | "FAILURE"
     }
 
     @Unroll
-    def "image scanning test with images enforcement turned on (#imageName, #test, #policyName, #tag)"() {
+    def "image scanning test with images enforcement turned on (#imageName, #policyName, #tag)"() {
         given:
         "a repo with images in the scanner repo"
         when:
         "Jenkins is setup"
         then:
         Policy updatedPolicy = policyObj.getUpdatedPolicy(policyName, tag)
-        Policies policies = restApiClient.getPolicies()
+        Policies policies = restApiClient.getPolicies(updatedPolicy)
         def policyId = policies.policies.find { it.name == policyName }?.id
         println("Updating the policy $policyName")
-        if (policyId != null ) {
-            restApiClient.updatePolicy(updatedPolicy, policyId)
-        }
-        else {
-            println("Policy id is null")
-            throw new NullPointerException()
-        }
+        assert policyId != null
         Policy enforcementPolicy = restApiClient.getPolicy(policyId)
         assert enforcementPolicy.enforcementActions == ["FAIL_BUILD_ENFORCEMENT"]
         assert enforcementPolicy.lifecycleStages == ["BUILD"]
@@ -93,10 +80,10 @@ class ImageScanningTest extends BaseSpecification {
         assert status == endStatus
         where:
         "data inputs are: "
-        imageName             | failOnCriticalPluginError | test                                 | endStatus
-        "jenkins/jenkins:lts" | true                      | "testing jenkins image with lts tag" | "SUCCESS"
-        "mis-spelled:lts"     | true                      | "testing jenkins image with lts tag" | "FAILURE"
-        "mis-spelled:lts"     | false                     | "testing jenkins image with lts tag" | "SUCCESS"
+        imageName             | failOnCriticalPluginError | endStatus
+        "jenkins/jenkins:lts" | true                      | "SUCCESS"
+        "mis-spelled:lts"     | true                      | "FAILURE"
+        "mis-spelled:lts"     | false                     | "SUCCESS"
 
     }
 }
