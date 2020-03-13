@@ -226,6 +226,7 @@ jobs:
       - run:
           name: Run qa tests.
           command: |
+            cd functionaltest-jenkins-plugin
             make all
       - *storeTestArtifacts
       - *collectK8sLogs
