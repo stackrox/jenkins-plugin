@@ -15,9 +15,10 @@ class ImageScanningTest extends BaseSpecification {
         "Jenkins is setup"
         then:
         Policy updatedPolicy = policyObj.getUpdatedPolicy(policyName, "v0.4.2", enforcement)
-        Policies policies = restApiClient.getPolicies(updatedPolicy)
+        Policies policies = restApiClient.getPolicies()
         def policyId = policies.policies.find { it.name == policyName }?.id
         assert policyId !=  null
+        restApiClient.updatePolicy(updatedPolicy, policyId)
         Policy enforcementPolicy = restApiClient.getPolicy(policyId)
         if ( enforcement == "UNSET_ENFORCEMENT") {
             assert enforcementPolicy.enforcementActions.empty
@@ -45,10 +46,11 @@ class ImageScanningTest extends BaseSpecification {
         "Jenkins is setup"
         then:
         Policy updatedPolicy = policyObj.getUpdatedPolicy(policyName, tag, enforcement)
-        Policies policies = restApiClient.getPolicies(updatedPolicy)
+        Policies policies = restApiClient.getPolicies()
         def policyId = policies.policies.find { it.name == policyName }?.id
         println("Updating the policy $policyName")
         assert policyId != null
+        restApiClient.updatePolicy(updatedPolicy, policyId)
         Policy enforcementPolicy = restApiClient.getPolicy(policyId)
         assert enforcementPolicy.enforcementActions == ["FAIL_BUILD_ENFORCEMENT"]
         assert enforcementPolicy.lifecycleStages == ["BUILD"]
