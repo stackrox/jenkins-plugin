@@ -8,7 +8,7 @@ class ImageScanningTest extends BaseSpecification {
     final String cachedJenkinsIp = getJenkinsAddress()
 
     @Unroll
-    def "image scanning test with toggle enforcement(#imageName, #policyName, #enforcement, #endStatus)"() {
+    def "image scanning test with toggle enforcement(#imageName, #policyName,  #enforcement, #endStatus)"() {
         given:
         "a scanner repo with images"
         when:
@@ -44,7 +44,7 @@ class ImageScanningTest extends BaseSpecification {
         when:
         "Jenkins is setup"
         then:
-        Policy updatedPolicy = policyObj.getUpdatedPolicy(policyName, tag)
+        Policy updatedPolicy = policyObj.getUpdatedPolicy(policyName, tag, enforcement)
         Policies policies = restApiClient.getPolicies(updatedPolicy)
         def policyId = policies.policies.find { it.name == policyName }?.id
         println("Updating the policy $policyName")
