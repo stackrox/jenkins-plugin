@@ -3,14 +3,12 @@ import data.Policies
 import data.Policy
 import spock.lang.Unroll
 
-import javax.validation.constraints.Null
-
 class ImageScanningTest extends BaseSpecification {
 
     final String cachedJenkinsIp = getJenkinsAddress()
 
     @Unroll
-    def "image scanning test with toggle enforcement(#imageName, #policyName, #enforcement)"() {
+    def "image scanning test with toggle enforcement(#imageName, #policyName, #enforcement, #endStatus)"() {
         given:
         "a scanner repo with images"
         when:
@@ -40,7 +38,7 @@ class ImageScanningTest extends BaseSpecification {
     }
 
     @Unroll
-    def "image scanning test with images enforcement turned on (#imageName, #policyName, #tag)"() {
+    def "image scanning test with images enforcement turned on (#imageName, #policyName, #tag, #enforcement)"() {
         given:
         "a repo with images in the scanner repo"
         when:
@@ -54,16 +52,17 @@ class ImageScanningTest extends BaseSpecification {
         Policy enforcementPolicy = restApiClient.getPolicy(policyId)
         assert enforcementPolicy.enforcementActions == ["FAIL_BUILD_ENFORCEMENT"]
         assert enforcementPolicy.lifecycleStages == ["BUILD"]
-        File configFile = DataUtil.createJenkinsConfig(imageName, "https://central.stackrox:443", token, true, true)
+        File configFile = DataUtil.createJenkinsConfig(imageName, "https://central.stackrox:443", token,
+                true, true)
         String jobName = restApiClient.createJenkinsJob(cachedJenkinsIp, configFile)
         restApiClient.startJenkinsBuild(cachedJenkinsIp, jobName)
         String status = restApiClient.getJenkinsBuildStatus(jobName, 60, cachedJenkinsIp)
         assert status == "FAILURE"
         where:
         "data inputs are: "
-        imageName             | policyName                     | tag
-        "jenkins/jenkins:lts" |  "Fixable CVSS >= 7"           | "lts"
-        "nginx:latest"        | "Testing nginx with latest tag"| "Latest tag"
+        imageName             | policyName                     | tag           | enforcement
+        "jenkins/jenkins:lts" |  "Fixable CVSS >= 7"           | "lts"         | "FAIL_BUILD_ENFORCEMENT"
+        "nginx:latest"        | "Testing nginx with latest tag"| "Latest tag"  | "FAIL_BUILD_ENFORCEMENT"
     }
 
     @Unroll
@@ -73,7 +72,8 @@ class ImageScanningTest extends BaseSpecification {
         when:
         "Jenkins is setup"
         then:
-        File configFile = DataUtil.createJenkinsConfig(imageName, "https://central.stackrox:443", token, false, failOnCriticalPluginError)
+        File configFile = DataUtil.createJenkinsConfig(imageName, "https://central.stackrox:443", token,
+                         false, failOnCriticalPluginError)
         String jobName = restApiClient.createJenkinsJob(cachedJenkinsIp, configFile)
         restApiClient.startJenkinsBuild(cachedJenkinsIp, jobName)
         String status = restApiClient.getJenkinsBuildStatus(jobName, 60, cachedJenkinsIp)
@@ -84,6 +84,5 @@ class ImageScanningTest extends BaseSpecification {
         "jenkins/jenkins:lts" | true                      | "SUCCESS"
         "mis-spelled:lts"     | true                      | "FAILURE"
         "mis-spelled:lts"     | false                     | "SUCCESS"
-
     }
 }

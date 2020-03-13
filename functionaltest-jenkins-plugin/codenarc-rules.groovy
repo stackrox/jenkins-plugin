@@ -175,7 +175,7 @@ ruleset {
     // ClassJavadoc
     ClosureStatementOnOpeningLineOfMultipleLineClosure 
     ConsecutiveBlankLines 
-    FileEndsWithoutNewline 
+    //FileEndsWithoutNewline
     Indentation 
     LineLength 
     MissingBlankLineAfterImports 
@@ -277,7 +277,7 @@ ruleset {
     JUnitLostTest 
     JUnitPublicField 
     // JUnitPublicNonTestMethod
-    JUnitPublicProperty 
+    //JUnitPublicProperty
     JUnitSetUpCallsSuper 
     JUnitStyleAssertions 
     JUnitTearDownCallsSuper 
@@ -319,7 +319,7 @@ ruleset {
     PackageName 
     PackageNameMatchesFilePath 
     ParameterName 
-    PropertyName 
+    //PropertyName
     VariableName 
     
     // rulesets/security.xml
