@@ -64,7 +64,7 @@ class ImageScanningTest extends BaseSpecification {
         "data inputs are: "
         imageName             | policyName                     | tag           | enforcement
         "jenkins/jenkins:lts" |  "Fixable CVSS >= 7"           | "lts"         | "FAIL_BUILD_ENFORCEMENT"
-        "nginx:latest"        | "Testing nginx with latest tag"| "Latest tag"  | "FAIL_BUILD_ENFORCEMENT"
+        "nginx:latest"        |  "Latest tag"                  | "latest"  | "FAIL_BUILD_ENFORCEMENT"
     }
 
     @Unroll
