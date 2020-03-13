@@ -226,9 +226,7 @@ jobs:
       - run:
           name: Run qa tests.
           command: |
-            cd functionaltest-jenkins-plugin
-            gradle :cleanTest :test
-
+            make all
       - *storeTestArtifacts
       - *collectK8sLogs
       - *storeK8sLogs
