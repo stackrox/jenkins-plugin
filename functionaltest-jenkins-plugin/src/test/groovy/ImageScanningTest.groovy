@@ -68,7 +68,7 @@ class ImageScanningTest extends BaseSpecification {
     }
 
     @Unroll
-    def "Jenkins plugin image scanning with configuration error (#imageName, #failOnCriticalPluginError, #endStatus)"() {
+    def "Negative image scanning tests (#imageName, #failOnCriticalPluginError,#endStatus)"() {
         given:
         "a repo with images in the scanner repo"
         when:
