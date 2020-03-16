@@ -64,11 +64,11 @@ class ImageScanningTest extends BaseSpecification {
         "data inputs are: "
         imageName             | policyName                     | tag           | enforcement
         "jenkins/jenkins:lts" |  "Fixable CVSS >= 7"           | "lts"         | "FAIL_BUILD_ENFORCEMENT"
-        "nginx:latest"        |  "Latest tag"                  | "latest"  | "FAIL_BUILD_ENFORCEMENT"
+        "nginx:latest"        |  "Latest tag"                  | "latest"      | "FAIL_BUILD_ENFORCEMENT"
     }
 
     @Unroll
-    def "Jenkins plugin image scanning with configuration error"() {
+    def "Jenkins plugin image scanning with configuration error (#imageName, #failOnCriticalPluginError, #endStatus)"() {
         given:
         "a repo with images in the scanner repo"
         when:
@@ -85,6 +85,6 @@ class ImageScanningTest extends BaseSpecification {
         imageName             | failOnCriticalPluginError | endStatus
         "jenkins/jenkins:lts" | true                      | "SUCCESS"
         "mis-spelled:lts"     | true                      | "FAILURE"
-        "mis-spelled:lts"     | false                     | "SUCCESS"
+        "mis-spelled:lts"     | false                     | "SUCCESS" 
     }
 }
