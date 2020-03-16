@@ -1,5 +1,4 @@
 version: 2.1
-
 runOnAllTags: &runOnAllTags
   filters:
     tags:
@@ -9,11 +8,18 @@ runOnAllTagsWithDockerIOPullCtx: &runOnAllTagsWithDockerIOPullCtx
   <<: *runOnAllTags
   context: docker-io-pull
 
+
 buildLivenessCheck: &buildLivenessCheck
   run:
     name: Ensure workflow is still live
     command: |
       .circleci/check-workflow-live.sh
+
+storetestArtifacts: &storeTestArtifacts
+  store_artifacts:
+    path:  /home/circleci/project/functionaltest-jenkins-plugin/build/test-results/test
+    destination: artifacts
+
 
 setupGoogleAppCreds: &setupGoogleAppCreds
   run:
@@ -59,13 +65,6 @@ waitForCentral: &waitForCentral
           echo "Central did not come up"
           exit 1
       fi
-
-connectToCentral: &connectToCentral
-  run:
-    name: Connect to central via port-forward on 443
-    command: |
-      set +e
-      nohup kubectl -n 'stackrox' port-forward service/central '8000:443' 1>/dev/null 2>&1 &
 
 deleteClusterk8s: &deleteClusterk8s
   run:  
@@ -114,7 +113,7 @@ jobs:
         cluster-id: qa-tests
         num-nodes: 1
 
-  deploy-stackrox:
+  deploy-stackrox-and-run-qa-tests:
     docker:
       - image: docker.io/stackrox/apollo-ci:0.2.8-2-g1e9382b6d6
         auth:
@@ -143,7 +142,8 @@ jobs:
       - run:
           name: Get Roxctl binary and set the image name
           command: |
-            cci-export IMAGE_NAME "stackrox/main:3.0.38.1"
+            cci-export IMAGE_NAME "stackrox/main:3.0.38.2-0-gd83dbccae8"
+            cci-export BASE_DIR "/home/circleci/jenkins-plugin"
             docker login -u "$DOCKER_IO_PULL_USERNAME" -p "$DOCKER_IO_PULL_PASSWORD"
             cci-export REGISTRY_USERNAME "$DOCKER_IO_PULL_USERNAME"
             cci-export REGISTRY_PASSWORD "$DOCKER_IO_PULL_PASSWORD"
@@ -151,17 +151,16 @@ jobs:
             docker cp $containerId:/assets/downloads/cli/roxctl-linux ./roxctl
             docker rm ${containerId}
 
+
       - *setupGoogleAppCreds
 
       - run:
           name: Creating License Key
           command: |
-            export ROX_LICENSE_KEY="$(./licenses/ci.sh)"
+            export ROX_LICENSE_KEY="$(./licenses/ci.sh  --not-valid-after +6h)"
             touch /tmp/data.lic
             chmod 0600 /tmp/data.lic
             echo $ROX_LICENSE_KEY >> /tmp/data.lic
-
-
       - run:
           name: Generate central bundle
           command: |
@@ -186,8 +185,6 @@ jobs:
             central-bundle/scanner/scripts/setup.sh
             kubectl create -R -f central-bundle/scanner
 
-      - *waitForCentral
-      - *connectToCentral
       - run:
           name: Deploy Jenkins
           command: |
@@ -201,11 +198,40 @@ jobs:
           name: wait For set up plugin
           command: |
             .circleci/setUpJenkinsPlugin.sh
+      - run:
+          name: Set Up Port-Forwarding.
+          command: |
+            POD="$(kubectl get pod -l app=central -n stackrox -o custom-columns=:metadata.name --no-headers)"
+            kubectl -n stackrox wait --for=condition=ready "pod/${POD}" --timeout=3m
+            nohup kubectl -n 'stackrox' port-forward service/central '8000:443' 1>/dev/null 2>&1 &
+            export API_HOST_NAME="localhost"
+            export API_PORT=8000
+            PORT_FORWARD=false
+            for i in $(seq 1 50); do
+              export API_ENDPOINT="${API_HOST_NAME}:${API_PORT}" || true
+              echo $API_ENDPOINT
+              export METADATA_URL="https://${API_ENDPOINT}/v1/metadata" || true
+              echo $METADATA_URL
+              licenseStatus="$(curl -sk $METADATA_URL | jq  '.licenseStatus' -r || true)"
+              if [[ $licenseStatus = "VALID" ]]; then
+                 PORT_FORWARD=true
+                 break
+              fi
+              sleep 5
+            done
+            if [[ $PORT_FORWARD = false ]]; then
+                echo "Port forwarding is not up"
+                exit 1
+            fi
+      - run:
+          name: Run qa tests.
+          command: |
+            cd functionaltest-jenkins-plugin
+            make all
+      - *storeTestArtifacts
       - *collectK8sLogs
       - *storeK8sLogs
       - *deleteClusterk8s
-
-
   mirror:
     docker:
       - image: docker.io/stackrox/apollo-ci:jenkins-plugin-0.2.8-1-ga776a448ee
@@ -234,14 +260,12 @@ workflows:
               only: /.*/
       - provision-cluster-qa-tests:
           <<: *runOnAllTagsWithDockerIOPullCtx
-      - deploy-stackrox:
+      - deploy-stackrox-and-run-qa-tests:
           <<: *runOnAllTagsWithDockerIOPullCtx
           orchestrator-flavor: k8s
           requires:
             - provision-cluster-qa-tests
             - build
-
-
 commands:
   setup-gcp:
     parameters:
