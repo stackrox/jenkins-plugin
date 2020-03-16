@@ -85,6 +85,6 @@ class ImageScanningTest extends BaseSpecification {
         imageName             | failOnCriticalPluginError | endStatus
         "jenkins/jenkins:lts" | true                      | "SUCCESS"
         "mis-spelled:lts"     | true                      | "FAILURE"
-        "mis-spelled:lts"     | false                     | "SUCCESS" 
+        "mis-spelled:lts"     | false                     | "SUCCESS"
     }
 }
