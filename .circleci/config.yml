@@ -73,7 +73,6 @@ connectToCentral: &connectToCentral
       set +e
       POD="$(kubectl get pod -l app=central -n stackrox -o custom-columns=:metadata.name)"
       kubectl -n stackrox wait --for=condition=ready "pod/${POD}" --timeout=3m
-      nohup kubectl -n 'stackrox' port-forward service/central '8000:443' 1>/dev/null 2>&1 &
 
 deleteClusterk8s: &deleteClusterk8s
   run:  
