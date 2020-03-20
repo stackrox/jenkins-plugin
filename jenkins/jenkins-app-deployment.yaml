@@ -12,7 +12,7 @@ spec:
     spec:
       containers:
         - name: jenkins
-          image: stackrox/qa:pipeline
+          image: stackrox/splunk-test-repo:jenkins
           resources:
             limits:
               memory: 512Mi
@@ -27,6 +27,8 @@ spec:
           volumeMounts:
             - name: jenkins-home
               mountPath: /var/jenkins_home
+      imagePullSecrets:
+        - name: mysecret
       volumes:
         - name: jenkins-home
           emptyDir: {}
