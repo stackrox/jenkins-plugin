@@ -197,6 +197,8 @@ jobs:
           name: Deploy Jenkins
           command: |
             kubectl create namespace jenkins
+            export dockerConfigJson="$(cat ~/.docker/config.json | base64)"
+            sed -i "" "s/testString/$dockerConfigJson/g" secret.yaml
             kubectl apply -f jenkins
       - run:
           name: wait for Jenkins service

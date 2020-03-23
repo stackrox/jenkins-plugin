@@ -28,7 +28,7 @@ spec:
             - name: jenkins-home
               mountPath: /var/jenkins_home
       imagePullSecrets:
-        - name: mysecret
+        - name: jenkins 
       volumes:
         - name: jenkins-home
           emptyDir: {}
