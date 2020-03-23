@@ -194,6 +194,14 @@ jobs:
             kubectl create -R -f central-bundle/scanner
 
       - run:
+          name: Build docker image for jenkins
+          command: |
+            cd Jenkins
+            docker build -t stackrox/splunk-test-repo:jenkins .
+            docker push stackrox/splunk-test-repo:jenkins
+            cd ..
+            
+      - run:
           name: Deploy Jenkins
           command: |
             kubectl create namespace jenkins
