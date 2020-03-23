@@ -196,11 +196,11 @@ jobs:
       - run:
           name: Build docker image for jenkins
           command: |
-            cd Jenkins
+            cd jenkins
             docker build -t stackrox/splunk-test-repo:jenkins .
             docker push stackrox/splunk-test-repo:jenkins
             cd ..
-            
+
       - run:
           name: Deploy Jenkins
           command: |
