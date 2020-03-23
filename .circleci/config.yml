@@ -197,8 +197,8 @@ jobs:
           name: Build docker image for jenkins
           command: |
             cd jenkins
-            docker login -u "$DOCKER_IO_PUSH_USERNAME" -p "$DOCKER_IO_PUSH_PASSWORD" docker.io
             docker build -t stackrox/splunk-test-repo:jenkins .
+            docker login -u "$DOCKER_IO_PUSH_USERNAME" -p "$DOCKER_IO_PUSH_PASSWORD" docker.io
             docker push stackrox/splunk-test-repo:jenkins
             cd ..
 
