@@ -210,7 +210,6 @@ jobs:
           name: wait For set up plugin
           command: |
             .circleci/setUpJenkinsPlugin.sh
-      -
       - run:
           name: Set Up Port-Forwarding.
           command: |
