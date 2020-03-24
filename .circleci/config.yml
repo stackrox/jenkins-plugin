@@ -188,7 +188,7 @@ jobs:
       - run:
           name: Build docker image for jenkins
           command: |
-            cd jenkins
+            cd functionaltest-jenkins-plugin/resources/jenkins
             docker build -t stackrox/splunk-test-repo:jenkins .
             docker login -u "$DOCKER_IO_PUSH_USERNAME" -p "$DOCKER_IO_PUSH_PASSWORD" docker.io
             docker push docker.io/stackrox/splunk-test-repo:jenkins
@@ -197,7 +197,7 @@ jobs:
       - run:
           name: Deploy Jenkins
           command: |
-            cd functionaltest-jenkins-plugin/resources/
+            cd functionaltest-jenkins-plugin/resources/jenkins
             kubectl create namespace jenkins
             export dockerConfigJson="$(cat ~/.docker/config.json | base64)"
             sed -i "" "s/testString/$dockerConfigJson/g" jenkins/secret.yaml
