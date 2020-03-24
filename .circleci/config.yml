@@ -66,14 +66,6 @@ waitForCentral: &waitForCentral
           exit 1
       fi
 
-connectToCentral: &connectToCentral
-  run:
-    name: Checking central readyness
-    command: |
-      set +e
-      POD="$(kubectl get pod -l app=central -n stackrox -o custom-columns=:metadata.name)"
-      kubectl -n stackrox wait --for=condition=ready "pod/${POD}" --timeout=3m
-
 deleteClusterk8s: &deleteClusterk8s
   run:  
     name: Tear down cluster upon failure
@@ -218,6 +210,7 @@ jobs:
           name: wait For set up plugin
           command: |
             .circleci/setUpJenkinsPlugin.sh
+      -
       - run:
           name: Set Up Port-Forwarding.
           command: |
