@@ -8,6 +8,9 @@ runOnAllTagsWithDockerIOPullCtx: &runOnAllTagsWithDockerIOPullCtx
   <<: *runOnAllTags
   context: docker-io-pull
 
+runOnAllTagsWithDockerIOPushCtx: &runOnAllTagsWithDockerIOPushCtx
+  <<: *runOnAllTags
+  context: docker-io-push
 
 buildLivenessCheck: &buildLivenessCheck
   run:
@@ -103,6 +106,7 @@ jobs:
         auth:
           username: $DOCKER_IO_PULL_USERNAME
           password: $DOCKER_IO_PULL_PASSWORD
+
    environment:
      - GCP_IMAGE_TYPE: "COS"
    working_directory: /home/circleci/jenkins-plugin
@@ -192,16 +196,17 @@ jobs:
             docker build -t stackrox/splunk-test-repo:jenkins .
             docker login -u "$DOCKER_IO_PUSH_USERNAME" -p "$DOCKER_IO_PUSH_PASSWORD" docker.io
             docker push docker.io/stackrox/splunk-test-repo:jenkins
-            cd ..
+
 
       - run:
           name: Deploy Jenkins
           command: |
-            cd functionaltest-jenkins-plugin/resources/jenkins
             kubectl create namespace jenkins
             export dockerConfigJson="$(cat ~/.docker/config.json | base64)"
             sed -i "" "s/testString/$dockerConfigJson/g" jenkins/secret.yaml
             kubectl apply -f jenkins
+            cd -
+
       - run:
           name: wait for Jenkins service
           command: |
@@ -274,7 +279,7 @@ workflows:
       - provision-cluster-qa-tests:
           <<: *runOnAllTagsWithDockerIOPullCtx
       - deploy-stackrox-and-run-qa-tests:
-          <<: *runOnAllTagsWithDockerIOPullCtx
+          <<: *runOnAllTagsWithDockerIOPushCtx
           orchestrator-flavor: k8s
           requires:
             - provision-cluster-qa-tests
