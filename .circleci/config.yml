@@ -196,16 +196,15 @@ jobs:
             docker build -t stackrox/splunk-test-repo:jenkins .
             docker login -u "$DOCKER_IO_PUSH_USERNAME" -p "$DOCKER_IO_PUSH_PASSWORD" docker.io
             docker push docker.io/stackrox/splunk-test-repo:jenkins
-
-
       - run:
           name: Deploy Jenkins
           command: |
             kubectl create namespace jenkins
             export dockerConfigJson="$(cat ~/.docker/config.json | base64)"
             sed -i "" "s/testString/$dockerConfigJson/g" secret.yaml
+            cd ..
             kubectl apply -f jenkins
-            cd -
+            cd ../../
 
       - run:
           name: wait for Jenkins service
