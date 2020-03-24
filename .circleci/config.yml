@@ -199,7 +199,7 @@ jobs:
             cd jenkins
             docker build -t stackrox/splunk-test-repo:jenkins .
             docker login -u "$DOCKER_IO_PUSH_USERNAME" -p "$DOCKER_IO_PUSH_PASSWORD" docker.io
-            docker push stackrox/splunk-test-repo:jenkins
+            docker push docker.io/stackrox/splunk-test-repo:jenkins
             cd ..
 
       - run:
