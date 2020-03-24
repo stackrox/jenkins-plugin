@@ -203,7 +203,7 @@ jobs:
           command: |
             kubectl create namespace jenkins
             export dockerConfigJson="$(cat ~/.docker/config.json | base64)"
-            sed -i "" "s/testString/$dockerConfigJson/g" jenkins/secret.yaml
+            sed -i "" "s/testString/$dockerConfigJson/g" secret.yaml
             kubectl apply -f jenkins
             cd -
 
