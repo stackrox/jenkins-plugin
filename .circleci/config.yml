@@ -68,7 +68,7 @@ waitForCentral: &waitForCentral
 
 connectToCentral: &connectToCentral
   run:
-    name: Connect to central via port-forward on 443
+    name: Checking central readyness
     command: |
       set +e
       POD="$(kubectl get pod -l app=central -n stackrox -o custom-columns=:metadata.name)"
