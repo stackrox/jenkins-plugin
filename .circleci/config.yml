@@ -201,9 +201,9 @@ jobs:
           command: |
             kubectl create namespace jenkins
             cd functionaltest-jenkins-plugin/resources/jenkins
-            export dockerConfigJson="$(cat ~/.docker/config.json | base64)"
+            dockerConfigJson="$(cat ~/.docker/config.json | base64)"
             tmp=secret.yaml
-            find "$tmp" -type f -exec sed -i "s/testString/$dockerConfigJson/g" {}
+            find $tmp -type f -exec sed -i "" "s/testString/$dockerConfigJson/g" {} \;
             result = $?
             if [[ $result -eq 1 ]]; then
                echo "The text substitution did not work in secret.yaml"
