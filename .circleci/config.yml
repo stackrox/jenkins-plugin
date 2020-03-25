@@ -200,12 +200,12 @@ jobs:
           name: Deploy Jenkins
           command: |
             kubectl create namespace jenkins
-            ls -lrt
+            cd functionaltest-jenkins-plugin/resources/jenkins
             export dockerConfigJson="$(cat ~/.docker/config.json | base64)"
-            sed -i " " "s/testString/$dockerConfigJson/g" secret.yaml
-            cd ..
+            sed -i "" "s/testString/$dockerConfigJson/g" secret.yaml
             kubectl apply -f jenkins
-            cd ../../
+            cd ${BASE_DIR}
+
 
       - run:
           name: wait for Jenkins service
@@ -248,7 +248,7 @@ jobs:
       - *storeTestArtifacts
       - *collectK8sLogs
       - *storeK8sLogs
-      #- *deleteClusterk8s
+      - *deleteClusterk8s
 
   mirror:
     docker:
