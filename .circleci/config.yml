@@ -202,11 +202,11 @@ jobs:
             kubectl create namespace jenkins
             cd functionaltest-jenkins-plugin/resources/jenkins
             export dockerConfigJson="$(cat ~/.docker/config.json | base64)"
-            sed -i "" "s/testString/$dockerConfigJson/g" secret.yaml
+            tmp=secret.yaml
+            find "$tmp" -type f -exec sed -i "" "s/testString/differentString/g" {} \;
+            cd ..
             kubectl apply -f jenkins
-            cd ${BASE_DIR}
-
-
+            cd "${BASE_DIR}"
       - run:
           name: wait for Jenkins service
           command: |
