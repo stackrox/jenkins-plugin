@@ -201,10 +201,10 @@ jobs:
           command: |
             kubectl create namespace jenkins
             cd functionaltest-jenkins-plugin/resources/jenkins
-            ls -lrt 
+            ls -lrt
             dockerConfigJson="$(cat ~/.docker/config.json | base64)"
             tmp=secret.yaml
-            find $tmp -type f -exec sed -i "" "s/testString/$dockerConfigJson/g" {} \;
+            find $tmp -exec sed -i -e "s/testString/$dockerConfigJson/g" {} \;
             result = $?
             if [[ $result -eq 1 ]]; then
                exit 1
