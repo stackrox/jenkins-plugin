@@ -32,10 +32,3 @@ spec:
       volumes:
         - name: jenkins-home
           emptyDir: {}
-      dnsPolicy: "None"
-      dnsConfig:
-        nameservers:
-          - 1.2.3.4
-        searches:
-          - jenkins.svc
-          - my.dns.search.suffix
