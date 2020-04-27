@@ -1,6 +1,9 @@
 # Changelog
 All notable changes to the StackRox Container Image Scanner Jenkins plugin will be documented in this file.
 
+## [1.2.1]
+* Fixed CSV reports generation at remote paths.
+
 ## [1.2]
 * Improved styling for the plugin report.
 * Fixed possible NPEs when certain scanners return only a subset of the CVE properties that the plugin reports.
