@@ -44,15 +44,12 @@ import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.verb.POST;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.net.HttpURLConnection;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -341,7 +338,7 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
                 FilePath policyViolationsCsv = new FilePath(imageResultDir, "policyViolations.csv");
 
                 if (!result.getCves().isEmpty()) {
-                    try (CSVPrinter printer = new CSVPrinter(new OutputStreamWriter(new FileOutputStream(imageCveCsv.getRemote()), StandardCharsets.UTF_8), CSVFormat.EXCEL.withQuoteMode(QuoteMode.NON_NUMERIC))) {
+                    try (CSVPrinter printer = new CSVPrinter(new OutputStreamWriter(imageCveCsv.write(), StandardCharsets.UTF_8), CSVFormat.EXCEL.withQuoteMode(QuoteMode.NON_NUMERIC))) {
                         printer.printRecord("CVE ID", "CVSS Score", "Score Type", "Package Name", "Package Version", "Fixable", "Publish Date", "Link");
                         for (CVE cve : result.getCves()) {
                             printer.printRecord(cve.getId(), cve.getCvssScore(), cve.getScoreType(), cve.getPackageName(), cve.getPackageVersion(), cve.isFixable(), cve.getPublishDate(), cve.getLink());
@@ -350,7 +347,7 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
                 }
 
                 if (!result.getViolatedPolicies().isEmpty()) {
-                    try (CSVPrinter printer = new CSVPrinter(new OutputStreamWriter(new FileOutputStream(policyViolationsCsv.getRemote()), StandardCharsets.UTF_8), CSVFormat.EXCEL.withQuoteMode(QuoteMode.NON_NUMERIC))) {
+                    try (CSVPrinter printer = new CSVPrinter(new OutputStreamWriter(policyViolationsCsv.write(), StandardCharsets.UTF_8), CSVFormat.EXCEL.withQuoteMode(QuoteMode.NON_NUMERIC))) {
                         printer.printRecord("Policy Name", "Policy Description", "Severity", "Remediation");
                         for (ViolatedPolicy policy : result.getViolatedPolicies()) {
                             printer.printRecord(policy.getName(), policy.getDescription(), policy.getSeverity(), policy.getRemediation());
@@ -376,8 +373,7 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
         runConfig.getLog().println(String.format("Cleaning up the workspace ..."));
 
         try {
-            File imagesToScan = new File(runConfig.getImagesToScanFilePath().toURI());
-            Files.deleteIfExists(imagesToScan.toPath());
+            runConfig.getImagesToScanFilePath().delete();
 
             runConfig.getBaseWorkDir().deleteRecursive();
         } catch (IOException | InterruptedException e) {
