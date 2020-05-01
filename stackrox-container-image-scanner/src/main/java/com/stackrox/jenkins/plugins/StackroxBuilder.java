@@ -274,14 +274,16 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
         for (JsonObject component : components.getValuesAs(JsonObject.class)) {
             JsonArray componentCves = component.getJsonArray("vulns");
             for (JsonObject cve : componentCves.getValuesAs(JsonObject.class)) {
+                String publishDate = cve.getString("publishedOn", NOT_AVAILABLE);
                 CVE cveToAdd = CVE.Builder.newInstance()
                         .withId(cve.getString("cve"))
                         .withCvssScore(cve.isNull("cvss") ? (float) 0 : (float) cve.getJsonNumber("cvss").doubleValue())
                         .withScoreType(cve.getString("scoreVersion", NOT_AVAILABLE))
-                        .withPublishDate(cve.getString("publishedOn", NOT_AVAILABLE))
+                        .withPublishDate(Strings.isNullOrEmpty(publishDate) ?  NOT_AVAILABLE : publishDate)
                         .withLink(cve.getString("link", NOT_AVAILABLE))
                         .inPackage(component.getString("name", NOT_AVAILABLE))
                         .inVersion(component.getString("version", NOT_AVAILABLE))
+                        .isFixable(Strings.isNullOrEmpty(cve.getString("fixedBy"))? false : true)
                         .build();
                 cves.add(cveToAdd);
             }

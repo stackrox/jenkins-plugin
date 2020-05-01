@@ -22,8 +22,12 @@ function renderCVETable(tableId, cves) {
                     { title: 'Package Version', data : 'packageVersion' },
                     { title: 'Fixable', data : 'fixable' },
                     { title: 'Publish Date', mData : function (data, type, dataToSet) {
+                                                 if (data.publishDate == "-") {
+                                                    return `<span>-</span>`
+                                                 } else {
                                                     var d = new Date(data.publishDate);
                                                     return `<span>${d.getMonth()+1}/${d.getDate()}/${d.getFullYear()}</span>`
+                                                 }
                                                }
                    },
                 ],
