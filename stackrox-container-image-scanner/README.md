@@ -94,7 +94,7 @@ freestyle projects and pipelines.
     `<jenkins-workspace>/${BUILD_TAG}/rox_images_to_scan` file. Each
     image name must be on a separate line.
 
-    ![build step](./src/img/build-step.png)
+    ![build step](./src/main/resources/img/build-step.png)
 
     For example, to do this:
 
@@ -172,7 +172,7 @@ freestyle projects and pipelines.
     </tbody>
     </table>
 
-    ![plugin config](./src/img/plugin-config.png)
+    ![plugin config](./src/main/resources/img/plugin-config.png)
 
 4.  Select **Save** and then select **Apply**.
 
@@ -204,7 +204,7 @@ To use the StackRox Container Image Scanner plugin in your pipeline:
         configuration variables](#plugin-configuration-variables)
         section.
 
-    ![plugin pipeline](./src/img/plugin-pipeline.png)
+    ![plugin pipeline](./src/main/resources/img/plugin-pipeline.png)
 
 ## View scan reports
 
@@ -227,4 +227,4 @@ To view the HTML report:
 1.  Select **StackRox Image Security Report** from the left-hand
     navigation menu.
 
-    ![view html report](./src/img/view-html-report.png)
+    ![view html report](./src/main/resources/img/view-html-report.png)
