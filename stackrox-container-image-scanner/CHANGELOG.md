@@ -1,7 +1,7 @@
 # Changelog
 All notable changes to the StackRox Container Image Scanner Jenkins plugin will be documented in this file.
 
-## [1.3]
+## [1.2.3]
 * Upgraded guava version to fix unbounded memory allocation vulnerability in the guava dependency version being used.
 
 ## [1.2.2]	
