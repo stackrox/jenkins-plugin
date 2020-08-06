@@ -4,6 +4,10 @@ All notable changes to the StackRox Container Image Scanner Jenkins plugin will 
 ## [1.3]
 * Upgraded guava version to fix unbounded memory allocation vulnerability in the guava dependency version being used.
 
+## [1.2.2]	
+* Fixed HTML reports when CVE publishedOn date is not available.
+* Fixed incorrect reporting of CVE Fixable state.
+
 ## [1.2.1]
 * Fixed CSV reports generation at remote paths.
 
