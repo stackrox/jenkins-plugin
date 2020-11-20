@@ -157,9 +157,10 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
 
             cleanupJenkinsWorkspace();
 
+
             if (enforcedPolicyViolationExists()) {
                 if (this.failOnPolicyEvalFailure) {
-                    throw new AbortException(
+                    throw new IOException(
                             "At least one image violated at least one enforced system policy. Marking StackRox Image Security plugin build step failed. Check the report for additional details.");
                 }
                 runConfig.getLog().println("Marking StackRox Image Security plugin build step as successful despite enforced policy violations.");
@@ -167,6 +168,9 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
                 runConfig.getLog().println("No system policy violations found. Marking StackRox Image Security plugin build step as successful.");
             }
         } catch (IOException e) {
+            if (this.failOnPolicyEvalFailure) {
+                throw new AbortException(e.getMessage());
+            }
             if (this.failOnCriticalPluginError) {
                 throw new AbortException(String.format("Fatal error: %s. Aborting ...", e.getMessage()));
             }
