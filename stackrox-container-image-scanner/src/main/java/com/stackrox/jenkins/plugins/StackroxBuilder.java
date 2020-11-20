@@ -4,7 +4,6 @@ import com.google.common.base.CharMatcher;
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
-import com.sun.tools.javac.util.Abort;
 import hudson.AbortException;
 import hudson.Extension;
 import hudson.FilePath;
@@ -165,17 +164,17 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
             } else {
                 runConfig.getLog().println("No system policy violations found. Marking StackRox Image Security plugin build step as successful.");
             }
-        } catch (PolicyEvalException e) {
-            if (this.failOnPolicyEvalFailure) {
-                throw new AbortException(e.getMessage());
-            }
-            runConfig.getLog().println("Marking StackRox Image Security plugin build step as successful despite enforced policy violations.");
         } catch (IOException e) {
             if (this.failOnCriticalPluginError) {
                 throw new AbortException(String.format("Fatal error: %s. Aborting ...", e.getMessage()));
             }
             runConfig.getLog().println("Marking StackRox Image Security plugin build step as successful despite error.");
 
+        } catch (PolicyEvalException e) {
+            if (this.failOnPolicyEvalFailure) {
+                throw new AbortException(e.getMessage());
+            }
+            runConfig.getLog().println("Marking StackRox Image Security plugin build step as successful despite enforced policy violations.");
         } finally {
             if (httpClient != null) {
                 httpClient.close();
