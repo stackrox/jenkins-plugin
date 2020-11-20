@@ -34,8 +34,8 @@ class ImageScanningTest extends BaseSpecification {
         where:
         "data inputs are: "
         imageName                            | policyName         | enforcement              | endStatus
-        "k8s.gcr.io/prometheus-to-sd:v0.4.2" | "90-Day Image Age" | "UNSET_ENFORCEMENT"      | "SUCCESS"
-        "k8s.gcr.io/prometheus-to-sd:v0.4.2" | "90-Day Image Age" | "FAIL_BUILD_ENFORCEMENT" | "FAILURE"
+	"nginx:latest"                       | "Latest tag"       | "UNSET_ENFORCEMENT"      | "SUCCESS"
+        "nginx:latest"                       | "Latest tag"       | "FAIL_BUILD_ENFORCEMENT" | "FAILURE"
     }
 
     @Unroll
