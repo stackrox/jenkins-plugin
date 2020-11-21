@@ -34,8 +34,8 @@ class ImageScanningTest extends BaseSpecification {
         where:
         "data inputs are: "
         imageName                            | policyName         | enforcement              | endStatus
-        "nginx:latest"                       | "Latest tag"       | "UNSET_ENFORCEMENT"      | "SUCCESS"
-        "nginx:latest"                       | "Latest tag"       | "FAIL_BUILD_ENFORCEMENT" | "FAILURE"
+        "jenkins/jenkins:lts"                |  "Fixable CVSS >= 7" | "FAIL_BUILD_ENFORCEMENT" | "FAILURE"
+        "jenkins/jenkins:lts"                |  "Fixable CVSS >= 7" | "UNSET_ENFORCEMENT"      | "SUCCESS"
     }
 
     @Unroll
@@ -58,6 +58,7 @@ class ImageScanningTest extends BaseSpecification {
                 true, true)
         String jobName = restApiClient.createJenkinsJob(cachedJenkinsIp, configFile)
         restApiClient.startJenkinsBuild(cachedJenkinsIp, jobName)
+
         String status = restApiClient.getJenkinsBuildStatus(jobName, 60, cachedJenkinsIp)
         assert status == "FAILURE"
         where:
