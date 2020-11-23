@@ -33,7 +33,7 @@ class ImageScanningTest extends BaseSpecification {
         assert status == endStatus
         where:
         "data inputs are: "
-        imageName                            | policyName         | enforcement              | endStatus
+        imageName                            | policyName           | enforcement              | endStatus
         "jenkins/jenkins:lts"                |  "Fixable CVSS >= 7" | "FAIL_BUILD_ENFORCEMENT" | "FAILURE"
         "jenkins/jenkins:lts"                |  "Fixable CVSS >= 7" | "UNSET_ENFORCEMENT"      | "SUCCESS"
     }
@@ -84,7 +84,7 @@ class ImageScanningTest extends BaseSpecification {
         where:
         "data inputs are: "
         imageName             | failOnCriticalPluginError | endStatus
-        "jenkins/jenkins:lts" | true                      | "SUCCESS"
+        "nginx:latest"        | true                      | "SUCCESS"
         "mis-spelled:lts"     | true                      | "FAILURE"
         "mis-spelled:lts"     | false                     | "SUCCESS"
     }
