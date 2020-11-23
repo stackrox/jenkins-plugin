@@ -88,4 +88,4 @@ class ImageScanningTest extends BaseSpecification {
         "mis-spelled:lts"     | true                      | "FAILURE"
         "mis-spelled:lts"     | false                     | "SUCCESS"
     }
-}i
+}
