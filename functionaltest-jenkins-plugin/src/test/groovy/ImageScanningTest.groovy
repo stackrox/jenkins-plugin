@@ -10,7 +10,7 @@ class ImageScanningTest extends BaseSpecification {
     @Unroll
     def "image scanning test with toggle enforcement(#imageName, #policyName,  #enforcement, #endStatus)"() {
         given:
-        "a scanner repo with images"	
+        "a scanner repo with images"
         when:
         "Jenkins is setup"
         then:
