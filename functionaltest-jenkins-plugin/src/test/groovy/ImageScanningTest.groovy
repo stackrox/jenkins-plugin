@@ -10,7 +10,7 @@ class ImageScanningTest extends BaseSpecification {
     @Unroll
     def "image scanning test with toggle enforcement(#imageName, #policyName,  #enforcement, #endStatus)"() {
         given:
-        "a scanner repo with images"
+        "a scanner repo with images"	
         when:
         "Jenkins is setup"
         then:
@@ -33,9 +33,9 @@ class ImageScanningTest extends BaseSpecification {
         assert status == endStatus
         where:
         "data inputs are: "
-        imageName                            | policyName           | enforcement              | endStatus
-        "jenkins/jenkins:lts"                |  "Fixable CVSS >= 7" | "FAIL_BUILD_ENFORCEMENT" | "FAILURE"
-        "jenkins/jenkins:lts"                |  "Fixable CVSS >= 7" | "UNSET_ENFORCEMENT"      | "SUCCESS"
+        imageName                            | policyName          | enforcement              | endStatus
+        "nginx:latest"                       | "Latest tag"        | "UNSET_ENFORCEMENT"      | "SUCCESS"
+        "nginx:latest"                       | "Latest tag"        | "FAIL_BUILD_ENFORCEMENT" | "FAILURE"
     }
 
     @Unroll
@@ -84,8 +84,8 @@ class ImageScanningTest extends BaseSpecification {
         where:
         "data inputs are: "
         imageName             | failOnCriticalPluginError | endStatus
-        "nginx:latest"        | true                      | "SUCCESS"
+        "jenkins/jenkins:lts" | true                      | "SUCCESS"
         "mis-spelled:lts"     | true                      | "FAILURE"
         "mis-spelled:lts"     | false                     | "SUCCESS"
     }
-}
+}i
