@@ -14,7 +14,7 @@ class ImageScanningTest extends BaseSpecification {
         when:
         "Jenkins is setup"
         then:
-        Policy updatedPolicy = policyObj.getUpdatedPolicy(policyName, "v0.4.2", enforcement)
+        Policy updatedPolicy = policyObj.getUpdatedPolicy(policyName, "latest", enforcement)
         Policies policies = restApiClient.getPolicies()
         def policyId = policies.policies.find { it.name == policyName }?.id
         assert policyId !=  null
