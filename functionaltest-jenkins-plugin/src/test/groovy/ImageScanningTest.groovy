@@ -84,7 +84,7 @@ class ImageScanningTest extends BaseSpecification {
         where:
         "data inputs are: "
         imageName             | failOnCriticalPluginError | endStatus
-        "jenkins/jenkins:lts" | true                      | "SUCCESS"
+        "postgres:latest"     | true                      | "SUCCESS"
         "mis-spelled:lts"     | true                      | "FAILURE"
         "mis-spelled:lts"     | false                     | "SUCCESS"
     }
