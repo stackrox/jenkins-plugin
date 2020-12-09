@@ -34,8 +34,8 @@ class ImageScanningTest extends BaseSpecification {
         where:
         "data inputs are: "
         imageName                            | policyName          | enforcement              | endStatus
-        "nginx:latest"                       | "Latest tag"        | "UNSET_ENFORCEMENT"      | "SUCCESS"
-        "nginx:latest"                       | "Latest tag"        | "FAIL_BUILD_ENFORCEMENT" | "FAILURE"
+        "nginx:latest"                       | "Fixable CVSS >= 7" | "UNSET_ENFORCEMENT"      | "SUCCESS"
+        "nginx:latest"                       | "Fixable CVSS >= 7" | "FAIL_BUILD_ENFORCEMENT" | "FAILURE"
     }
 
     @Unroll
