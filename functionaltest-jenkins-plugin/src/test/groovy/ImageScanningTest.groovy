@@ -30,7 +30,7 @@ class ImageScanningTest extends BaseSpecification {
         String jobName = restApiClient.createJenkinsJob(cachedJenkinsIp, configfile)
         restApiClient.startJenkinsBuild(jenkinsAddress, jobName)
         String status = restApiClient.getJenkinsBuildStatus(jobName, 60, jenkinsAddress)
-        println "Jenkins job status is ${status}, expecting ${endstatus}"
+        println "Jenkins job status is ${status}, expecting ${endStatus}"
         assert status == endStatus
         where:
         "data inputs are: "
@@ -81,7 +81,7 @@ class ImageScanningTest extends BaseSpecification {
         String jobName = restApiClient.createJenkinsJob(cachedJenkinsIp, configFile)
         restApiClient.startJenkinsBuild(cachedJenkinsIp, jobName)
         String status = restApiClient.getJenkinsBuildStatus(jobName, 60, cachedJenkinsIp)
-        println "Jenkins job status is ${status}, expecting ${endstatus}"
+        println "Jenkins job status is ${status}, expecting ${endStatus}"
         assert status == endStatus
         where:
         "data inputs are: "
