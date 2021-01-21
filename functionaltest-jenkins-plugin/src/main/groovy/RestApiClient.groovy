@@ -133,6 +133,7 @@ class RestApiClient {
                 println(ex.toString())
             }
         }
+        println response.asString()
         return response.jsonPath().get("result")
     }
 }
