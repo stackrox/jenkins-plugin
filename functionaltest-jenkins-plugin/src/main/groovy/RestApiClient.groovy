@@ -134,6 +134,14 @@ class RestApiClient {
             }
         }
         println response.asString()
+
+        // MORE DEBUG INFO
+        def url = "${Constants.JENKINSPROTOCOL}://${jenkinsAddress}:${Constants.JENKINSPORT}" +
+                          "/job/${job}/lastBuild/consoleText"
+        Response response2 = given().when()
+                        .get(url)
+        println response2.asString()
+
         return response.jsonPath().get("result")
     }
 }
