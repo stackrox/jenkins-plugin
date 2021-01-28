@@ -133,6 +133,16 @@ class RestApiClient {
                 println(ex.toString())
             }
         }
+        println "***Full response from Jenkins build status API: " + response.asString()
+
+        // MORE DEBUG INFO
+        def jobOutputUrl = "${Constants.JENKINSPROTOCOL}://${jenkinsAddress}:${Constants.JENKINSPORT}" +
+                          "/job/${job}/lastBuild/consoleText"
+        Response outputResponse = given().when()
+                        .get(jobOutputUrl)
+        println "***Output of Jenkins build:"
+        println outputResponse.asString()
+
         return response.jsonPath().get("result")
     }
 }

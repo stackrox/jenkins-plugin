@@ -14,7 +14,7 @@ class ImageScanningTest extends BaseSpecification {
         when:
         "Jenkins is setup"
         then:
-        Policy updatedPolicy = policyObj.getUpdatedPolicy(policyName, "v0.4.2", enforcement)
+        Policy updatedPolicy = policyObj.getUpdatedPolicy(policyName, "latest", enforcement)
         Policies policies = restApiClient.getPolicies()
         def policyId = policies.policies.find { it.name == policyName }?.id
         assert policyId !=  null
@@ -30,12 +30,13 @@ class ImageScanningTest extends BaseSpecification {
         String jobName = restApiClient.createJenkinsJob(cachedJenkinsIp, configfile)
         restApiClient.startJenkinsBuild(jenkinsAddress, jobName)
         String status = restApiClient.getJenkinsBuildStatus(jobName, 60, jenkinsAddress)
+        println "Jenkins job status is ${status}, expecting ${endStatus}"
         assert status == endStatus
         where:
         "data inputs are: "
-        imageName                            | policyName         | enforcement              | endStatus
-        "k8s.gcr.io/prometheus-to-sd:v0.4.2" | "90-Day Image Age" | "UNSET_ENFORCEMENT"      | "SUCCESS"
-        "k8s.gcr.io/prometheus-to-sd:v0.4.2" | "90-Day Image Age" | "FAIL_BUILD_ENFORCEMENT" | "FAILURE"
+        imageName                            | policyName          | enforcement              | endStatus
+        "nginx:latest"                       | "Fixable CVSS >= 7" | "UNSET_ENFORCEMENT"      | "SUCCESS"
+        "nginx:latest"                       | "Fixable CVSS >= 7" | "FAIL_BUILD_ENFORCEMENT" | "FAILURE"
     }
 
     @Unroll
@@ -58,6 +59,7 @@ class ImageScanningTest extends BaseSpecification {
                 true, true)
         String jobName = restApiClient.createJenkinsJob(cachedJenkinsIp, configFile)
         restApiClient.startJenkinsBuild(cachedJenkinsIp, jobName)
+
         String status = restApiClient.getJenkinsBuildStatus(jobName, 60, cachedJenkinsIp)
         assert status == "FAILURE"
         where:
@@ -79,11 +81,12 @@ class ImageScanningTest extends BaseSpecification {
         String jobName = restApiClient.createJenkinsJob(cachedJenkinsIp, configFile)
         restApiClient.startJenkinsBuild(cachedJenkinsIp, jobName)
         String status = restApiClient.getJenkinsBuildStatus(jobName, 60, cachedJenkinsIp)
+        println "Jenkins job status is ${status}, expecting ${endStatus}"
         assert status == endStatus
         where:
         "data inputs are: "
         imageName             | failOnCriticalPluginError | endStatus
-        "jenkins/jenkins:lts" | true                      | "SUCCESS"
+        "postgres:latest"     | true                      | "SUCCESS"
         "mis-spelled:lts"     | true                      | "FAILURE"
         "mis-spelled:lts"     | false                     | "SUCCESS"
     }
