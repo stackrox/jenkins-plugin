@@ -14,6 +14,7 @@ sourceCompatibility = 1.8
 
 test {
     testLogging.showStandardStreams = true
+    testLogging.exceptionFormat = "full"
 }
 
 repositories {
@@ -37,12 +38,12 @@ dependencies {
     compile 'com.google.code.gson:gson:2.7'
     compile 'io.fabric8:kubernetes-client:4.1.2'
     compile 'io.kubernetes:client-java:2.0.0-beta1'
-    compile 'org.codehaus.groovy:groovy-all:2.2.2'
+    compile 'org.codehaus.groovy:groovy-all:2.4.18'
     compile group: 'com.jayway.restassured', name: 'rest-assured', version: '2.4.1'
     compile group: 'com.github.docker-java', name: 'docker-java', version: '3.1.0-rc-3'
     compile group: 'commons-cli', name: 'commons-cli', version: '1.2'
     compile group: 'commons-httpclient', name: 'commons-httpclient', version: '3.1'
-    compile group: 'org.spockframework', name: 'spock-core', version: '1.1-groovy-2.0'
+    compile group: 'org.spockframework', name: 'spock-core', version: '1.2-groovy-2.4'
     compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.7'
     testCompile group: 'junit', name: 'junit', version: '4.11'
 }
