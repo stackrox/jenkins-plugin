@@ -142,7 +142,7 @@ jobs:
       - run:
           name: Get Roxctl binary and set the image name
           command: |
-            cci-export IMAGE_NAME "stackrox/main:3.0.52.x-41-gd05d266c9d"
+            cci-export IMAGE_NAME "stackrox/main:3.0.55.x-4-gd2e48c0fd6"
             cci-export BASE_DIR "/home/circleci/jenkins-plugin"
             docker login -u "$DOCKER_IO_PULL_USERNAME" -p "$DOCKER_IO_PULL_PASSWORD"
             cci-export REGISTRY_USERNAME "$DOCKER_IO_PULL_USERNAME"
