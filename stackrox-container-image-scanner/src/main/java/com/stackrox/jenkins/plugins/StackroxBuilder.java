@@ -153,7 +153,7 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
             artifactArchiver.setAllowEmptyArchive(true);
             artifactArchiver.perform(run, workspace, launcher, listener);
 
-            run.addAction(new ViewStackroxResultsAction(results, run));
+            run.addAction(new ViewStackroxResultsAction(results, runConfig.getRunTimestamp(), run));
 
             cleanupJenkinsWorkspace();
 

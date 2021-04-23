@@ -8,10 +8,12 @@ import java.util.List;
 public class ViewStackroxResultsAction implements Action {
     private Run<?, ?> build;
     private List<ImageCheckResults> results;
+    private String runTimesamp;
 
-    public ViewStackroxResultsAction(List<ImageCheckResults> results, Run<?, ?> build) {
+    public ViewStackroxResultsAction(List<ImageCheckResults> results, String runTimestamp, Run<?, ?> build) {
         this.build = build;
         this.results = results;
+        this.runTimesamp = runTimestamp;
     }
 
     public Run<?, ?> getBuild() {
@@ -34,6 +36,6 @@ public class ViewStackroxResultsAction implements Action {
 
     @Override
     public String getUrlName() {
-        return "stackrox-image-security-results";
+        return String.format("stackrox-image-security-results-%s", runTimesamp);
     }
 }

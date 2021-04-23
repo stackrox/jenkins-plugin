@@ -13,6 +13,9 @@ import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Date;
+import java.text.SimpleDateFormat;
+
 
 public class RunConfig {
     private static final String IMAGE_LIST_FILENAME = "rox_images_to_scan";
@@ -26,6 +29,7 @@ public class RunConfig {
     private FilePath imagesToScanFilePath;
     private List<String> imageNames;
     private String artifacts;
+    private String runTimestamp;
 
     public RunConfig(Run<?, ?> run, FilePath workspace, Launcher launcher, TaskListener listener) throws AbortException {
         try {
@@ -39,9 +43,10 @@ public class RunConfig {
                 throw new AbortException(String.format("%s not found at %s, no images to scan.", IMAGE_LIST_FILENAME, imagesToScanFilePath));
             }
 
-            reportsDir = new FilePath(baseWorkDir, REPORTS_DIR_NAME);
+            runTimestamp = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
+            reportsDir = new FilePath(baseWorkDir, String.format("%s_%s" , REPORTS_DIR_NAME, runTimestamp));
             reportsDir.mkdirs();
-            artifacts = String.format("%s/%s/", envVars.get("BUILD_TAG"), REPORTS_DIR_NAME);
+            artifacts = String.format("%s/%s_%s/", envVars.get("BUILD_TAG"), REPORTS_DIR_NAME, runTimestamp);
 
             try (BufferedReader br = new BufferedReader(new InputStreamReader(imagesToScanFilePath.read(), StandardCharsets.UTF_8))) {
                 imageNames = Lists.newArrayList();
@@ -59,13 +64,10 @@ public class RunConfig {
         return artifacts;
     }
 
-    public EnvVars getEnvVars() {
-        return envVars;
+    public String getRunTimestamp() {
+        return runTimestamp;
     }
 
-    public FilePath getJenkinsWorkspace() {
-        return jenkinsWorkspace;
-    }
 
     public FilePath getBaseWorkDir() {
         return baseWorkDir;
