@@ -5,8 +5,6 @@ import spock.lang.Unroll
 
 class ImageScanningTest extends BaseSpecification {
 
-    final String cachedJenkinsIp = getJenkinsAddress()
-
     @Unroll
     def "image scanning test with toggle enforcement(#imageName, #policyName,  #enforcement, #endStatus)"() {
         given:
@@ -27,9 +25,9 @@ class ImageScanningTest extends BaseSpecification {
         }
         assert enforcementPolicy.lifecycleStages == ["BUILD"]
         File configfile = DataUtil.createJenkinsConfig(imageName, "https://central.stackrox:443", token, true, true)
-        String jobName = restApiClient.createJenkinsJob(cachedJenkinsIp, configfile)
-        restApiClient.startJenkinsBuild(jenkinsAddress, jobName)
-        String status = restApiClient.getJenkinsBuildStatus(jobName, 60, jenkinsAddress)
+        String jobName = jenkins.createJob(configfile)
+        jenkins.startBuild(jobName)
+        String status = jenkins.getBuildStatus(jobName, 60)
         println "Jenkins job status is ${status}, expecting ${endStatus}"
         assert status == endStatus
         where:
@@ -57,10 +55,10 @@ class ImageScanningTest extends BaseSpecification {
         assert enforcementPolicy.lifecycleStages == ["BUILD"]
         File configFile = DataUtil.createJenkinsConfig(imageName, "https://central.stackrox:443", token,
                 true, true)
-        String jobName = restApiClient.createJenkinsJob(cachedJenkinsIp, configFile)
-        restApiClient.startJenkinsBuild(cachedJenkinsIp, jobName)
+        String jobName = jenkins.createJob(configFile)
+        jenkins.startBuild(jobName)
 
-        String status = restApiClient.getJenkinsBuildStatus(jobName, 60, cachedJenkinsIp)
+        String status = jenkins.getBuildStatus(jobName, 60)
         assert status == "FAILURE"
         where:
         "data inputs are: "
@@ -78,9 +76,9 @@ class ImageScanningTest extends BaseSpecification {
         then:
         File configFile = DataUtil.createJenkinsConfig(imageName, "https://central.stackrox:443", token,
                          false, failOnCriticalPluginError)
-        String jobName = restApiClient.createJenkinsJob(cachedJenkinsIp, configFile)
-        restApiClient.startJenkinsBuild(cachedJenkinsIp, jobName)
-        String status = restApiClient.getJenkinsBuildStatus(jobName, 60, cachedJenkinsIp)
+        String jobName = jenkins.createJob(configFile)
+        jenkins.startBuild(jobName)
+        String status = jenkins.getBuildStatus(jobName, 60)
         println "Jenkins job status is ${status}, expecting ${endStatus}"
         assert status == endStatus
         where:

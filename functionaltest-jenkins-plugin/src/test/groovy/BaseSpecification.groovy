@@ -4,27 +4,19 @@ import data.Token
 import groovy.io.FileType
 
 class BaseSpecification extends Specification {
+    JenkinsClient jenkins
     RestApiClient restApiClient
     String token
-    static String jenkinsAddress
     Policy policyObj
 
     def setup() {
+        jenkins = new JenkinsClient()
         restApiClient = new RestApiClient()
         Token tokenobject = new Token()
         tokenobject.setName("automation")
         tokenobject.setRole("Continuous Integration")
         token = restApiClient.getToken(tokenobject)
         policyObj = new Policy()
-    }
-
-    final static setJenkinsAddress() {
-        jenkinsAddress = RestApiClient.getCachedIp()
-    }
-
-    final static getJenkinsAddress() {
-        setJenkinsAddress()
-        return jenkinsAddress
     }
 
     def cleanup() {
