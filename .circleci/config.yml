@@ -15,9 +15,13 @@ buildLivenessCheck: &buildLivenessCheck
     command: |
       .circleci/check-workflow-live.sh
 
+storetestResults: &storeTestResults
+  store_test_results:
+    path: /home/circleci/project/functionaltest-jenkins-plugin/build/test-results/test
+
 storetestArtifacts: &storeTestArtifacts
   store_artifacts:
-    path:  /home/circleci/project/functionaltest-jenkins-plugin/build/test-results/test
+    path: /home/circleci/project/functionaltest-jenkins-plugin/build/test-results/test
     destination: artifacts
 
 
@@ -228,6 +232,7 @@ jobs:
           command: |
             cd functionaltest-jenkins-plugin
             make all
+      - *storeTestResults
       - *storeTestArtifacts
       - *collectK8sLogs
       - *storeK8sLogs
