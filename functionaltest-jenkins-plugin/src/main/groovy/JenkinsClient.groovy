@@ -1,31 +1,33 @@
 import static com.jayway.restassured.RestAssured.given
 import com.jayway.restassured.response.Response
 import com.jayway.restassured.specification.RequestSpecification
+import groovy.transform.CompileStatic
 import java.security.SecureRandom
 import util.Timer
 
+@CompileStatic
 class JenkinsClient {
-    public final static JENKINSPORT = "8080"
-    public final static JENKINSPROTOCOL = "http"
-    String jenkinsAddress = ""
+    private final static JENKINSPORT = "8080"
+    private final static JENKINSPROTOCOL = "http"
+    private final String jenkinsAddress
+
+    JenkinsClient() {
+        def env = System.getenv()
+        jenkinsAddress = env.getOrDefault('JENKINS_IP', getJenkinsAddressFromK8s())
+    }
+
+    protected static String getJenkinsAddressFromK8s() {
+        Service svc = new Service("jenkins", "jenkins")
+        return svc.getLoadBalancer(60)
+    }
 
     protected RequestSpecification jenkins() {
-        String jenkinsUri = "${JENKINSPROTOCOL}://${cachedIp}:${JENKINSPORT}"
+        String jenkinsUri = "${JENKINSPROTOCOL}://${jenkinsAddress}:${JENKINSPORT}"
         def r = given().when().get("${jenkinsUri}/crumbIssuer/api/json")
         return given().header(
                 r.jsonPath().getString("crumbRequestField"),
                 r.jsonPath().getString("crumb")
         ).cookies(r.cookies()).baseUri(jenkinsUri)
-    }
-
-    String getCachedIp() {
-        def env = System.getenv()
-        jenkinsAddress = env['JENKINS_IP']
-        if (jenkinsAddress == "") {
-            Service svc = new Service("jenkins", "jenkins")
-            jenkinsAddress = svc.getLoadBalancer(60)
-        }
-        return jenkinsAddress
     }
 
     String createJob(File configfile) {
@@ -54,10 +56,8 @@ class JenkinsClient {
 
     String getBuildStatus(String job, int timeout) {
         println("\nGetting build status of ${job}")
-        int interval = 1
-        int iterations = timeout / interval
-        Response response
-        Timer timer = new Timer(iterations, interval)
+        Response response = null
+        Timer timer = new Timer(timeout, 1)
         while ((response?.body() == null || response?.asString()?.startsWith("<") ||
                 response?.jsonPath()?.get("result") == null) && timer.IsValid()) {
             try {

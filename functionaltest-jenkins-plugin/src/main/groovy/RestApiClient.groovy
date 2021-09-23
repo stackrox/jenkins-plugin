@@ -7,7 +7,9 @@ import data.DataUtil
 import data.Policies
 import data.Policy
 import data.TokenResponse
+import groovy.transform.CompileStatic
 
+@CompileStatic
 class RestApiClient {
 
     Gson gson
@@ -16,8 +18,8 @@ class RestApiClient {
     RestApiClient() {
         gson = new Gson()
         def env = System.getenv()
-        def password = env['ROX_PASSWORD']
-        authHeaderValue = "Basic " + DataUtil.base64Encode(Constants.CLUSTERUSERNAME + ":" + password)
+        String password = env['ROX_PASSWORD']
+        authHeaderValue = "Basic " + DataUtil.base64Encode(Constants.CLUSTERUSERNAME + ':' + password)
     }
 
     protected RequestSpecification createRequestSpecification() {
