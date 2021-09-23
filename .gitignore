@@ -28,3 +28,5 @@ work/
 hs_err_pid*
 
 .idea/
+cookies.txt
+nohup.out
