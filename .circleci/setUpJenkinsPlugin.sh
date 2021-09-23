@@ -27,7 +27,7 @@ if [[ $result -eq 0 ]]; then
     echo "Jenkins plugin failed to install"
   exit 1
 fi
-kubectl -n jenkins exec -i "${JENKINSPOD}" ls /var/jenkins_home/plugins/stackrox-container-image-scanner.hpi
+kubectl -n jenkins exec -i "${JENKINSPOD}" -- ls /var/jenkins_home/plugins/stackrox-container-image-scanner.hpi
 GETSVC=false
 for i in $(seq 1 50); do
   echo "in ${i} iteration"

@@ -71,7 +71,7 @@ waitForCentral: &waitForCentral
       fi
 
 deleteClusterk8s: &deleteClusterk8s
-  run:  
+  run:
     name: Tear down cluster upon failure
     command: |
       gcloud container clusters delete "$CLUSTER_NAME" --async
