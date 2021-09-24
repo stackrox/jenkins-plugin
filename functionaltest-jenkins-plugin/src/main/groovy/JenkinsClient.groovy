@@ -45,6 +45,14 @@ class JenkinsClient {
         return jobName
     }
 
+    String deleteJob(String job) {
+        println("Deleting Jenkins job ${job}")
+        def url = "/job/${job}"
+        jenkins().when()
+                .delete(url)
+                .then().statusCode(302)
+    }
+
     void startBuild(String job) {
         println("Starting Jenkins job ${job}")
         def url = "/job/${job}/build"

@@ -56,10 +56,10 @@ class Policy {
         RUNTIME
     }
 
-    Policy getUpdatedPolicy(String policyName, String tag, String enforcement) {
+    Policy getUpdatedPolicy(String policyName, String tag, List<String> enforcements) {
         Policy updatedPolicy = new Policy()
-        Policy.PolicyFields policyFields = new Policy.PolicyFields()
-        Policy.PolicyFields.ImageNamePolicy imageNamePolicy = new Policy.PolicyFields.ImageNamePolicy()
+        PolicyFields policyFields = new PolicyFields()
+        PolicyFields.ImageNamePolicy imageNamePolicy = new PolicyFields.ImageNamePolicy(null)
         policyFields.setImage_name(imageNamePolicy)
         imageNamePolicy.setTag(tag)
         updatedPolicy.with {
@@ -68,7 +68,7 @@ class Policy {
             severity = "MEDIUM_SEVERITY"
             fields = policyFields
             categories = ["Image Assurance"]
-            enforcementActions = [enforcement]
+            enforcementActions = enforcements
         }
         return updatedPolicy
     }

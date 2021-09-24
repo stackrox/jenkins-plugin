@@ -1,5 +1,6 @@
 import static com.jayway.restassured.RestAssured.given
 import com.google.gson.Gson
+import com.google.gson.GsonBuilder
 import com.jayway.restassured.response.Response
 import com.jayway.restassured.specification.RequestSpecification
 import common.Constants
@@ -16,7 +17,7 @@ class RestApiClient {
     String authHeaderValue
 
     RestApiClient() {
-        gson = new Gson()
+        gson = new GsonBuilder().setPrettyPrinting().create()
         def env = System.getenv()
         String password = env['ROX_PASSWORD']
         authHeaderValue = "Basic " + DataUtil.base64Encode(Constants.CLUSTERUSERNAME + ':' + password)
@@ -41,6 +42,8 @@ class RestApiClient {
         def url = Constants.BASEURL + Constants.GETPOLICIES
         Response response = createRequestSpecification()
                 .get(url)
+        println(response.asString())
+        response.then().statusCode(200)
         Policies policies = gson.fromJson(response.asString(), Policies)
         return policies
     }
@@ -50,6 +53,8 @@ class RestApiClient {
         Response response = createRequestSpecification()
                 .body(gson.toJson(policyObj))
                 .put(url)
+        println(response.asString())
+        response.then().statusCode(200)
         Policy policy = gson.fromJson(response.asString(), Policy)
         return policy
     }
