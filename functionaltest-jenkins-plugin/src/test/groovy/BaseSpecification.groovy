@@ -1,22 +1,21 @@
 import data.Policy
+import services.BaseService
 import spock.lang.Specification
 import data.Token
 import groovy.io.FileType
 
 class BaseSpecification extends Specification {
     JenkinsClient jenkins
-    RestApiClient restApiClient
     String token
-    Policy policyObj
 
     def setup() {
         jenkins = new JenkinsClient()
-        restApiClient = new RestApiClient()
+        def restApiClient = new RestApiClient()
         Token tokenobject = new Token()
         tokenobject.setName("automation")
         tokenobject.setRole("Continuous Integration")
         token = restApiClient.getToken(tokenobject)
-        policyObj = new Policy()
+        BaseService.useBasicAuth()
     }
 
     def cleanup() {

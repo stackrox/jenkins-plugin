@@ -1,6 +1,9 @@
+import static io.stackrox.proto.storage.PolicyOuterClass.EnforcementAction.FAIL_BUILD_ENFORCEMENT
+import static io.stackrox.proto.storage.PolicyOuterClass.LifecycleStage.BUILD
+import static io.stackrox.proto.storage.PolicyOuterClass.Policy
+import static io.stackrox.proto.storage.PolicyOuterClass.Severity.MEDIUM_SEVERITY
 import data.DataUtil
-import data.Policies
-import data.Policy
+import services.PolicyService
 import spock.lang.Unroll
 
 class ImageScanningTest extends BaseSpecification {
@@ -8,62 +11,73 @@ class ImageScanningTest extends BaseSpecification {
     @Unroll
     def "image scanning test with toggle enforcement(#imageName, #policyName,  #enforcements, #endStatus)"() {
         given:
-        Policies policies = restApiClient.getPolicies()
-        def policyId = policies.policies.find { it.name == policyName }?.id
+        def policies = PolicyService.getPolicies()
+        def policyId = policies.find { it.name == policyName }?.id
         assert policyId != null
 
         when:
-        Policy updatedPolicy = restApiClient.getPolicy(policyId)
-        updatedPolicy.with {
-            lifecycleStages = ["BUILD"]
-            severity = "MEDIUM_SEVERITY"
-            categories = ["Image Assurance"]
-            enforcementActions = enforcements
-        }
-        restApiClient.updatePolicy(updatedPolicy, policyId)
-        Policy enforcementPolicy = restApiClient.getPolicy(policyId)
+        Policy policy = PolicyService.getPolicy(policyId)
+        Policy updatedPolicy = Policy.newBuilder(policy)
+                .clearLifecycleStages()
+                .addAllLifecycleStages([BUILD])
+                .setSeverity(MEDIUM_SEVERITY)
+                .clearCategories()
+                .addAllCategories(["Image Assurance"])
+                .clearEnforcementActions()
+                .addAllEnforcementActions(enforcements)
+                .build()
+
+        PolicyService.updatePolicy(updatedPolicy)
+        Policy enforcementPolicy = PolicyService.getPolicy(policyId)
 
         then:
-        assert enforcementPolicy.enforcementActions == enforcements
-        assert enforcementPolicy.lifecycleStages == ["BUILD"]
+        assert enforcementPolicy.enforcementActionsList == enforcements
+        assert enforcementPolicy.lifecycleStagesList == [BUILD]
 
-//        when:
-//        File configfile = DataUtil.createJenkinsConfig(imageName, "https://central.stackrox:443", token, true, true)
-//        String jobName = jenkins.createJob(configfile)
-//        jenkins.startBuild(jobName)
-//
-//        then:
-//        String status = jenkins.getBuildStatus(jobName, 60)
-//        println "Jenkins job status is ${status}, expecting ${endStatus}"
-//        assert status == endStatus
-//
-//        cleanup:
-//        jenkins.deleteJob(jobName)
+        when:
+        File configFile = DataUtil.createJenkinsConfig(imageName, "https://central.stackrox:443", token, true, true)
+        String jobName = jenkins.createJob(configFile)
+        jenkins.startBuild(jobName)
+
+        then:
+        String status = jenkins.getBuildStatus(jobName, 60)
+        println "Jenkins job status is ${status}, expecting ${endStatus}"
+        assert status == endStatus
+
+        cleanup:
+        jenkins.deleteJob(jobName)
 
         where:
-        imageName      | policyName          | enforcements               | endStatus
-        "nginx:latest" | "Fixable CVSS >= 7" | []                         | "SUCCESS"
-        "nginx:latest" | "Fixable CVSS >= 7" | ["FAIL_BUILD_ENFORCEMENT"] | "FAILURE"
+        imageName      | policyName   | enforcements             | endStatus
+        "nginx:latest" | "Latest tag" | []                       | "SUCCESS"
+        "nginx:latest" | "Latest tag" | [FAIL_BUILD_ENFORCEMENT] | "FAILURE"
     }
 
     @Unroll
-    def "image scanning test with images enforcement turned on (#imageName, #policyName, #tag, FAIL_BUILD_ENFORCEMENT)"() {
-        when:
-        Policy updatedPolicy = policyObj.getUpdatedPolicy(policyName, tag, ["FAIL_BUILD_ENFORCEMENT"])
-        Policies policies = restApiClient.getPolicies()
-
-        then:
-        def policyId = policies.policies.find { it.name == policyName }?.id
+    def "image scanning test with images enforcement turned on (#imageName, #policyName, #tag)"() {
+        given:
+        def policies = PolicyService.getPolicies()
+        def policyId = policies.find { it.name == policyName }?.id
         assert policyId != null
 
         when:
-        println("Updating the policy $policyName")
-        restApiClient.updatePolicy(updatedPolicy, policyId)
+        Policy policy = PolicyService.getPolicy(policyId)
+        Policy updatedPolicy = Policy.newBuilder(policy)
+                .clearLifecycleStages()
+                .addAllLifecycleStages([BUILD])
+                .setSeverity(MEDIUM_SEVERITY)
+                .clearCategories()
+                .addAllCategories(["Image Assurance"])
+                .clearEnforcementActions()
+                .addAllEnforcementActions([FAIL_BUILD_ENFORCEMENT])
+                .build()
+
+        PolicyService.updatePolicy(updatedPolicy)
+        Policy enforcementPolicy = PolicyService.getPolicy(policyId)
 
         then:
-        Policy enforcementPolicy = restApiClient.getPolicy(policyId)
-        assert enforcementPolicy.enforcementActions == ["FAIL_BUILD_ENFORCEMENT"]
-        assert enforcementPolicy.lifecycleStages == ["BUILD"]
+        assert enforcementPolicy.enforcementActionsList == [FAIL_BUILD_ENFORCEMENT]
+        assert enforcementPolicy.lifecycleStagesList == [BUILD]
 
         when:
         File configFile = DataUtil.createJenkinsConfig(imageName, "https://central.stackrox:443", token,
