@@ -98,7 +98,7 @@ class BaseService {
             authHeaderContents = "Bearer " + apiToken
         }
 
-        public <ReqT, RespT> ClientCall<ReqT, RespT> interceptCall(
+        def <ReqT, RespT> ClientCall<ReqT, RespT> interceptCall(
                 MethodDescriptor<ReqT, RespT> method, CallOptions callOptions, Channel next) {
             return new CallWithAuthorizationHeader<>(next.newCall(method, callOptions), authHeaderContents)
         }

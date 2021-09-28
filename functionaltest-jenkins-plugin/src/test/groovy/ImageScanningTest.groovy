@@ -2,11 +2,13 @@ import static io.stackrox.proto.storage.PolicyOuterClass.EnforcementAction.FAIL_
 import static io.stackrox.proto.storage.PolicyOuterClass.LifecycleStage.BUILD
 import static io.stackrox.proto.storage.PolicyOuterClass.Policy
 import static io.stackrox.proto.storage.PolicyOuterClass.Severity.MEDIUM_SEVERITY
-import data.DataUtil
 import services.PolicyService
 import spock.lang.Unroll
 
 class ImageScanningTest extends BaseSpecification {
+
+
+    public static final String CENTRAL_URI = "https://central.stackrox:443"
 
     @Unroll
     def "image scanning test with toggle enforcement(#imageName, #policyName,  #enforcements, #endStatus)"() {
@@ -35,7 +37,7 @@ class ImageScanningTest extends BaseSpecification {
         assert enforcementPolicy.lifecycleStagesList == [BUILD]
 
         when:
-        File configFile = DataUtil.createJenkinsConfig(imageName, "https://central.stackrox:443", token, true, true)
+        File configFile = jenkins.createJobConfig(imageName, CENTRAL_URI, token, true, true)
         String jobName = jenkins.createJob(configFile)
         jenkins.startBuild(jobName)
 
@@ -80,8 +82,7 @@ class ImageScanningTest extends BaseSpecification {
         assert enforcementPolicy.lifecycleStagesList == [BUILD]
 
         when:
-        File configFile = DataUtil.createJenkinsConfig(imageName, "https://central.stackrox:443", token,
-                true, true)
+        File configFile = jenkins.createJobConfig(imageName, CENTRAL_URI, token, true, true)
         String jobName = jenkins.createJob(configFile)
         jenkins.startBuild(jobName)
 
@@ -102,8 +103,7 @@ class ImageScanningTest extends BaseSpecification {
     def "Negative image scanning tests (#imageName, #failOnCriticalPluginError,#endStatus)"() {
         given:
         "a repo with images in the scanner repo"
-        File configFile = DataUtil.createJenkinsConfig(imageName, "https://central.stackrox:443", token,
-                false, failOnCriticalPluginError)
+        File configFile = jenkins.createJobConfig(imageName, CENTRAL_URI, token, false, failOnCriticalPluginError)
         String jobName = jenkins.createJob(configFile)
 
         when:
