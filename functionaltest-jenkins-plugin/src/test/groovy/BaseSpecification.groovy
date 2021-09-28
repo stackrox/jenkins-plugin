@@ -1,8 +1,7 @@
-import data.Policy
-import services.BaseService
-import spock.lang.Specification
 import data.Token
 import groovy.io.FileType
+import services.BaseService
+import spock.lang.Specification
 
 class BaseSpecification extends Specification {
     JenkinsClient jenkins
@@ -20,8 +19,10 @@ class BaseSpecification extends Specification {
 
     def cleanup() {
         def folderPath = "."
-        new File(folderPath).eachFile (FileType.FILES) { file ->
-            if (file.name.contains('temp')) { file.delete() }
+        new File(folderPath).eachFile(FileType.FILES) { file ->
+            if (file.name.contains('temp')) {
+                file.delete()
+            }
         }
     }
 }
