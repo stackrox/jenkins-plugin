@@ -1,5 +1,6 @@
 package services
 
+import groovy.transform.CompileStatic
 import groovy.transform.EqualsAndHashCode
 import io.grpc.CallOptions
 import io.grpc.Channel
@@ -14,36 +15,20 @@ import io.grpc.netty.NegotiationType
 import io.grpc.netty.NettyChannelBuilder
 import io.netty.handler.ssl.SslContextBuilder
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory
-import io.stackrox.proto.api.v1.Common.ResourceByID
 import io.stackrox.proto.api.v1.EmptyOuterClass
 import util.Env
 import util.Keys
 
+@CompileStatic
 class BaseService {
 
-    static final BASIC_AUTH_USERNAME = Env.mustGetUsername()
-    static final BASIC_AUTH_PASSWORD = Env.mustGetPassword()
+    static final String BASIC_AUTH_USERNAME = Env.mustGetUsername()
+    static final String BASIC_AUTH_PASSWORD = Env.mustGetPassword()
 
     static final EMPTY = EmptyOuterClass.Empty.newBuilder().build()
 
-    static ResourceByID getResourceByID(String id) {
-        return ResourceByID.newBuilder().setId(id).build()
-    }
-
-    static useApiToken(String apiToken) {
-        updateAuthConfig(useClientCert, new AuthInterceptor(apiToken))
-    }
-
     static useBasicAuth() {
         updateAuthConfig(useClientCert, new AuthInterceptor(BASIC_AUTH_USERNAME, BASIC_AUTH_PASSWORD))
-    }
-
-    static useNoAuthorizationHeader() {
-        updateAuthConfig(useClientCert, null)
-    }
-
-    static setUseClientCert(boolean use) {
-        updateAuthConfig(use, authInterceptor)
     }
 
     private static updateAuthConfig(boolean newUseClientCert, ClientInterceptor newAuthInterceptor) {
@@ -79,7 +64,7 @@ class BaseService {
         }
 
         @Override
-        protected void checkedStart(ClientCall.Listener<RespT> responseListener, Metadata headers) throws Exception {
+        protected void checkedStart(Listener<RespT> responseListener, Metadata headers) throws Exception {
             headers.put(AUTHORIZATION, authHeaderContents)
             delegate().start(responseListener, headers)
         }
@@ -92,10 +77,6 @@ class BaseService {
         AuthInterceptor(String username, String password) {
             authHeaderContents = "Basic " + Base64.getEncoder().encodeToString(
                     (username + ":" + password).getBytes("UTF-8"))
-        }
-
-        AuthInterceptor(String apiToken) {
-            authHeaderContents = "Bearer " + apiToken
         }
 
         def <ReqT, RespT> ClientCall<ReqT, RespT> interceptCall(

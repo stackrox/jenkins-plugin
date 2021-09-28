@@ -14,13 +14,4 @@ class Keys {
         kmf.init(keyStore, "".toCharArray())
         return kmf
     }
-
-    static TrustManagerFactory trustManagerFactory() {
-        def trustStore = KeyStore.getInstance("PKCS12")
-        trustStore.load(new FileInputStream(Env.mustGetTruststorePath()), "".toCharArray())
-
-        def tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm())
-        tmf.init(trustStore)
-        return tmf
-    }
 }

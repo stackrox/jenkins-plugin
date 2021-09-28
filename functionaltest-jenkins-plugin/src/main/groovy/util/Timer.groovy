@@ -25,8 +25,4 @@ class Timer {
         currIteration++
         return true
     }
-
-    int SecondsSince() {
-        return (System.currentTimeMillis() - this.startTime) / 1000
-    }
 }

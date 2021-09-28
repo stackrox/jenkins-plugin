@@ -73,9 +73,7 @@ class JenkinsClient {
                 def url = "/job/${job}/lastBuild/api/json"
                 response = jenkins().when()
                         .post(url)
-            }
-
-            catch (Exception ex) {
+            } catch (Exception ex) {
                 println(ex.toString())
             }
         }
