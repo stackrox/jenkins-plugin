@@ -1,6 +1,5 @@
 package services
 
-
 import static io.stackrox.proto.api.v1.PolicyServiceGrpc.PolicyServiceBlockingStub
 import static io.stackrox.proto.api.v1.PolicyServiceGrpc.newBlockingStub
 import groovy.transform.CompileStatic

@@ -7,8 +7,7 @@ import spock.lang.Unroll
 
 class ImageScanningTest extends BaseSpecification {
 
-
-    public static final String CENTRAL_URI = "https://central.stackrox:443"
+    private static final String CENTRAL_URI = "https://central.stackrox:443"
 
     @Unroll
     def "image scanning test with toggle enforcement(#imageName, #policyName,  #enforcements, #endStatus)"() {

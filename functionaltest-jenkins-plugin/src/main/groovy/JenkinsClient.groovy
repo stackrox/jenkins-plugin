@@ -90,7 +90,7 @@ class JenkinsClient {
     }
 
     static File createJobConfig(String imageName, String portalAddress, String token, Boolean policyEvalCheck,
-                                    Boolean failOnCriticalPluginError) {
+                                Boolean failOnCriticalPluginError) {
         String path = "resources/template.xml"
         String xml = new File(path).text
         def param = [
@@ -101,7 +101,7 @@ class JenkinsClient {
                 apiToken                 : token,
                 failOnPolicyEvalFailure  : policyEvalCheck,
                 failOnCriticalPluginError: failOnCriticalPluginError,
-                enableTLSVerification    : false
+                enableTLSVerification    : false,
         ]
         // We can't use XML Template here as Jenkins incorrectly treat newlines in XML
         def engine = new GStringTemplateEngine()
