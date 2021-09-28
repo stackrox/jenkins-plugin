@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+option go_package = "v1";
+option java_package = "io.stackrox.proto.api.v1";
+
+import weak "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+import "api/v1/empty.proto";
+import "storage/auth_provider.proto";
+import "storage/service_identity.proto";
+import "storage/user.proto";
+
+package v1;
+
+message UserAttribute {
+    string          key    = 1;
+    repeated string values = 2;
+}
+
+message AuthStatus {
+    oneof id {
+        string                user_id     = 1;
+        storage.ServiceIdentity       service_id  = 2;
+    }
+    google.protobuf.Timestamp expires     = 3;
+    string                    refresh_url = 4;
+
+    storage.AuthProvider   auth_provider   = 5;
+    storage.UserInfo       user_info       = 6;
+    repeated UserAttribute user_attributes = 7;
+}
+
+service AuthService {
+    rpc GetAuthStatus(Empty) returns (AuthStatus) {
+        option (google.api.http) = {
+            get: "/v1/auth/status"
+        };
+    }
+}

@@ -1,0 +1,190 @@
+syntax = "proto3";
+
+option go_package = "central";
+
+import "internalapi/compliance/compliance_data.proto";
+import "storage/alert.proto";
+import "storage/cluster.proto";
+import "storage/deployment.proto";
+import "storage/namespace_metadata.proto";
+import "storage/network_policy.proto";
+import "storage/node.proto";
+import "storage/secret.proto";
+import "storage/service_account.proto";
+import "storage/rbac.proto";
+import "storage/policy.proto";
+import "storage/process_indicator.proto";
+import "storage/image_integration.proto";
+import "storage/compliance_operator.proto";
+
+package central;
+
+enum ResourceAction {
+    UNSET_ACTION_RESOURCE   = 0;
+    CREATE_RESOURCE         = 1;
+    REMOVE_RESOURCE         = 2;
+    UPDATE_RESOURCE         = 3;
+}
+
+// Event updates from sensor to central.
+////////////////////////////////////////
+
+message ReprocessDeploymentRisk {
+    string deployment_id = 1;
+}
+
+message AlertResults {
+    enum Source {
+      DEPLOYMENT_EVENT = 0;
+      AUDIT_EVENT      = 1;
+    }
+    // Only relevant if source == DEPLOYMENT.
+    string deployment_id          = 1;
+    repeated storage.Alert alerts = 2;
+    storage.LifecycleStage stage  = 3;
+    Source source                 = 4;
+}
+
+// Next tag: 24.
+message SensorEvent {
+    // These fields may be duplicated in the individual events, but avoid the need to branch all the time
+    string         id                           = 1;
+    ResourceAction action                       = 2;
+
+    message ResourcesSynced {}
+
+    oneof resource {
+        storage.NetworkPolicy     network_policy    = 4;
+        storage.Deployment        deployment        = 5;
+        storage.Pod               pod               = 19;
+        storage.NamespaceMetadata namespace         = 6;
+        storage.Secret            secret            = 7;
+        storage.Node              node              = 9;
+        storage.ServiceAccount    service_account   = 14;
+        storage.K8sRole           role              = 15;
+        storage.K8sRoleBinding    binding           = 16;
+
+        storage.ProcessIndicator        process_indicator       = 8;
+        storage.ProviderMetadata        provider_metadata       = 10;
+        ResourcesSynced                 synced                  = 11;
+        storage.OrchestratorMetadata    orchestrator_metadata   = 12;
+        storage.ImageIntegration        image_integration       = 13;
+        ReprocessDeploymentRisk         reprocess_deployment    = 17;
+        AlertResults                    alert_results           = 18;
+
+        storage.ComplianceOperatorCheckResult        compliance_operator_result               = 20;
+        storage.ComplianceOperatorProfile            compliance_operator_profile              = 21;
+        storage.ComplianceOperatorRule               compliance_operator_rule                 = 22;
+        storage.ComplianceOperatorScanSettingBinding compliance_operator_scan_setting_binding = 23;
+    }
+}
+
+// Central enforcement through sensor.
+//////////////////////////////////////
+
+message SensorEnforcement {
+    storage.EnforcementAction enforcement = 1;
+
+    oneof resource {
+        DeploymentEnforcement        deployment         = 2;
+        ContainerInstanceEnforcement container_instance = 3;
+    }
+}
+
+message DeploymentEnforcement {
+    string deployment_id   = 1;
+    string deployment_name = 2;
+    string deployment_type = 3;
+    string namespace       = 4;
+    string alert_id        = 5;
+    string policy_name     = 6;
+}
+
+message ContainerInstanceEnforcement {
+    string pod_id                = 2;
+
+    DeploymentEnforcement deployment_enforcement = 3;
+}
+
+// Scrape commands sent to sensor.
+//////////////////////////////////
+
+message ScrapeCommand {
+    string scrape_id = 1;
+
+    oneof command {
+        StartScrape start_scrape = 2;
+        KillScrape  kill_scrape  = 3;
+    }
+}
+
+message StartScrape {
+    // Dictates the hosts we expect results from.
+    repeated string hostnames = 1;
+    // Dictates which standards the compliance pods should run.
+    repeated string standards = 2;
+}
+
+message KillScrape {}
+
+// Scrape updates received from sensor.
+////////////////////////////////////////
+
+message ScrapeUpdate {
+    string scrape_id = 1;
+
+    oneof update {
+        compliance.ComplianceReturn compliance_return = 2;
+        ScrapeStarted scrape_started                  = 3;
+        ScrapeKilled scrape_killed                    = 4;
+    }
+}
+
+message ScrapeStarted {
+    string error_message = 1;
+}
+
+message ScrapeKilled {
+    string error_message = 1;
+}
+
+// Network policy application.
+////////////////////////////////////////
+
+message NetworkPoliciesCommand {
+    message Apply {
+        string apply_id                           = 1;
+        storage.NetworkPolicyModification modification = 2;
+    }
+
+    message Payload {
+        oneof cmd {
+            Apply apply = 1;
+        }
+    }
+
+    int64 seq_id    = 1;
+    Payload payload = 2;
+}
+
+message NetworkPoliciesResponse {
+    message Apply {
+        string apply_id = 1;
+        storage.NetworkPolicyModification undo_modification = 2;
+    }
+
+    message Error {
+        string message = 1;
+    }
+
+    message Payload {
+        oneof cmd {
+            Error error = 1;
+
+            Apply apply = 2;
+        }
+    }
+
+    int64 seq_id    = 1;
+    Payload payload = 2;
+}
