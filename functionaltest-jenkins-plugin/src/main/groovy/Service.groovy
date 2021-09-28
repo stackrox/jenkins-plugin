@@ -1,10 +1,8 @@
-import groovy.transform.CompileStatic
-import io.fabric8.kubernetes.client.KubernetesClient
-import io.fabric8.kubernetes.client.DefaultKubernetesClient
 import io.fabric8.kubernetes.api.model.Service as KService
+import io.fabric8.kubernetes.client.DefaultKubernetesClient
+import io.fabric8.kubernetes.client.KubernetesClient
 import util.Timer
 
-@CompileStatic
 class Service {
     KService service
     KubernetesClient client
@@ -19,7 +17,9 @@ class Service {
     }
 
     String getLoadBalancer(int timeout) {
-        Timer timer = new Timer(timeout, 1)
+        int interval = 1
+        int iterations = timeout / interval
+        Timer timer = new Timer(iterations, interval)
         while (loadBalancerIP == null && timer.IsValid()) {
             service = client.services().inNamespace(namespace).withName(serviceName).get()
             if (service?.status?.loadBalancer?.ingress?.size()) {

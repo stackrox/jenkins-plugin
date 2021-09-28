@@ -1,5 +1,8 @@
 package util
 
+import groovy.transform.CompileStatic
+
+@CompileStatic
 class Timer {
     private Integer currIteration = 0
     private final Integer iterations

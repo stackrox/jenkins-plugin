@@ -1,9 +1,10 @@
 package util
 
+import groovy.transform.CompileStatic
 import java.security.KeyStore
 import javax.net.ssl.KeyManagerFactory
-import javax.net.ssl.TrustManagerFactory
 
+@CompileStatic
 class Keys {
 
     static KeyManagerFactory keyManagerFactory() {
