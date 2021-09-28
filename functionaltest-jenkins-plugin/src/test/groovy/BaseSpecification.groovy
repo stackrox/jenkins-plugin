@@ -1,28 +1,31 @@
+import static io.stackrox.proto.api.v1.ApiTokenService.*
 import data.Token
 import groovy.io.FileType
+import services.ApiTokenService
 import services.BaseService
 import spock.lang.Specification
 
 class BaseSpecification extends Specification {
     JenkinsClient jenkins
-    String token
+    GenerateTokenResponse tokenResponse
 
     def setup() {
         jenkins = new JenkinsClient()
-        def restApiClient = new RestApiClient()
-        Token tokenobject = new Token()
-        tokenobject.setName("automation")
-        tokenobject.setRole("Continuous Integration")
-        token = restApiClient.getToken(tokenobject)
         BaseService.useBasicAuth()
+        tokenResponse = ApiTokenService.generateToken("automation", "Continuous Integration")
     }
 
     def cleanup() {
+        ApiTokenService.revokeToken(tokenResponse.metadata.id)
         def folderPath = "."
         new File(folderPath).eachFile(FileType.FILES) { file ->
             if (file.name.contains('temp')) {
                 file.delete()
             }
         }
+    }
+
+    String getToken() {
+        return tokenResponse.token
     }
 }
