@@ -1,9 +1,10 @@
-import data.DataUtil
 import data.Policies
 import data.Policy
 import spock.lang.Unroll
 
 class ImageScanningTest extends BaseSpecification {
+
+    private static final String CENTRAL_URI = "https://central.stackrox:443"
 
     @Unroll
     def "image scanning test with toggle enforcement(#imageName, #policyName,  #enforcement, #endStatus)"() {
@@ -15,26 +16,30 @@ class ImageScanningTest extends BaseSpecification {
         Policy updatedPolicy = policyObj.getUpdatedPolicy(policyName, "latest", enforcement)
         Policies policies = restApiClient.getPolicies()
         def policyId = policies.policies.find { it.name == policyName }?.id
-        assert policyId !=  null
+        assert policyId != null
         restApiClient.updatePolicy(updatedPolicy, policyId)
         Policy enforcementPolicy = restApiClient.getPolicy(policyId)
-        if ( enforcement == "UNSET_ENFORCEMENT") {
+        if (enforcement == "UNSET_ENFORCEMENT") {
             assert enforcementPolicy.enforcementActions.empty
         } else {
             assert enforcementPolicy.enforcementActions == [enforcement]
         }
         assert enforcementPolicy.lifecycleStages == ["BUILD"]
-        File configfile = DataUtil.createJenkinsConfig(imageName, "https://central.stackrox:443", token, true, true)
+        File configfile = jenkins.createJobConfig(imageName, CENTRAL_URI, token, true, true)
         String jobName = jenkins.createJob(configfile)
         jenkins.startBuild(jobName)
         String status = jenkins.getBuildStatus(jobName, 60)
         println "Jenkins job status is ${status}, expecting ${endStatus}"
         assert status == endStatus
+
+        cleanup:
+        jenkins.deleteJob(jobName)
+
         where:
         "data inputs are: "
-        imageName                            | policyName          | enforcement              | endStatus
-        "nginx:latest"                       | "Fixable CVSS >= 7" | "UNSET_ENFORCEMENT"      | "SUCCESS"
-        "nginx:latest"                       | "Fixable CVSS >= 7" | "FAIL_BUILD_ENFORCEMENT" | "FAILURE"
+        imageName      | policyName          | enforcement              | endStatus
+        "nginx:latest" | "Fixable CVSS >= 7" | "UNSET_ENFORCEMENT"      | "SUCCESS"
+        "nginx:latest" | "Fixable CVSS >= 7" | "FAIL_BUILD_ENFORCEMENT" | "FAILURE"
     }
 
     @Unroll
@@ -53,18 +58,22 @@ class ImageScanningTest extends BaseSpecification {
         Policy enforcementPolicy = restApiClient.getPolicy(policyId)
         assert enforcementPolicy.enforcementActions == ["FAIL_BUILD_ENFORCEMENT"]
         assert enforcementPolicy.lifecycleStages == ["BUILD"]
-        File configFile = DataUtil.createJenkinsConfig(imageName, "https://central.stackrox:443", token,
+        File configFile = jenkins.createJobConfig(imageName, CENTRAL_URI, token,
                 true, true)
         String jobName = jenkins.createJob(configFile)
         jenkins.startBuild(jobName)
 
         String status = jenkins.getBuildStatus(jobName, 60)
         assert status == "FAILURE"
+
+        cleanup:
+        jenkins.deleteJob(jobName)
+
         where:
         "data inputs are: "
-        imageName             | policyName                     | tag           | enforcement
-        "jenkins/jenkins:lts" |  "Fixable CVSS >= 7"           | "lts"         | "FAIL_BUILD_ENFORCEMENT"
-        "nginx:latest"        |  "Latest tag"                  | "latest"      | "FAIL_BUILD_ENFORCEMENT"
+        imageName             | policyName          | tag      | enforcement
+        "jenkins/jenkins:lts" | "Fixable CVSS >= 7" | "lts"    | "FAIL_BUILD_ENFORCEMENT"
+        "nginx:latest"        | "Latest tag"        | "latest" | "FAIL_BUILD_ENFORCEMENT"
     }
 
     @Unroll
@@ -74,18 +83,22 @@ class ImageScanningTest extends BaseSpecification {
         when:
         "Jenkins is setup"
         then:
-        File configFile = DataUtil.createJenkinsConfig(imageName, "https://central.stackrox:443", token,
-                         false, failOnCriticalPluginError)
+        File configFile = jenkins.createJobConfig(imageName, CENTRAL_URI, token,
+                false, failOnCriticalPluginError)
         String jobName = jenkins.createJob(configFile)
         jenkins.startBuild(jobName)
         String status = jenkins.getBuildStatus(jobName, 60)
         println "Jenkins job status is ${status}, expecting ${endStatus}"
         assert status == endStatus
+
+        cleanup:
+        jenkins.deleteJob(jobName)
+
         where:
         "data inputs are: "
-        imageName             | failOnCriticalPluginError | endStatus
-        "postgres:latest"     | true                      | "SUCCESS"
-        "mis-spelled:lts"     | true                      | "FAILURE"
-        "mis-spelled:lts"     | false                     | "SUCCESS"
+        imageName         | failOnCriticalPluginError | endStatus
+        "postgres:latest" | true                      | "SUCCESS"
+        "mis-spelled:lts" | true                      | "FAILURE"
+        "mis-spelled:lts" | false                     | "SUCCESS"
     }
 }

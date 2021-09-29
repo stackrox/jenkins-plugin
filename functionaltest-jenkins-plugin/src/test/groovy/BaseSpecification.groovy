@@ -17,6 +17,7 @@ class BaseSpecification extends Specification {
         tokenobject.setRole("Continuous Integration")
         token = restApiClient.getToken(tokenobject)
         policyObj = new Policy()
+        println "Jenkins Version: ${jenkins.version()}"
     }
 
     def cleanup() {
