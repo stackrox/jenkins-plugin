@@ -16,17 +16,14 @@ import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.util.FormValidation;
 import hudson.util.Secret;
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
-import javax.json.JsonString;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import jenkins.model.Jenkins;
 import jenkins.tasks.SimpleBuildStep;
 import net.sf.json.JSONObject;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.QuoteMode;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.validator.routines.RegexValidator;
 import org.apache.commons.validator.routines.UrlValidator;
 import org.apache.http.HttpEntity;
@@ -44,12 +41,17 @@ import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.verb.POST;
+
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
+import javax.json.JsonString;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.net.HttpURLConnection;
-import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -242,7 +244,7 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
             detectionRequest.addHeader(HttpHeaders.AUTHORIZATION, Joiner.on(" ").join("Bearer", apiToken));
             detectionRequest.setEntity(new StringEntity(
                     Json.createObjectBuilder().add("imageName", imageName).build().toString(),
-                    StandardCharsets.UTF_8));
+                    UTF_8));
 
             response = this.httpClient.execute(detectionRequest);
             int statusCode = response.getStatusLine().getStatusCode();
@@ -253,7 +255,7 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
                 throw new IOException(String.format("Failed build time detection request. Status code: %d. Error: %s",
                         statusCode, entity == null ? "" : entity.toString()));
             }
-            JsonReader reader = Json.createReader(new InputStreamReader(entity.getContent(), StandardCharsets.UTF_8));
+            JsonReader reader = Json.createReader(new InputStreamReader(entity.getContent(), UTF_8));
             JsonObject object = reader.readObject();
             EntityUtils.consume(entity);
 
@@ -282,11 +284,11 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
                         .withId(cve.getString("cve"))
                         .withCvssScore(cve.isNull("cvss") ? (float) 0 : (float) cve.getJsonNumber("cvss").doubleValue())
                         .withScoreType(cve.getString("scoreVersion", NOT_AVAILABLE))
-                        .withPublishDate(Strings.isNullOrEmpty(publishDate) ?  NOT_AVAILABLE : publishDate)
+                        .withPublishDate(Strings.isNullOrEmpty(publishDate) ? NOT_AVAILABLE : publishDate)
                         .withLink(cve.getString("link", NOT_AVAILABLE))
                         .inPackage(component.getString("name", NOT_AVAILABLE))
                         .inVersion(component.getString("version", NOT_AVAILABLE))
-                        .isFixable(Strings.isNullOrEmpty(cve.getString("fixedBy"))? false : true)
+                        .isFixable(Strings.isNullOrEmpty(cve.getString("fixedBy")) ? false : true)
                         .build();
                 cves.add(cveToAdd);
             }
@@ -305,19 +307,22 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
             imageScanRequest.setHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.toString());
             imageScanRequest.addHeader(HttpHeaders.AUTHORIZATION, Joiner.on(" ").join("Bearer", apiToken));
             imageScanRequest.setEntity(new StringEntity(
-                    Json.createObjectBuilder().add("imageName", imageName).add("force", true).build().toString(),
-                    StandardCharsets.UTF_8));
+                    Json.createObjectBuilder().add("imageName", imageName).add("force", true).build().toString(), UTF_8));
 
             response = httpClient.execute(imageScanRequest);
             int statusCode = response.getStatusLine().getStatusCode();
 
             HttpEntity entity = response.getEntity();
 
-            if (statusCode != HttpURLConnection.HTTP_OK || entity == null) {
-                throw new IOException(String.format("Failed image scan request. Status code: %d. Error: %s", statusCode, String.valueOf(entity)));
+            if (entity == null) {
+                throw new IOException(String.format("Failed image scan request. Status code: %d", statusCode));
+            }
+            if (statusCode != HttpURLConnection.HTTP_OK) {
+                String content = IOUtils.toString(entity.getContent(), UTF_8);
+                throw new IOException(String.format("Failed image scan request. Status code: %d. Error: %s", statusCode, content));
             }
 
-            JsonReader reader = Json.createReader(new InputStreamReader(entity.getContent(), StandardCharsets.UTF_8));
+            JsonReader reader = Json.createReader(new InputStreamReader(entity.getContent(), UTF_8));
             JsonObject object = reader.readObject();
             EntityUtils.consume(entity);
             return object.getJsonObject("scan");
@@ -343,7 +348,7 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
                 FilePath policyViolationsCsv = new FilePath(imageResultDir, "policyViolations.csv");
 
                 if (!result.getCves().isEmpty()) {
-                    try (CSVPrinter printer = new CSVPrinter(new OutputStreamWriter(imageCveCsv.write(), StandardCharsets.UTF_8), CSVFormat.EXCEL.withQuoteMode(QuoteMode.NON_NUMERIC))) {
+                    try (CSVPrinter printer = new CSVPrinter(new OutputStreamWriter(imageCveCsv.write(), UTF_8), CSVFormat.EXCEL.withQuoteMode(QuoteMode.NON_NUMERIC))) {
                         printer.printRecord("CVE ID", "CVSS Score", "Score Type", "Package Name", "Package Version", "Fixable", "Publish Date", "Link");
                         for (CVE cve : result.getCves()) {
                             printer.printRecord(cve.getId(), cve.getCvssScore(), cve.getScoreType(), cve.getPackageName(), cve.getPackageVersion(), cve.isFixable(), cve.getPublishDate(), cve.getLink());
@@ -352,7 +357,7 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
                 }
 
                 if (!result.getViolatedPolicies().isEmpty()) {
-                    try (CSVPrinter printer = new CSVPrinter(new OutputStreamWriter(policyViolationsCsv.write(), StandardCharsets.UTF_8), CSVFormat.EXCEL.withQuoteMode(QuoteMode.NON_NUMERIC))) {
+                    try (CSVPrinter printer = new CSVPrinter(new OutputStreamWriter(policyViolationsCsv.write(), UTF_8), CSVFormat.EXCEL.withQuoteMode(QuoteMode.NON_NUMERIC))) {
                         printer.printRecord("Policy Name", "Policy Description", "Severity", "Remediation");
                         for (ViolatedPolicy policy : result.getViolatedPolicies()) {
                             printer.printRecord(policy.getName(), policy.getDescription(), policy.getSeverity(), policy.getRemediation());
@@ -482,7 +487,7 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
                     return false;
                 }
 
-                JsonReader reader = Json.createReader(new InputStreamReader(entity.getContent(), StandardCharsets.UTF_8));
+                JsonReader reader = Json.createReader(new InputStreamReader(entity.getContent(), UTF_8));
                 JsonObject object = reader.readObject();
 
                 EntityUtils.consume(entity);
