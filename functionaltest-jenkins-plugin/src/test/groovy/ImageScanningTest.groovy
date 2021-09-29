@@ -19,6 +19,7 @@ class ImageScanningTest extends BaseSpecification {
         when:
         Policy policy = PolicyService.getPolicy(policyId)
         Policy updatedPolicy = Policy.newBuilder(policy)
+                .clearExclusions()
                 .clearLifecycleStages()
                 .addAllLifecycleStages([BUILD])
                 .setSeverity(MEDIUM_SEVERITY)
@@ -64,6 +65,7 @@ class ImageScanningTest extends BaseSpecification {
         when:
         Policy policy = PolicyService.getPolicy(policyId)
         Policy updatedPolicy = Policy.newBuilder(policy)
+                .clearExclusions()
                 .clearLifecycleStages()
                 .addAllLifecycleStages([BUILD])
                 .setSeverity(MEDIUM_SEVERITY)
