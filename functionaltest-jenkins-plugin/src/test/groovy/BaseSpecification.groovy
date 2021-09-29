@@ -15,7 +15,6 @@ class BaseSpecification extends Specification {
         tokenResponse = ApiTokenService.generateToken("automation", "Continuous Integration")
         println "Jenkins Version: ${jenkins.version()}"
         println "StackRox Metadata\n${MetadataService.metadata}"
-
     }
 
     def cleanup() {

@@ -36,4 +36,19 @@ export JENKIS_CRUMB=`curl  --cookie-jar cookies.txt -s http://localhost:8080/cru
 curl -b cookies.txt -i -F file=@stackrox-container-image-scanner/target/stackrox-container-image-scanner.hpi http://localhost:8080/pluginManager/uploadPlugin\?Jenkins-Crumb=$JENKIS_CRUMB
 ```
 
-4. Create a new job with the plugin
+4. Run Tests
+
+```
+cd functionaltest-jenkins-plugin
+JENKINS_IP=127.0.0.1 make test
+```
+
+Other params
+
+| Env             | default   |
+|-----------------|-----------|
+| API_HOSTNAME    | localhost |
+| API_PORT        |    8000   |
+| ROX_USERNAME    |   admin   |
+| ROX_PASSWORD    |     –     |
+| KEYSTORE_PATH   |     –     |

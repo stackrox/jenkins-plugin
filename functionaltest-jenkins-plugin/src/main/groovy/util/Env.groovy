@@ -94,9 +94,5 @@ class Env {
     static String mustGetKeystorePath() {
         return mustGet("KEYSTORE_PATH")
     }
-
-    static String mustGetTruststorePath() {
-        return mustGet("TRUSTSTORE_PATH")
-    }
 }
 

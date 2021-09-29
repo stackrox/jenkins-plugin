@@ -1,6 +1,5 @@
 package services
 
-
 import static io.stackrox.proto.api.v1.EmptyOuterClass.Empty
 import groovy.transform.CompileStatic
 import groovy.transform.EqualsAndHashCode
