@@ -22,7 +22,7 @@ fi
 kubectl cp "${BASE_DIR}"/stackrox-container-image-scanner/target/stackrox-container-image-scanner.hpi jenkins/"${JENKINSPOD}":/var/jenkins_home/plugins/.
 result=$?
 if [[ $result -eq 0 ]]; then
-    echo "Jenkins plugin has been installed"
+    echo "Jenkins plugin has been copied"
   else
     echo "Jenkins plugin failed to install"
   exit 1
@@ -45,8 +45,9 @@ if [[ "$GETSVC" = false ]]; then
   exit 1
 fi
 echo restarting jenkins
-export JENKINS_URL="http://${JENKINSVC}:${JENKINSPORT}/"
-curl -XPOST "${JENKINS_URL}/restart"
+export JENKINS_URL="http://${JENKINSVC}:${JENKINSPORT}"
+export JENKIS_CRUMB=`curl  --cookie-jar cookies.txt -s "${JENKINS_URL}/crumbIssuer/api/json" | jq .crumb -r`
+curl -f -b cookies.txt -XPOST "${JENKINS_URL}/restart\?Jenkins-Crumb=${JENKIS_CRUMB}"
 SERVICEREADY=false
 for i in $(seq 1 50); do
   curl -sk --connect-timeout 5 --max-time 10 "${JENKINS_URL}"
