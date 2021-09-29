@@ -54,7 +54,7 @@ class Env {
         if (isEnvVarEmpty("ROX_PASSWORD")) {
             String password = null
             try {
-                def cluster = envVars.get("CLUSTER").toString().toLowerCase()
+                def cluster = envVars.getOrDefault("CLUSTER", "k8s").toString().toLowerCase()
                 def passwordPath = "../../rox/deploy/${cluster}/central-deploy/password"
                 BufferedReader br = new BufferedReader(new FileReader(passwordPath))
                 password = br.readLine()
