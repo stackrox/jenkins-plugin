@@ -2,6 +2,7 @@ import static io.stackrox.proto.api.v1.ApiTokenService.GenerateTokenResponse
 import groovy.io.FileType
 import services.ApiTokenService
 import services.BaseService
+import services.MetadataService
 import spock.lang.Specification
 
 class BaseSpecification extends Specification {
@@ -12,6 +13,9 @@ class BaseSpecification extends Specification {
         jenkins = new JenkinsClient()
         BaseService.useBasicAuth()
         tokenResponse = ApiTokenService.generateToken("automation", "Continuous Integration")
+        println "Jenkins Version: ${jenkins.version()}"
+        println "StackRox Metadata\n${MetadataService.metadata}"
+
     }
 
     def cleanup() {

@@ -31,6 +31,10 @@ class JenkinsClient {
         ).cookies(r.cookies()).baseUri(jenkinsUri)
     }
 
+    String version() {
+        return jenkins().get().header('X-Jenkins')
+    }
+
     String createJob(File configfile) {
         def jobName = "testjob" + new SecureRandom().nextInt()
         def url = "/createItem?name=${jobName}"

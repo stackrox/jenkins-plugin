@@ -1,5 +1,7 @@
 package services
 
+
+import static io.stackrox.proto.api.v1.EmptyOuterClass.Empty
 import groovy.transform.CompileStatic
 import groovy.transform.EqualsAndHashCode
 import io.grpc.CallOptions
@@ -23,6 +25,8 @@ class BaseService {
 
     static final String BASIC_AUTH_USERNAME = Env.mustGetUsername()
     static final String BASIC_AUTH_PASSWORD = Env.mustGetPassword()
+
+    static final Empty EMPTY = Empty.newBuilder().build()
 
     static useBasicAuth() {
         updateAuthConfig(useClientCert, new AuthInterceptor(BASIC_AUTH_USERNAME, BASIC_AUTH_PASSWORD))
