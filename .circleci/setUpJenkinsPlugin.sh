@@ -24,7 +24,7 @@ result=$?
 if [[ $result -eq 0 ]]; then
     echo "Jenkins plugin has been copied"
   else
-    echo "Jenkins plugin failed to install"
+    echo "Jenkins plugin failed to copied"
   exit 1
 fi
 kubectl -n jenkins exec -i "${JENKINSPOD}" -- ls /var/jenkins_home/plugins/stackrox-container-image-scanner.hpi
