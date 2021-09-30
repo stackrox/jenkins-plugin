@@ -198,6 +198,8 @@ jobs:
           name: wait for Jenkins service
           command: |
             .circleci/waitForJenkinService.sh
+            export JENKINS_IP="$(kubectl -n jenkins get svc jenkins -o jsonpath="{.status.loadBalancer.ingress[*].ip}")"
+            cci-export JENKINS_IP "$JENKINS_IP"
       - run:
           name: wait For set up plugin
           command: |

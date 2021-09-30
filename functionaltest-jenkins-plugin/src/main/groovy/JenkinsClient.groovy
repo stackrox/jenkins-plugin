@@ -26,12 +26,7 @@ class JenkinsClient {
 
     JenkinsClient() {
         def env = System.getenv()
-        jenkinsAddress = env.getOrDefault('JENKINS_IP', getJenkinsAddressFromK8s())
-    }
-
-    protected static String getJenkinsAddressFromK8s() {
-        Service svc = new Service("jenkins", "jenkins")
-        return svc.getLoadBalancer(60)
+        jenkinsAddress = env.getOrDefault('JENKINS_IP', "localhost")
     }
 
     protected RequestSpecification jenkins() {
