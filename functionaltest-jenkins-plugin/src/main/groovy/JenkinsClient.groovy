@@ -118,7 +118,10 @@ class JenkinsClient {
                 failOnCriticalPluginError: failOnCriticalPluginError,
                 enableTLSVerification    : false,
         ]
-        // We can't use XML Template here as Jenkins incorrectly treat newlines in XML
+        // def engine = new XmlTemplateEngine()
+        // We can't use XML Template here as generated output wraps values with new lines
+        // that are not trimmed by Jenkins and causes errors.
+        // See: https://stackoverflow.com/a/45127021
         def engine = new GStringTemplateEngine()
         def template = engine.createTemplate(xml).make(param)
         File file = File.createTempFile("temp", ".xml", new File("."))
