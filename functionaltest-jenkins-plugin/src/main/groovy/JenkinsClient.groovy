@@ -1,112 +1,40 @@
-import static com.jayway.restassured.RestAssured.given
-import com.google.gson.Gson
-import com.jayway.restassured.response.Response
-import com.jayway.restassured.specification.RequestSpecification
+import com.offbytwo.jenkins.JenkinsServer
+import com.offbytwo.jenkins.JenkinsTriggerHelper
 import groovy.text.GStringTemplateEngine
 import groovy.transform.CompileStatic
 import java.security.SecureRandom
-import util.Timer
 
 @CompileStatic
 class JenkinsClient {
     private final static JENKINSPORT = "8080"
     private final static JENKINSPROTOCOL = "http"
-    private final String jenkinsAddress
-    private final Gson gson = new Gson()
-
-    class JobStatus {
-        class Artifact {
-            String displayPath
-            String relativePath
-        }
-        String result
-        String url
-        List<Artifact> artifacts
-    }
+    private final static boolean CRUMB = true
+    private final JenkinsServer jenkins
 
     JenkinsClient() {
         def env = System.getenv()
-        jenkinsAddress = env.getOrDefault('JENKINS_IP', getJenkinsAddressFromK8s())
-    }
-
-    protected static String getJenkinsAddressFromK8s() {
-        Service svc = new Service("jenkins", "jenkins")
-        return svc.getLoadBalancer(60)
-    }
-
-    protected RequestSpecification jenkins() {
-        String jenkinsUri = "${JENKINSPROTOCOL}://${jenkinsAddress}:${JENKINSPORT}"
-        def r = given().when().get("${jenkinsUri}/crumbIssuer/api/json")
-        return given().header(
-                r.jsonPath().getString("crumbRequestField"),
-                r.jsonPath().getString("crumb")
-        ).cookies(r.cookies()).baseUri(jenkinsUri)
+        def jenkinsAddress = env.getOrDefault('JENKINS_IP', "localhost")
+        jenkins = new JenkinsServer(new URI("${JENKINSPROTOCOL}://${jenkinsAddress}:${JENKINSPORT}"))
     }
 
     String version() {
-        return jenkins().get().header('X-Jenkins')
+        return jenkins.version.toString()
     }
 
     String createJob(File configfile) {
         def jobName = "testjob" + new SecureRandom().nextInt()
-        def url = "/createItem?name=${jobName}"
-        FileInputStream fileInputStream = new FileInputStream(configfile)
-        byte[] bytes = fileInputStream.bytes
         println("Creating Jenkins job  ${jobName}")
-        jenkins().content(bytes)
-                .contentType("text/xml")
-                .when()
-                .post(url)
-                .then()
-                .statusCode(200)
+        jenkins.createJob(jobName, configfile.text, CRUMB)
         return jobName
     }
 
-    String deleteJob(String job) {
-        println("Deleting Jenkins job ${job}")
-        def url = "/job/${job}"
-        jenkins().when()
-                .delete(url)
-                .then().statusCode(302)
-    }
-
-    void startBuild(String job) {
+    String startBuild(String job) {
         println("Starting Jenkins job ${job}")
-        def url = "/job/${job}/build"
-        print url
-        jenkins().when()
-                .post(url)
-                .then().statusCode(201)
-    }
-
-    String getBuildStatus(String job, int timeout) {
-        println("\nGetting build status of ${job}")
-        Timer timer = new Timer(timeout, 1)
-        JobStatus result = null
-        while (result?.result == null && timer.IsValid()) {
-            try {
-                def url = "/job/${job}/lastBuild/api/json"
-                Response response = jenkins().when()
-                        .post(url)
-                result = gson.fromJson(response.asString(), JobStatus)
-            } catch (Exception ex) {
-                println(ex.toString())
-            }
-        }
-
-        result.artifacts.each {
-            def content = jenkins().get("${result.url}artifact/${it.relativePath}").body()
-            println it.displayPath
-            println content.asString()
-        }
-
-        def jobOutputUrl = "/job/${job}/lastBuild/consoleText"
-        Response outputResponse = jenkins().when()
-                .get(jobOutputUrl)
+        def trigger = new JenkinsTriggerHelper(jenkins)
+        def result = trigger.triggerJobAndWaitUntilFinished(job, CRUMB)
         println "***Output of Jenkins build:"
-        println outputResponse.asString()
-
-        return result.result
+        println result.consoleOutputText
+        return result.result.toString()
     }
 
     static File createJobConfig(String imageName, String portalAddress, String token, Boolean policyEvalCheck,
@@ -123,7 +51,10 @@ class JenkinsClient {
                 failOnCriticalPluginError: failOnCriticalPluginError,
                 enableTLSVerification    : false,
         ]
-        // We can't use XML Template here as Jenkins incorrectly treat newlines in XML
+        // def engine = new XmlTemplateEngine()
+        // We can't use XML Template here as generated output wraps values with new lines
+        // that are not trimmed by Jenkins and causes errors.
+        // See: https://stackoverflow.com/a/45127021
         def engine = new GStringTemplateEngine()
         def template = engine.createTemplate(xml).make(param)
         File file = File.createTempFile("temp", ".xml", new File("."))

@@ -39,15 +39,10 @@ class ImageScanningTest extends BaseSpecification {
         when:
         File configFile = jenkins.createJobConfig(imageName, CENTRAL_URI, token, true, true)
         String jobName = jenkins.createJob(configFile)
-        jenkins.startBuild(jobName)
+        String status = jenkins.startBuild(jobName)
 
         then:
-        String status = jenkins.getBuildStatus(jobName, 60)
-        println "Jenkins job status is ${status}, expecting ${endStatus}"
         assert status == endStatus
-
-        cleanup:
-        jenkins.deleteJob(jobName)
 
         where:
         imageName      | policyName   | enforcements             | endStatus
@@ -85,14 +80,10 @@ class ImageScanningTest extends BaseSpecification {
         when:
         File configFile = jenkins.createJobConfig(imageName, CENTRAL_URI, token, true, true)
         String jobName = jenkins.createJob(configFile)
-        jenkins.startBuild(jobName)
 
         then:
-        String status = jenkins.getBuildStatus(jobName, 60)
+        String status = jenkins.startBuild(jobName)
         assert status == "FAILURE"
-
-        cleanup:
-        jenkins.deleteJob(jobName)
 
         where:
         imageName             | policyName          | tag
@@ -109,14 +100,10 @@ class ImageScanningTest extends BaseSpecification {
 
         when:
         "job is stared"
-        jenkins.startBuild(jobName)
+        String status = jenkins.startBuild(jobName)
 
         then:
-        String status = jenkins.getBuildStatus(jobName, 60)
         assert status == endStatus
-
-        cleanup:
-        jenkins.deleteJob(jobName)
 
         where:
         "data inputs are: "
