@@ -27,13 +27,9 @@ class ImageScanningTest extends BaseSpecification {
         assert enforcementPolicy.lifecycleStages == ["BUILD"]
         File configfile = jenkins.createJobConfig(imageName, CENTRAL_URI, token, true, true)
         String jobName = jenkins.createJob(configfile)
-        jenkins.startBuild(jobName)
-        String status = jenkins.getBuildStatus(jobName, 60)
+        String status = jenkins.startBuild(jobName)
         println "Jenkins job status is ${status}, expecting ${endStatus}"
         assert status == endStatus
-
-        cleanup:
-        jenkins.deleteJob(jobName)
 
         where:
         "data inputs are: "
@@ -61,13 +57,8 @@ class ImageScanningTest extends BaseSpecification {
         File configFile = jenkins.createJobConfig(imageName, CENTRAL_URI, token,
                 true, true)
         String jobName = jenkins.createJob(configFile)
-        jenkins.startBuild(jobName)
-
-        String status = jenkins.getBuildStatus(jobName, 60)
+        String status = jenkins.startBuild(jobName)
         assert status == "FAILURE"
-
-        cleanup:
-        jenkins.deleteJob(jobName)
 
         where:
         "data inputs are: "
@@ -86,13 +77,9 @@ class ImageScanningTest extends BaseSpecification {
         File configFile = jenkins.createJobConfig(imageName, CENTRAL_URI, token,
                 false, failOnCriticalPluginError)
         String jobName = jenkins.createJob(configFile)
-        jenkins.startBuild(jobName)
-        String status = jenkins.getBuildStatus(jobName, 60)
+        String status = jenkins.startBuild(jobName)
         println "Jenkins job status is ${status}, expecting ${endStatus}"
         assert status == endStatus
-
-        cleanup:
-        jenkins.deleteJob(jobName)
 
         where:
         "data inputs are: "
