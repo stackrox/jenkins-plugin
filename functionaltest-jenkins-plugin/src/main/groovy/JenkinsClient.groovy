@@ -8,7 +8,7 @@ import java.security.SecureRandom
 class JenkinsClient {
     private final static JENKINSPORT = "8080"
     private final static JENKINSPROTOCOL = "http"
-    private final static boolean CRUMB = true
+    private final static boolean USE_CRUMB_AUTHENTICATION = true
     private final JenkinsServer jenkins
 
     JenkinsClient() {
@@ -24,14 +24,14 @@ class JenkinsClient {
     String createJob(File configfile) {
         def jobName = "testjob" + new SecureRandom().nextInt()
         println("Creating Jenkins job  ${jobName}")
-        jenkins.createJob(jobName, configfile.text, CRUMB)
+        jenkins.createJob(jobName, configfile.text, USE_CRUMB_AUTHENTICATION)
         return jobName
     }
 
     String startBuild(String job) {
-        println("Starting Jenkins job ${job}")
+        println "Starting Jenkins job ${job}"
         def trigger = new JenkinsTriggerHelper(jenkins)
-        def result = trigger.triggerJobAndWaitUntilFinished(job, CRUMB)
+        def result = trigger.triggerJobAndWaitUntilFinished(job, USE_CRUMB_AUTHENTICATION)
         println "***Output of Jenkins build:"
         println result.consoleOutputText
         return result.result.toString()
@@ -58,7 +58,7 @@ class JenkinsClient {
         def engine = new GStringTemplateEngine()
         def template = engine.createTemplate(xml).make(param)
         File file = File.createTempFile("temp", ".xml", new File("."))
-        println("Writing to a temp file: ${file.path}")
+        println "Writing to a temp file: ${file.path}"
         file.write(template.toString())
         return file
     }
