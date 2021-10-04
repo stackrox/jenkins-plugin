@@ -19,14 +19,11 @@ if [[ "${JENKINS_DEPLOYED}" = false  ]]; then
        kubectl -n jenkins get pods
        exit 1
 fi
+
+echo "Copying Jenkins plugin into pod"
 kubectl cp "${BASE_DIR}"/stackrox-container-image-scanner/target/stackrox-container-image-scanner.hpi jenkins/"${JENKINSPOD}":/var/jenkins_home/plugins/.
-result=$?
-if [[ $result -eq 0 ]]; then
-    echo "Jenkins plugin has been copied"
-  else
-    echo "Jenkins plugin failed to copied"
-  exit 1
-fi
+# No result=$? and if-else stuff is needed. No-zero exit code from kubectl will stop the script.
+
 kubectl -n jenkins exec -i "${JENKINSPOD}" -- ls /var/jenkins_home/plugins/stackrox-container-image-scanner.hpi
 GETSVC=false
 for i in $(seq 1 50); do
