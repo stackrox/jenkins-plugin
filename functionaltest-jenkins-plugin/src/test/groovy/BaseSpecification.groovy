@@ -1,7 +1,6 @@
 import data.Policy
-import spock.lang.Specification
 import data.Token
-import groovy.io.FileType
+import spock.lang.Specification
 
 class BaseSpecification extends Specification {
     JenkinsClient jenkins
@@ -18,12 +17,5 @@ class BaseSpecification extends Specification {
         token = restApiClient.getToken(tokenobject)
         policyObj = new Policy()
         println "Jenkins Version: ${jenkins.version()}"
-    }
-
-    def cleanup() {
-        def folderPath = "."
-        new File(folderPath).eachFile (FileType.FILES) { file ->
-            if (file.name.contains('temp')) { file.delete() }
-        }
     }
 }

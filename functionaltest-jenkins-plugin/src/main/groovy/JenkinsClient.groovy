@@ -1,5 +1,6 @@
 import com.offbytwo.jenkins.JenkinsServer
 import com.offbytwo.jenkins.JenkinsTriggerHelper
+import com.offbytwo.jenkins.model.BuildResult
 import groovy.text.GStringTemplateEngine
 import groovy.transform.CompileStatic
 import java.security.SecureRandom
@@ -21,24 +22,31 @@ class JenkinsClient {
         return jenkins.version.toString()
     }
 
-    String createJob(File configfile) {
+    BuildResult createAndRunJob(String imageName, String portalAddress, String token, Boolean policyEvalCheck,
+                                Boolean failOnCriticalPluginError) {
+        String config = createJobConfig(imageName, portalAddress, token, policyEvalCheck, failOnCriticalPluginError)
+        String job = createJob(config)
+        return startBuild(job)
+    }
+
+    String createJob(String config) {
         def jobName = "testjob" + new SecureRandom().nextInt()
         println("Creating Jenkins job  ${jobName}")
-        jenkins.createJob(jobName, configfile.text, USE_CRUMB_AUTHENTICATION)
+        jenkins.createJob(jobName, config, USE_CRUMB_AUTHENTICATION)
         return jobName
     }
 
-    String startBuild(String job) {
+    BuildResult startBuild(String job) {
         println "Starting Jenkins job ${job}"
         def trigger = new JenkinsTriggerHelper(jenkins)
         def result = trigger.triggerJobAndWaitUntilFinished(job, USE_CRUMB_AUTHENTICATION)
         println "***Output of Jenkins build:"
         println result.consoleOutputText
-        return result.result.toString()
+        return result.result
     }
 
-    static File createJobConfig(String imageName, String portalAddress, String token, Boolean policyEvalCheck,
-                                Boolean failOnCriticalPluginError) {
+    static String createJobConfig(String imageName, String portalAddress, String token, Boolean policyEvalCheck,
+                                  Boolean failOnCriticalPluginError) {
         String path = "resources/template.xml"
         String xml = new File(path).text
         def param = [
@@ -57,9 +65,6 @@ class JenkinsClient {
         // See: https://stackoverflow.com/a/45127021
         def engine = new GStringTemplateEngine()
         def template = engine.createTemplate(xml).make(param)
-        File file = File.createTempFile("temp", ".xml", new File("."))
-        println "Writing to a temp file: ${file.path}"
-        file.write(template.toString())
-        return file
+        return template.toString()
     }
 }

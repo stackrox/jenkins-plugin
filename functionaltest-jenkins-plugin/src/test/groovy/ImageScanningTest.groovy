@@ -1,3 +1,6 @@
+import static com.offbytwo.jenkins.model.BuildResult.FAILURE
+import static com.offbytwo.jenkins.model.BuildResult.SUCCESS
+import com.offbytwo.jenkins.model.BuildResult
 import data.Policies
 import data.Policy
 import spock.lang.Unroll
@@ -25,17 +28,15 @@ class ImageScanningTest extends BaseSpecification {
             assert enforcementPolicy.enforcementActions == [enforcement]
         }
         assert enforcementPolicy.lifecycleStages == ["BUILD"]
-        File configfile = jenkins.createJobConfig(imageName, CENTRAL_URI, token, true, true)
-        String jobName = jenkins.createJob(configfile)
-        String status = jenkins.startBuild(jobName)
+        BuildResult status = jenkins.createAndRunJob(imageName, CENTRAL_URI, token, true, true)
         println "Jenkins job status is ${status}, expecting ${endStatus}"
         assert status == endStatus
 
         where:
         "data inputs are: "
         imageName      | policyName          | enforcement              | endStatus
-        "nginx:latest" | "Fixable CVSS >= 7" | "UNSET_ENFORCEMENT"      | "SUCCESS"
-        "nginx:latest" | "Fixable CVSS >= 7" | "FAIL_BUILD_ENFORCEMENT" | "FAILURE"
+        "nginx:latest" | "Fixable CVSS >= 7" | "UNSET_ENFORCEMENT"      | SUCCESS
+        "nginx:latest" | "Fixable CVSS >= 7" | "FAIL_BUILD_ENFORCEMENT" | FAILURE
     }
 
     @Unroll
@@ -48,17 +49,14 @@ class ImageScanningTest extends BaseSpecification {
         Policy updatedPolicy = policyObj.getUpdatedPolicy(policyName, tag, enforcement)
         Policies policies = restApiClient.getPolicies()
         def policyId = policies.policies.find { it.name == policyName }?.id
-        println("Updating the policy $policyName")
+        println "Updating the policy $policyName"
         assert policyId != null
         restApiClient.updatePolicy(updatedPolicy, policyId)
         Policy enforcementPolicy = restApiClient.getPolicy(policyId)
         assert enforcementPolicy.enforcementActions == ["FAIL_BUILD_ENFORCEMENT"]
         assert enforcementPolicy.lifecycleStages == ["BUILD"]
-        File configFile = jenkins.createJobConfig(imageName, CENTRAL_URI, token,
-                true, true)
-        String jobName = jenkins.createJob(configFile)
-        String status = jenkins.startBuild(jobName)
-        assert status == "FAILURE"
+        BuildResult status = jenkins.createAndRunJob(imageName, CENTRAL_URI, token, true, true)
+        assert status == FAILURE
 
         where:
         "data inputs are: "
@@ -74,18 +72,15 @@ class ImageScanningTest extends BaseSpecification {
         when:
         "Jenkins is setup"
         then:
-        File configFile = jenkins.createJobConfig(imageName, CENTRAL_URI, token,
-                false, failOnCriticalPluginError)
-        String jobName = jenkins.createJob(configFile)
-        String status = jenkins.startBuild(jobName)
+        BuildResult status = jenkins.createAndRunJob(imageName, CENTRAL_URI, token, false, failOnCriticalPluginError)
         println "Jenkins job status is ${status}, expecting ${endStatus}"
         assert status == endStatus
 
         where:
         "data inputs are: "
         imageName         | failOnCriticalPluginError | endStatus
-        "postgres:latest" | true                      | "SUCCESS"
-        "mis-spelled:lts" | true                      | "FAILURE"
-        "mis-spelled:lts" | false                     | "SUCCESS"
+        "postgres:latest" | true                      | SUCCESS
+        "mis-spelled:lts" | true                      | FAILURE
+        "mis-spelled:lts" | false                     | SUCCESS
     }
 }

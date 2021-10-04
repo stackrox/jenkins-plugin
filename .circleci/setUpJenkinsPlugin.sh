@@ -43,7 +43,7 @@ if [[ "$GETSVC" = false ]]; then
 fi
 echo restarting jenkins
 export JENKINS_URL="http://${JENKINSVC}:${JENKINSPORT}"
-export JENKIS_CRUMB=`curl  --cookie-jar cookies.txt -s "${JENKINS_URL}/crumbIssuer/api/json" | jq .crumb -r`
+export JENKIS_CRUMB=`curl -f --cookie-jar cookies.txt -s "${JENKINS_URL}/crumbIssuer/api/json" | jq .crumb -r`
 curl -f -b cookies.txt -XPOST "${JENKINS_URL}/restart\?Jenkins-Crumb=${JENKIS_CRUMB}"
 SERVICEREADY=false
 for i in $(seq 1 50); do
