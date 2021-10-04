@@ -1,21 +1,26 @@
-import data.Policy
-import data.Token
+import static io.stackrox.proto.api.v1.ApiTokenService.GenerateTokenResponse
+import services.ApiTokenService
+import services.BaseService
+import services.MetadataService
 import spock.lang.Specification
 
 class BaseSpecification extends Specification {
     JenkinsClient jenkins
-    RestApiClient restApiClient
-    String token
-    Policy policyObj
+    GenerateTokenResponse tokenResponse
 
     def setup() {
         jenkins = new JenkinsClient()
-        restApiClient = new RestApiClient()
-        Token tokenobject = new Token()
-        tokenobject.setName("automation")
-        tokenobject.setRole("Continuous Integration")
-        token = restApiClient.getToken(tokenobject)
-        policyObj = new Policy()
+        BaseService.useBasicAuth()
+        tokenResponse = ApiTokenService.generateToken("automation", "Continuous Integration")
         println "Jenkins Version: ${jenkins.version()}"
+        println "StackRox Metadata\n${MetadataService.metadata}"
+    }
+
+    def cleanup() {
+        ApiTokenService.revokeToken(tokenResponse.metadata.id)
+    }
+
+    String getToken() {
+        return tokenResponse.token
     }
 }
