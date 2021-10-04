@@ -146,7 +146,8 @@ jobs:
       - run:
           name: Get Roxctl binary and set the image name
           command: |
-            cci-export IMAGE_NAME "stackrox/main:3.0.55.x-4-gd2e48c0fd6"
+            cci-export IMAGE_NAME "stackrox/main:3.65.1"
+            cci-export SCANNER_VERSION "2.19.1"
             cci-export BASE_DIR "/home/circleci/jenkins-plugin"
             docker login -u "$DOCKER_IO_PULL_USERNAME" -p "$DOCKER_IO_PULL_PASSWORD"
             cci-export REGISTRY_USERNAME "$DOCKER_IO_PULL_USERNAME"
@@ -171,8 +172,8 @@ jobs:
             ./roxctl central generate k8s pvc \
               --license /tmp/data.lic \
               --main-image "${IMAGE_NAME}" \
-              --scanner-image docker.io/stackrox/scanner:2.10.0 \
-              --scanner-db-image docker.io/stackrox/scanner-db:2.10.0
+              --scanner-image docker.io/stackrox/scanner:${SCANNER_VERSION} \
+              --scanner-db-image docker.io/stackrox/scanner-db:${SCANNER_VERSION}
             export ROX_PASSWORD="$(cat central-bundle/password)"
             cci-export ROX_USERNAME "admin"
             cci-export ROX_PASSWORD "$ROX_PASSWORD"
