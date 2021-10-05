@@ -1,9 +1,13 @@
 import com.offbytwo.jenkins.JenkinsServer
 import com.offbytwo.jenkins.JenkinsTriggerHelper
 import com.offbytwo.jenkins.model.BuildResult
+import groovy.transform.CompileStatic
+import groovy.transform.TypeCheckingMode
+import groovy.util.slurpersupport.NodeChild
 import groovy.xml.XmlUtil
 import java.security.SecureRandom
 
+@CompileStatic
 class JenkinsClient {
     private final static JENKINSPORT = "8080"
     private final static JENKINSPROTOCOL = "http"
@@ -43,6 +47,7 @@ class JenkinsClient {
         return result.result
     }
 
+    @CompileStatic(TypeCheckingMode.SKIP)
     static String createJobConfig(String imageName, String portalAddress, String token, Boolean policyEvalCheck,
                                   Boolean failOnCriticalPluginError) {
         String path = "resources/template.xml"
@@ -59,7 +64,7 @@ class JenkinsClient {
         // parse the xml
         def parsexml = new XmlSlurper().parse(new File(path))
         param.each { key, value ->
-            parsexml.breadthFirst().findAll {
+            parsexml.breadthFirst().findAll { NodeChild it ->
                 if (it.name() == key) {
                     it.replaceBody value
                 }
