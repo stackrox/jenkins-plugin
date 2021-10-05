@@ -4,6 +4,12 @@ import com.google.common.base.CharMatcher;
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
+import com.stackrox.jenkins.plugins.data.CVE;
+import com.stackrox.jenkins.plugins.data.ImageCheckResults;
+import com.stackrox.jenkins.plugins.data.ViolatedPolicy;
+import com.stackrox.jenkins.plugins.report.ReportGenerator;
+import com.stackrox.jenkins.plugins.services.DetectionService;
+import com.stackrox.jenkins.plugins.services.ImageService;
 import hudson.AbortException;
 import hudson.Extension;
 import hudson.FilePath;
@@ -16,26 +22,14 @@ import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.util.FormValidation;
 import hudson.util.Secret;
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
-import javax.json.JsonString;
 import jenkins.model.Jenkins;
 import jenkins.tasks.SimpleBuildStep;
 import net.sf.json.JSONObject;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVPrinter;
-import org.apache.commons.csv.QuoteMode;
 import org.apache.commons.validator.routines.RegexValidator;
 import org.apache.commons.validator.routines.UrlValidator;
 import org.apache.http.HttpEntity;
-import org.apache.http.HttpHeaders;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
 import org.jenkinsci.Symbol;
@@ -44,10 +38,12 @@ import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.verb.POST;
+
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.PrintStream;
 import java.net.HttpURLConnection;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
@@ -56,7 +52,7 @@ import java.util.List;
 
 @SuppressWarnings("unused")
 public class StackroxBuilder extends Builder implements SimpleBuildStep {
-    private static String NOT_AVAILABLE = "-";
+    private static final String NOT_AVAILABLE = "-";
     private String portalAddress;
     private Secret apiToken = Secret.fromString("");
     private boolean failOnPolicyEvalFailure;
@@ -67,6 +63,9 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
     private CloseableHttpClient httpClient;
     private RunConfig runConfig;
     private List<ImageCheckResults> results;
+
+    private ImageService imageService;
+    private DetectionService detectionService;
 
     @DataBoundConstructor
     public StackroxBuilder() {
@@ -130,24 +129,13 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
     @Override
     public void perform(Run<?, ?> run, FilePath workspace, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
         runConfig = new RunConfig(run, workspace, launcher, listener);
+
+        httpClient = HttpClientUtils.get(this.enableTLSVerification, this.caCertPEM);
+        imageService = new ImageService(getPortalAddress(), getApiToken(), httpClient);
+        detectionService = new DetectionService(getPortalAddress(), getApiToken(), httpClient);
+
         try {
-            httpClient = HttpClientUtils.get(this.enableTLSVerification, this.caCertPEM);
-
-            results = Lists.newArrayList();
-
-            for (String name : runConfig.getImageNames()) {
-                processImage(name);
-            }
-
-            Collections.sort(results, new Comparator<ImageCheckResults>() {
-                @Override
-                public int compare(ImageCheckResults result1, ImageCheckResults result2) {
-                    //descending order
-                    return Boolean.compare(result1.isImageCheckStatusPass(), result2.isImageCheckStatusPass());
-                }
-            });
-
-            generateBuildReport();
+            checkImages();
 
             ArtifactArchiver artifactArchiver = new ArtifactArchiver(runConfig.getArtifacts());
             artifactArchiver.setAllowEmptyArchive(true);
@@ -156,7 +144,6 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
             run.addAction(new ViewStackroxResultsAction(results, run));
 
             cleanupJenkinsWorkspace();
-
 
             if (enforcedPolicyViolationExists()) {
                 throw new PolicyEvalException(
@@ -183,185 +170,35 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
         }
     }
 
+    private void checkImages() throws IOException {
+        results = Lists.newArrayList();
+
+        for (String name : runConfig.getImageNames()) {
+            processImage(name);
+        }
+
+        Collections.sort(results, new Comparator<ImageCheckResults>() {
+            @Override
+            public int compare(ImageCheckResults result1, ImageCheckResults result2) {
+                //descending order
+                return Boolean.compare(result1.isImageCheckStatusPass(), result2.isImageCheckStatusPass());
+            }
+        });
+
+        ReportGenerator.generateBuildReport(results, runConfig.getReportsDir());
+    }
+
     // Runs an image scan and the build time policy checks on the image
     private void processImage(String imageName) throws IOException {
         runConfig.getLog().println(String.format("Checking image %s...", imageName));
 
         try {
-            List<CVE> cves = getImageScanResults(imageName);
-            List<ViolatedPolicy> violatedPolicies = getPolicyViolations(imageName);
+            List<CVE> cves = imageService.getImageScanResults(imageName);
+            List<ViolatedPolicy> violatedPolicies = detectionService.getPolicyViolations(imageName);
             results.add(new ImageCheckResults(imageName, cves, violatedPolicies));
         } catch (IOException e) {
             runConfig.getLog().println(String.format("Error processing image %s: %s", imageName, e.getMessage()));
             throw e;
-        }
-    }
-
-    private List<ViolatedPolicy> getPolicyViolations(String imageName) throws IOException {
-        List<ViolatedPolicy> violatedPolicies = Lists.newArrayList();
-
-        JsonObject detectionResult = runBuildTimeDetection(imageName);
-        JsonArray alerts = detectionResult.getJsonArray("alerts");
-
-        for (JsonObject alert : alerts.getValuesAs(JsonObject.class)) {
-            JsonObject policy = alert.getJsonObject("policy");
-
-            boolean isEnforced = false;
-            JsonArray actions = policy.getJsonArray("enforcementActions");
-            for (JsonString action : actions.getValuesAs(JsonString.class)) {
-                if (ViolatedPolicy.FAIL_BUILD_ENFORCEMENT.equals(action.getString())) {
-                    isEnforced = true;
-                    break;
-                }
-            }
-
-            if (isEnforced) {
-                List<String> violations = Lists.newArrayList();
-                for (JsonObject violation : alert.getJsonArray("violations").getValuesAs(JsonObject.class)) {
-                    violations.add(violation.getString("message"));
-                }
-
-                violatedPolicies.add(new ViolatedPolicy(
-                        policy.getString("name"),
-                        policy.getString("description"),
-                        policy.getString("severity"),
-                        policy.getString("remediation"), violations));
-            }
-        }
-        return violatedPolicies;
-    }
-
-    private JsonObject runBuildTimeDetection(String imageName) throws IOException {
-        CloseableHttpResponse response = null;
-        HttpPost detectionRequest = null;
-
-        try {
-            detectionRequest = new HttpPost(Joiner.on("/").join(portalAddress, "v1/detect/build"));
-            detectionRequest.setHeader(HttpHeaders.ACCEPT, ContentType.APPLICATION_JSON.toString());
-            detectionRequest.setHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.toString());
-            detectionRequest.addHeader(HttpHeaders.AUTHORIZATION, Joiner.on(" ").join("Bearer", apiToken));
-            detectionRequest.setEntity(new StringEntity(
-                    Json.createObjectBuilder().add("imageName", imageName).build().toString(),
-                    StandardCharsets.UTF_8));
-
-            response = this.httpClient.execute(detectionRequest);
-            int statusCode = response.getStatusLine().getStatusCode();
-
-            HttpEntity entity = response.getEntity();
-
-            if (statusCode != HttpURLConnection.HTTP_OK || entity == null) {
-                throw new IOException(String.format("Failed build time detection request. Status code: %d. Error: %s",
-                        statusCode, entity == null ? "" : entity.toString()));
-            }
-            JsonReader reader = Json.createReader(new InputStreamReader(entity.getContent(), StandardCharsets.UTF_8));
-            JsonObject object = reader.readObject();
-            EntityUtils.consume(entity);
-
-            return object;
-        } finally {
-            if (detectionRequest != null) {
-                detectionRequest.releaseConnection();
-            }
-            if (response != null) {
-                response.close();
-            }
-        }
-    }
-
-    private List<CVE> getImageScanResults(String imageName) throws IOException {
-        List<CVE> cves = Lists.newArrayList();
-
-        JsonObject scanResult = runImageScan(imageName);
-
-        JsonArray components = scanResult.getJsonArray("components");
-        for (JsonObject component : components.getValuesAs(JsonObject.class)) {
-            JsonArray componentCves = component.getJsonArray("vulns");
-            for (JsonObject cve : componentCves.getValuesAs(JsonObject.class)) {
-                String publishDate = cve.getString("publishedOn", NOT_AVAILABLE);
-                CVE cveToAdd = CVE.Builder.newInstance()
-                        .withId(cve.getString("cve"))
-                        .withCvssScore(cve.isNull("cvss") ? (float) 0 : (float) cve.getJsonNumber("cvss").doubleValue())
-                        .withScoreType(cve.getString("scoreVersion", NOT_AVAILABLE))
-                        .withPublishDate(Strings.isNullOrEmpty(publishDate) ?  NOT_AVAILABLE : publishDate)
-                        .withLink(cve.getString("link", NOT_AVAILABLE))
-                        .inPackage(component.getString("name", NOT_AVAILABLE))
-                        .inVersion(component.getString("version", NOT_AVAILABLE))
-                        .isFixable(Strings.isNullOrEmpty(cve.getString("fixedBy"))? false : true)
-                        .build();
-                cves.add(cveToAdd);
-            }
-        }
-
-        return cves;
-    }
-
-    private JsonObject runImageScan(String imageName) throws IOException {
-        CloseableHttpResponse response = null;
-        HttpPost imageScanRequest = null;
-
-        try {
-            imageScanRequest = new HttpPost(Joiner.on("/").join(portalAddress, "v1/images/scan"));
-            imageScanRequest.setHeader(HttpHeaders.ACCEPT, ContentType.APPLICATION_JSON.toString());
-            imageScanRequest.setHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.toString());
-            imageScanRequest.addHeader(HttpHeaders.AUTHORIZATION, Joiner.on(" ").join("Bearer", apiToken));
-            imageScanRequest.setEntity(new StringEntity(
-                    Json.createObjectBuilder().add("imageName", imageName).add("force", true).build().toString(),
-                    StandardCharsets.UTF_8));
-
-            response = httpClient.execute(imageScanRequest);
-            int statusCode = response.getStatusLine().getStatusCode();
-
-            HttpEntity entity = response.getEntity();
-
-            if (statusCode != HttpURLConnection.HTTP_OK || entity == null) {
-                throw new IOException(String.format("Failed image scan request. Status code: %d. Error: %s", statusCode, String.valueOf(entity)));
-            }
-
-            JsonReader reader = Json.createReader(new InputStreamReader(entity.getContent(), StandardCharsets.UTF_8));
-            JsonObject object = reader.readObject();
-            EntityUtils.consume(entity);
-            return object.getJsonObject("scan");
-        } finally {
-            if (imageScanRequest != null) {
-                imageScanRequest.releaseConnection();
-            }
-            if (response != null) {
-                response.close();
-            }
-        }
-    }
-
-    private void generateBuildReport() throws AbortException {
-        PrintStream log = runConfig.getLog();
-        log.println("Generating report...");
-
-        try {
-            for (ImageCheckResults result : results) {
-                FilePath imageResultDir = new FilePath(this.runConfig.getReportsDir(), CharMatcher.is(':').replaceFrom(result.getImageName(), '.'));
-                imageResultDir.mkdirs();
-                FilePath imageCveCsv = new FilePath(imageResultDir, "cves.csv");
-                FilePath policyViolationsCsv = new FilePath(imageResultDir, "policyViolations.csv");
-
-                if (!result.getCves().isEmpty()) {
-                    try (CSVPrinter printer = new CSVPrinter(new OutputStreamWriter(imageCveCsv.write(), StandardCharsets.UTF_8), CSVFormat.EXCEL.withQuoteMode(QuoteMode.NON_NUMERIC))) {
-                        printer.printRecord("CVE ID", "CVSS Score", "Score Type", "Package Name", "Package Version", "Fixable", "Publish Date", "Link");
-                        for (CVE cve : result.getCves()) {
-                            printer.printRecord(cve.getId(), cve.getCvssScore(), cve.getScoreType(), cve.getPackageName(), cve.getPackageVersion(), cve.isFixable(), cve.getPublishDate(), cve.getLink());
-                        }
-                    }
-                }
-
-                if (!result.getViolatedPolicies().isEmpty()) {
-                    try (CSVPrinter printer = new CSVPrinter(new OutputStreamWriter(policyViolationsCsv.write(), StandardCharsets.UTF_8), CSVFormat.EXCEL.withQuoteMode(QuoteMode.NON_NUMERIC))) {
-                        printer.printRecord("Policy Name", "Policy Description", "Severity", "Remediation");
-                        for (ViolatedPolicy policy : result.getViolatedPolicies()) {
-                            printer.printRecord(policy.getName(), policy.getDescription(), policy.getSeverity(), policy.getRemediation());
-                        }
-                    }
-                }
-            }
-        } catch (IOException | InterruptedException e) {
-            throw new AbortException(String.format("Failed to write image scan results. Error: %s", e.getMessage()));
         }
     }
 

@@ -7,6 +7,7 @@ import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.Run;
 import hudson.model.TaskListener;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -18,14 +19,14 @@ public class RunConfig {
     private static final String IMAGE_LIST_FILENAME = "rox_images_to_scan";
     private static final String REPORTS_DIR_NAME = "rox_image_security_reports";
 
-    private EnvVars envVars;
-    private PrintStream log;
-    private FilePath jenkinsWorkspace;
-    private FilePath baseWorkDir;
-    private FilePath reportsDir;
-    private FilePath imagesToScanFilePath;
-    private List<String> imageNames;
-    private String artifacts;
+    private final EnvVars envVars;
+    private final PrintStream log;
+    private final FilePath jenkinsWorkspace;
+    private final FilePath baseWorkDir;
+    private final FilePath reportsDir;
+    private final FilePath imagesToScanFilePath;
+    private final List<String> imageNames;
+    private final String artifacts;
 
     public RunConfig(Run<?, ?> run, FilePath workspace, Launcher launcher, TaskListener listener) throws AbortException {
         try {
