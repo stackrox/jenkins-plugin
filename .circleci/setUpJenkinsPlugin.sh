@@ -45,3 +45,4 @@ echo restarting jenkins
 export JENKINS_URL="http://${JENKINSVC}:${JENKINSPORT}"
 export JENKIS_CRUMB=`curl -f --cookie-jar cookies.txt -s "${JENKINS_URL}/crumbIssuer/api/json" | jq .crumb -r`
 curl -f -b cookies.txt -XPOST "${JENKINS_URL}/restart\?Jenkins-Crumb=${JENKIS_CRUMB}"
+curl -s --connect-timeout 5 --max-time 10 "${JENKINS_URL}"
