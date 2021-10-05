@@ -45,20 +45,3 @@ echo restarting jenkins
 export JENKINS_URL="http://${JENKINSVC}:${JENKINSPORT}"
 export JENKIS_CRUMB=`curl -f --cookie-jar cookies.txt -s "${JENKINS_URL}/crumbIssuer/api/json" | jq .crumb -r`
 curl -f -b cookies.txt -XPOST "${JENKINS_URL}/restart\?Jenkins-Crumb=${JENKIS_CRUMB}"
-SERVICEREADY=false
-for i in $(seq 1 50); do
-  curl -sk --connect-timeout 5 --max-time 10 "${JENKINS_URL}"
-  result=$?
-  if [[ $result -eq 0 ]]; then
-    SERVICEREADY=true
-    echo "stackrox plugin installation on Jenkins is complete"
-    break
-  fi
-  sleep 5
-done
-if [[ "$SERVICEREADY" = true ]]; then
-    echo "Jenkins installation is complete"
-    exit 0
-  else
-       exit 1
-fi
