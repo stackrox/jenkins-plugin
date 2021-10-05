@@ -1,11 +1,9 @@
 import com.offbytwo.jenkins.JenkinsServer
 import com.offbytwo.jenkins.JenkinsTriggerHelper
 import com.offbytwo.jenkins.model.BuildResult
-import groovy.text.GStringTemplateEngine
-import groovy.transform.CompileStatic
+import groovy.xml.XmlUtil
 import java.security.SecureRandom
 
-@CompileStatic
 class JenkinsClient {
     private final static JENKINSPORT = "8080"
     private final static JENKINSPROTOCOL = "http"
@@ -48,7 +46,6 @@ class JenkinsClient {
     static String createJobConfig(String imageName, String portalAddress, String token, Boolean policyEvalCheck,
                                   Boolean failOnCriticalPluginError) {
         String path = "resources/template.xml"
-        String xml = new File(path).text
         def param = [
                 command                  : """mkdir \$BUILD_TAG
                                cd \$BUILD_TAG
@@ -59,12 +56,15 @@ class JenkinsClient {
                 failOnCriticalPluginError: failOnCriticalPluginError,
                 enableTLSVerification    : false,
         ]
-        // def engine = new XmlTemplateEngine()
-        // We can't use XML Template here as generated output wraps values with new lines
-        // that are not trimmed by Jenkins and causes errors.
-        // See: https://stackoverflow.com/a/45127021
-        def engine = new GStringTemplateEngine()
-        def template = engine.createTemplate(xml).make(param)
-        return template.toString()
+        // parse the xml
+        def parsexml = new XmlSlurper().parse(new File(path))
+        param.each { key, value ->
+            parsexml.breadthFirst().findAll {
+                if (it.name() == key) {
+                    it.replaceBody value
+                }
+            }
+        }
+        return XmlUtil.serialize(parsexml)
     }
 }

@@ -13,14 +13,14 @@
     <concurrentBuild>false</concurrentBuild>
     <builders>
         <hudson.tasks.Shell>
-            <command>$command</command>
+            <command></command>
         </hudson.tasks.Shell>
         <com.stackrox.jenkins.plugins.StackroxBuilder plugin="stackrox-k8s-security-platform@1.0-SNAPSHOT">
-            <portalAddress>$portalAddress</portalAddress>
-            <apiToken>$apiToken</apiToken>
-            <failOnPolicyEvalFailure>$failOnPolicyEvalFailure</failOnPolicyEvalFailure>
-            <failOnCriticalPluginError>$failOnCriticalPluginError</failOnCriticalPluginError>
-            <enableTLSVerification>$enableTLSVerification</enableTLSVerification>
+            <portalAddress></portalAddress>
+            <apiToken></apiToken>
+            <failOnPolicyEvalFailure></failOnPolicyEvalFailure>
+            <failOnCriticalPluginError></failOnCriticalPluginError>
+            <enableTLSVerification></enableTLSVerification>
         </com.stackrox.jenkins.plugins.StackroxBuilder>
     </builders>
     <publishers/>
