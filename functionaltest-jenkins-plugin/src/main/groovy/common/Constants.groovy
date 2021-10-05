@@ -1,14 +1,13 @@
 package common
 
+import groovy.transform.CompileStatic
+
+@CompileStatic
 class Constants {
-    public final static BASEURL = "https://localhost:8000/v1/"
-    public final static CLUSTERUSERNAME = "admin"
-    public final static JENKINSPORT = "8080"
-    public final static JENKINSPROTOCOL = "http"
-    public final static BUILDDETECT = "detect/build"
-    public final static GETPOLICY = "policies/{id}"
-    public final static PUTPOLICY = "policies/{id}"
-    public final static POSTPOLICY = "policies"
-    public final static GETPOLICIES = "policies"
-    public final static TOKENGENERATE = "apitokens/generate"
+    public final static String BASEURL = "https://localhost:8000/v1/"
+    public final static String CLUSTERUSERNAME = "admin"
+    public final static String GETPOLICY = "policies/{id}"
+    public final static String PUTPOLICY = "policies/{id}"
+    public final static String GETPOLICIES = "policies"
+    public final static String TOKENGENERATE = "apitokens/generate"
 }
