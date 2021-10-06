@@ -8,16 +8,13 @@ import io.grpc.Channel
 import io.grpc.ClientCall
 import io.grpc.ClientInterceptor
 import io.grpc.ClientInterceptors
-import io.grpc.ManagedChannel
 import io.grpc.Metadata
 import io.grpc.MethodDescriptor
 import io.grpc.netty.GrpcSslContexts
 import io.grpc.netty.NegotiationType
 import io.grpc.netty.NettyChannelBuilder
-import io.netty.handler.ssl.SslContextBuilder
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory
 import util.Env
-import util.Keys
 
 @CompileStatic
 class BaseService {
@@ -26,28 +23,27 @@ class BaseService {
     static final String BASIC_AUTH_PASSWORD = Env.mustGetPassword()
 
     static final Empty EMPTY = Empty.newBuilder().build()
+    static final Channel effectiveChannel = useBasicAuth()
 
-    static useBasicAuth() {
-        updateAuthConfig(useClientCert, new AuthInterceptor(BASIC_AUTH_USERNAME, BASIC_AUTH_PASSWORD))
+    private static Channel useBasicAuth() {
+        def sslContext = GrpcSslContexts
+                .forClient()
+                .trustManager(InsecureTrustManagerFactory.INSTANCE)
+                .build()
+
+        def transportChannel = NettyChannelBuilder
+                .forAddress(Env.mustGetHostname(), Env.mustGetPort())
+                .negotiationType(NegotiationType.TLS)
+                .sslContext(sslContext)
+                .build()
+
+        def interceptor = new AuthInterceptor(BASIC_AUTH_USERNAME, BASIC_AUTH_PASSWORD)
+
+        return ClientInterceptors.intercept(transportChannel, interceptor)
     }
 
-    private static updateAuthConfig(boolean newUseClientCert, ClientInterceptor newAuthInterceptor) {
-        if (useClientCert == newUseClientCert && authInterceptor == newAuthInterceptor) {
-            return
-        }
-        if (useClientCert != newUseClientCert) {
-            if (transportChannel != null) {
-                transportChannel.shutdownNow()
-                transportChannel = null
-                effectiveChannel = null
-            }
-        }
-        if (authInterceptor != newAuthInterceptor) {
-            effectiveChannel = null
-        }
-
-        useClientCert = newUseClientCert
-        authInterceptor = newAuthInterceptor
+    static Channel getChannel() {
+        return effectiveChannel
     }
 
     private static class CallWithAuthorizationHeader<ReqT, RespT>
@@ -83,42 +79,5 @@ class BaseService {
                 MethodDescriptor<ReqT, RespT> method, CallOptions callOptions, Channel next) {
             return new CallWithAuthorizationHeader<>(next.newCall(method, callOptions), authHeaderContents)
         }
-    }
-
-    static ManagedChannel transportChannel = null
-    static ClientInterceptor authInterceptor = null
-    static Channel effectiveChannel = null
-    private static boolean useClientCert = false
-
-    static initializeChannel() {
-        if (transportChannel == null) {
-            SslContextBuilder sslContextBuilder = GrpcSslContexts
-                    .forClient()
-                    .trustManager(InsecureTrustManagerFactory.INSTANCE)
-            if (useClientCert) {
-                sslContextBuilder = sslContextBuilder.keyManager(Keys.keyManagerFactory())
-            }
-            def sslContext = sslContextBuilder.build()
-
-            transportChannel = NettyChannelBuilder
-                    .forAddress(Env.mustGetHostname(), Env.mustGetPort())
-                    .negotiationType(NegotiationType.TLS)
-                    .sslContext(sslContext)
-                    .build()
-            effectiveChannel = null
-        }
-
-        if (authInterceptor == null) {
-            effectiveChannel = transportChannel
-        } else {
-            effectiveChannel = ClientInterceptors.intercept(transportChannel, authInterceptor)
-        }
-    }
-
-    static Channel getChannel() {
-        if (effectiveChannel == null) {
-            initializeChannel()
-        }
-        return effectiveChannel
     }
 }

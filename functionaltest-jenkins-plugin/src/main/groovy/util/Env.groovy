@@ -12,23 +12,11 @@ class Env {
 
     private static final Env INSTANCE = new Env()
 
-    static String get(String key, String defVal = null) {
-        return INSTANCE.getInternal(key, defVal)
-    }
-
-    static String mustGet(String key) {
-        return INSTANCE.mustGetInternal(key)
-    }
-
     private final Properties envVars = new Properties()
 
     private Env() {
         envVars.putAll(System.getenv())
         assignFallbackValues()
-    }
-
-    protected String getInternal(String key, String defVal) {
-        return envVars.getOrDefault(key, defVal)
     }
 
     protected String mustGetInternal(String key) {
@@ -39,17 +27,12 @@ class Env {
         return value
     }
 
-    protected boolean isEnvVarEmpty(String key) {
-        return (envVars.get(key) ?: "null") == "null"
-    }
-
     private void assignFallbackValues() {
         for (def entry : DEFAULT_VALUES.entrySet()) {
             if (isEnvVarEmpty(entry.key)) {
                 envVars.put(entry.key, entry.value)
             }
         }
-        println System.getenv()
 
         if (isEnvVarEmpty("ROX_PASSWORD")) {
             String password
@@ -66,6 +49,14 @@ class Env {
                 envVars.put("ROX_PASSWORD", password)
             }
         }
+    }
+
+    protected boolean isEnvVarEmpty(String key) {
+        return (envVars.get(key) ?: "null") == "null"
+    }
+
+    static String mustGet(String key) {
+        return INSTANCE.mustGetInternal(key)
     }
 
     static String mustGetUsername() {
