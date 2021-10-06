@@ -1,0 +1,237 @@
+syntax = "proto3";
+
+option go_package = "v1";
+
+option java_package = "io.stackrox.proto.api.v1";
+
+import weak "google/api/annotations.proto";
+import "api/v1/common.proto";
+import "api/v1/empty.proto";
+import "storage/role.proto";
+
+package v1;
+
+// storage.Access values should be in escalating order. IE READ_WRITE means you have READ as well.
+
+message Permission {
+    string         resource = 1;
+    storage.Access access   = 2;
+}
+
+message GetRolesResponse {
+    repeated storage.Role roles = 1;
+}
+
+// GetPermissionsResponse is wire-compatible with the old format of the Role
+// message and represents a collection of aggregated permissions.
+message GetPermissionsResponse {
+    reserved 1; // for compatibility with Role.name
+    reserved 2; // for compatibility with Role.global_access
+    map<string, storage.Access> resource_to_access = 3;
+}
+
+message GetResourcesResponse {
+    repeated string resources = 1;
+}
+
+message ListPermissionSetsResponse {
+    repeated storage.PermissionSet permission_sets = 1;
+}
+
+message ListSimpleAccessScopesResponse {
+    repeated storage.SimpleAccessScope access_scopes = 1;
+}
+
+message ComputeEffectiveAccessScopeRequest {
+    enum Detail {
+        STANDARD = 0;
+        MINIMAL  = 1;
+        HIGH     = 2;
+    }
+
+    message Payload {
+        // Other definitions of access scope rules is science fiction for now;
+        // however, prepare for that possible future.
+        oneof rules_opt {
+            storage.SimpleAccessScope.Rules simple_rules = 1;
+        }
+    }
+
+    Detail  detail       = 1;
+    Payload access_scope = 2;
+}
+
+// CreateRoleRequest unites name we take from the URL path and role body in the same structure.
+// This way we can verify that name in the path and name in the body are identical.
+message CreateRoleRequest {
+    string         name = 1;
+    storage.Role   role = 2;
+}
+
+service RoleService {
+
+    rpc GetRoles (Empty) returns (GetRolesResponse) {
+        option (google.api.http) = {
+            get: "/v1/roles"
+        };
+    }
+
+    rpc GetRole (ResourceByID) returns (storage.Role) {
+        option (google.api.http) = {
+            get: "/v1/roles/{id}"
+        };
+    }
+
+    rpc GetMyPermissions (Empty) returns (GetPermissionsResponse) {
+        option (google.api.http) = {
+            get: "/v1/mypermissions"
+        };
+    }
+
+    rpc CreateRole (CreateRoleRequest) returns (Empty) {
+        option (google.api.http) = {
+            post: "/v1/roles/{name}"
+            body: "role"
+        };
+    }
+
+    rpc UpdateRole (storage.Role) returns (Empty) {
+        option (google.api.http) = {
+            put: "/v1/roles/{name}"
+            body: "*"
+        };
+    }
+
+    rpc DeleteRole (ResourceByID) returns (Empty) {
+        option (google.api.http) = {
+            delete: "/v1/roles/{id}"
+        };
+    }
+
+    rpc GetResources (Empty) returns (GetResourcesResponse) {
+        option (google.api.http) = {
+            get: "/v1/resources"
+        };
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Permission sets                                                        //
+    //                                                                        //
+
+    // BEGIN EXPERIMENTAL/UNSTABLE API
+
+    rpc GetPermissionSet (ResourceByID) returns (storage.PermissionSet) {
+        option (google.api.http) = {
+            get: "/v1/permissionsets/{id}"
+        };
+    }
+
+    rpc ListPermissionSets (Empty) returns (ListPermissionSetsResponse) {
+        option (google.api.http) = {
+            get: "/v1/permissionsets"
+        };
+    }
+
+    // PostPermissionSet
+    //
+    // PermissionSet.id is disallowed in request and set in response.
+    rpc PostPermissionSet (storage.PermissionSet) returns (storage.PermissionSet) {
+        option (google.api.http) = {
+            post: "/v1/permissionsets"
+            body: "*"
+        };
+    }
+
+    rpc PutPermissionSet (storage.PermissionSet) returns (Empty) {
+        option (google.api.http) = {
+            put: "/v1/permissionsets/{id}"
+            body: "*"
+        };
+    }
+
+    rpc DeletePermissionSet (ResourceByID) returns (Empty) {
+        option (google.api.http) = {
+            delete: "/v1/permissionsets/{id}"
+        };
+    }
+
+    // END EXPERIMENTAL/UNSTABLE API
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Access scopes                                                          //
+    //                                                                        //
+
+    // BEGIN EXPERIMENTAL/UNSTABLE API
+
+    rpc GetSimpleAccessScope (ResourceByID) returns (storage.SimpleAccessScope) {
+        option (google.api.http) = {
+            get: "/v1/simpleaccessscopes/{id}"
+        };
+    }
+
+    rpc ListSimpleAccessScopes (Empty) returns (ListSimpleAccessScopesResponse) {
+        option (google.api.http) = {
+            get: "/v1/simpleaccessscopes"
+        };
+    }
+
+    // PostSimpleAccessScope
+    //
+    // SimpleAccessScope.id is disallowed in request and set in response.
+    rpc PostSimpleAccessScope (storage.SimpleAccessScope) returns (storage.SimpleAccessScope) {
+        option (google.api.http) = {
+            post: "/v1/simpleaccessscopes"
+            body: "*"
+        };
+    }
+
+    rpc PutSimpleAccessScope (storage.SimpleAccessScope) returns (Empty) {
+        option (google.api.http) = {
+            put: "/v1/simpleaccessscopes/{id}"
+            body: "*"
+        };
+    }
+
+    rpc DeleteSimpleAccessScope (ResourceByID) returns (Empty) {
+        option (google.api.http) = {
+            delete: "/v1/simpleaccessscopes/{id}"
+        };
+    }
+
+    // ComputeEffectiveAccessScope
+    //
+    // Returns effective access scope based on the rules in the request. Does
+    // not persist anything; not idempotent due to possible changes to clusters
+    // and namespaces. POST is chosen due to potentially large payload.
+    //
+    // There are advantages in both keeping the response slim and detailed. If
+    // only IDs of selected clusters and namespaces are included, response
+    // latency and processing time are lower but the caller shall overlay the
+    // response with its view of the world which is susceptible to consistency
+    // issues. Listing all clusters and namespaces with related metadata is
+    // convenient for the caller but bloat the message with secondary data.
+    //
+    // We let the caller decide what level of detail they would like to have:
+    //
+    //   * Minimal, when only roots of included subtrees are listed by their
+    //     IDs. Clusters can be either INCLUDED (its namespaces are included but
+    //     are not listed) or PARTIAL (at least one namespace is explicitly
+    //     included). Namespaces can only be INCLUDED.
+    //
+    //   * Standard , when all known clusters and namespaces are listed
+    //     with their IDs and names. Clusters can be INCLUDED (all its
+    //     namespaces are explicitly listed as INCLUDED), PARTIAL (all its
+    //     namespaces are explicitly listed, some as INCLUDED and some as
+    //     EXCLUDED), and EXCLUDED (all its namespaces are explicitly listed as
+    //     EXCLUDED). Namespaces can be either INCLUDED or EXCLUDED.
+    //
+    //   * High, when every cluster and namespace is augmented with metadata.
+    rpc ComputeEffectiveAccessScope (ComputeEffectiveAccessScopeRequest) returns (storage.EffectiveAccessScope) {
+        option (google.api.http) = {
+            post: "/v1/computeeffectiveaccessscope"
+            body: "access_scope"
+        };
+    }
+
+    // END EXPERIMENTAL/UNSTABLE API
+}

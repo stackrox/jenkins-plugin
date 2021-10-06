@@ -1,0 +1,145 @@
+syntax = "proto3";
+
+option go_package = "storage";
+option java_package = "io.stackrox.proto.storage";
+
+import "storage/common.proto";
+import "storage/policy.proto";
+
+package storage;
+
+message Notifier {
+    string id                  = 1;
+    string name                = 2;
+    string type                = 3;
+    string ui_endpoint         = 4;
+    string label_key           = 8;
+    string label_default       = 9;
+    oneof config {
+        Jira  jira                       = 10;
+        Email email                      = 11;
+        CSCC  cscc                       = 12;
+        Splunk splunk                    = 13;
+        PagerDuty pagerduty              = 14;
+        Generic   generic                = 15;
+        SumoLogic sumologic              = 16;
+        AWSSecurityHub aws_security_hub  = 17;
+        Syslog syslog                    = 18;
+    }
+
+    // These fields should be safe to un-reserve after a few releases. evan@
+    // just isn't familiar enough yet to determine whether they can be deleted
+    // outright.
+    reserved 5;          // Deleted 2021-03-18.
+    reserved "enabled";  // Deleted 2021-03-18.
+}
+
+message AWSSecurityHub {
+    message Credentials {
+        string access_key_id     = 1 ;
+        string secret_access_key = 2 ;
+    }
+    string region             = 1;
+    Credentials credentials   = 2;
+    string account_id         = 3;
+}
+
+message CSCC {
+    // The service account for the integration. The server will mask the value of this credential in responses and logs.
+    string service_account = 1 ;
+    reserved                 2; // Formerly gcp_org_id
+    reserved                 3; // Formerly gcp_project
+    string source_id       = 4;
+}
+
+message Jira {
+    string url        = 1 ;
+    string username   = 2 ;
+    // The password for the integration. The server will mask the value of this credential in responses and logs.
+    string password   = 3 ;
+    string issue_type = 4;
+    message PriorityMapping {
+        Severity severity      = 1;
+        string   priority_name = 2;
+    }
+    repeated PriorityMapping priority_mappings   = 5;
+    string                   default_fields_json = 6;
+}
+
+message Email {
+    string server    = 1 ;
+    string sender    = 2;
+    string username  = 3 ;
+    // The password for the integration. The server will mask the value of this credential in responses and logs.
+    string password  = 4 ;
+    bool disableTLS  = 5;
+    bool DEPRECATED_useStartTLS = 6; // useStartTLS has been deprecated for startTLSAuthMethod
+    string from      = 7;
+    enum AuthMethod {
+        DISABLED = 0;
+        PLAIN    = 1;
+        LOGIN    = 2;
+    }
+    AuthMethod startTLSAuthMethod = 8;
+}
+
+message Splunk {
+    // The HTTP token for the integration. The server will mask the value of this credential in responses and logs.
+    string http_token                 = 1 ;
+    string http_endpoint              = 2 ;
+    bool insecure                     = 3;
+    int64 truncate                    = 4;
+    bool audit_logging_enabled        = 5;
+    oneof derived_source_type_deprecated {
+        // derived_source_type is deprecated in lieu of source_types
+        bool derived_source_type      = 6 ;
+    }
+    map<string, string> source_types  = 7;
+}
+
+message PagerDuty {
+    // The API key for the integration. The server will mask the value of this credential in responses and logs.
+    string api_key = 1 ;
+}
+
+message Generic {
+    string endpoint                    = 1 ;
+    bool   skipTLSVerify               = 2;
+    string ca_cert                     = 3;
+    string username                    = 4 ;
+    // The password for the integration. The server will mask the value of this credential in responses and logs.
+    string password                    = 5 ;
+    repeated KeyValuePair headers      = 6;
+    repeated KeyValuePair extra_fields = 7;
+    bool audit_logging_enabled         = 8;
+}
+
+message SumoLogic {
+    string http_source_address = 1 ;
+    bool   skipTLSVerify       = 2;
+}
+
+message Syslog {
+    enum LocalFacility {
+        LOCAL0 = 0;
+        LOCAL1 = 1;
+        LOCAL2 = 2;
+        LOCAL3 = 3;
+        LOCAL4 = 4;
+        LOCAL5 = 5;
+        LOCAL6 = 6;
+        LOCAL7 = 7;
+    }
+    LocalFacility local_facility = 1;
+
+    message TCPConfig {
+        string hostname                    = 1 ;
+        int32  port                        = 2;
+        bool   skip_tls_verify             = 3;
+        bool   use_tls                     = 4;
+    }
+    // Eventually this will support TCP, UDP, and local endpoints
+    oneof endpoint {
+        TCPConfig tcp_config = 2;
+    }
+}
