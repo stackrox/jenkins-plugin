@@ -35,18 +35,18 @@ sourceSets.each { ss ->
 
 
 dependencies {
-    compile 'com.google.code.gson:gson:2.7'
-    compile 'io.fabric8:kubernetes-client:4.1.2'
-    compile 'io.kubernetes:client-java:2.0.0-beta1'
-    compile 'org.codehaus.groovy:groovy-all:2.4.18'
-    compile group: 'com.jayway.restassured', name: 'rest-assured', version: '2.4.1'
-    compile group: 'com.github.docker-java', name: 'docker-java', version: '3.1.0-rc-3'
-    compile group: 'commons-cli', name: 'commons-cli', version: '1.2'
-    compile group: 'commons-httpclient', name: 'commons-httpclient', version: '3.1'
-    compile group: 'org.spockframework', name: 'spock-core', version: '1.2-groovy-2.4'
-    compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.7'
-    testCompile group: 'junit', name: 'junit', version: '4.11'
-    compile group: 'com.offbytwo.jenkins', name: 'jenkins-client', version: '0.3.8'
+    implementation 'com.google.code.gson:gson:2.7'
+    implementation 'io.fabric8:kubernetes-client:4.1.2'
+    implementation 'io.kubernetes:client-java:2.0.0-beta1'
+    implementation 'org.codehaus.groovy:groovy-all:2.4.18'
+    implementation group: 'com.jayway.restassured', name: 'rest-assured', version: '2.4.1'
+    implementation group: 'com.github.docker-java', name: 'docker-java', version: '3.1.0-rc-3'
+    implementation group: 'commons-cli', name: 'commons-cli', version: '1.2'
+    implementation group: 'commons-httpclient', name: 'commons-httpclient', version: '3.1'
+    implementation group: 'org.spockframework', name: 'spock-core', version: '1.2-groovy-2.4'
+    implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.7'
+    testImplementation group: 'junit', name: 'junit', version: '4.11'
+    implementation group: 'com.offbytwo.jenkins', name: 'jenkins-client', version: '0.3.8'
     // JAX-B dependencies for JDK 9+
     implementation "jakarta.xml.bind:jakarta.xml.bind-api:2.3.2"
     implementation "org.glassfish.jaxb:jaxb-runtime:2.3.2"
