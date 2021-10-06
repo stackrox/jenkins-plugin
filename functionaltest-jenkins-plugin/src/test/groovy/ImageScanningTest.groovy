@@ -2,8 +2,10 @@ import static com.offbytwo.jenkins.model.BuildResult.FAILURE
 import static com.offbytwo.jenkins.model.BuildResult.SUCCESS
 import static io.stackrox.proto.storage.PolicyOuterClass.EnforcementAction
 import static io.stackrox.proto.storage.PolicyOuterClass.EnforcementAction.FAIL_BUILD_ENFORCEMENT
+import static io.stackrox.proto.storage.PolicyOuterClass.ImageNamePolicy
 import static io.stackrox.proto.storage.PolicyOuterClass.LifecycleStage.BUILD
 import static io.stackrox.proto.storage.PolicyOuterClass.Policy
+import static io.stackrox.proto.storage.PolicyOuterClass.PolicyFields
 import static io.stackrox.proto.storage.PolicyOuterClass.Severity.MEDIUM_SEVERITY
 import com.offbytwo.jenkins.model.BuildResult
 import services.PolicyService
@@ -16,7 +18,7 @@ class ImageScanningTest extends BaseSpecification {
     @Unroll
     def "image scanning test with toggle enforcement(#imageName, #policyName,  #enforcements, #endStatus)"() {
         when:
-        Policy enforcementPolicy = updatePolicy(policyName, enforcements)
+        Policy enforcementPolicy = updatePolicy(policyName, "latest", enforcements)
 
         then:
         assert enforcementPolicy.enforcementActionsList == enforcements
@@ -38,7 +40,7 @@ class ImageScanningTest extends BaseSpecification {
     @Unroll
     def "image scanning test with images enforcement turned on (#imageName, #policyName, #tag)"() {
         when:
-        Policy enforcementPolicy = updatePolicy(policyName, [FAIL_BUILD_ENFORCEMENT])
+        Policy enforcementPolicy = updatePolicy(policyName, tag, [FAIL_BUILD_ENFORCEMENT])
 
         then:
         assert enforcementPolicy.enforcementActionsList == [FAIL_BUILD_ENFORCEMENT]
@@ -72,13 +74,16 @@ class ImageScanningTest extends BaseSpecification {
         "mis-spelled:lts" | false                     | SUCCESS
     }
 
-    private static Policy updatePolicy(String policyName, Iterable<? extends EnforcementAction> enforcements) {
+    private static Policy updatePolicy(String policyName, String tag, Iterable<EnforcementAction> enforcements) {
         def policies = PolicyService.getPolicies()
         def policyId = policies.find { it.name == policyName }?.id
         assert policyId != null
         Policy policy = PolicyService.getPolicy(policyId)
         Policy updatedPolicy = Policy.newBuilder(policy)
                 .clearExclusions()
+                .clearFields()
+                .setFields(PolicyFields.newBuilder().setImageName(
+                        ImageNamePolicy.newBuilder().setTag(tag)))
                 .clearLifecycleStages()
                 .addAllLifecycleStages([BUILD])
                 .setSeverity(MEDIUM_SEVERITY)

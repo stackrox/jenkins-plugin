@@ -1,6 +1,5 @@
 import static io.stackrox.proto.api.v1.ApiTokenService.GenerateTokenResponse
 import services.ApiTokenService
-import services.BaseService
 import services.MetadataService
 import spock.lang.Specification
 
@@ -10,7 +9,6 @@ class BaseSpecification extends Specification {
 
     def setup() {
         jenkins = new JenkinsClient()
-        BaseService.useBasicAuth()
         tokenResponse = ApiTokenService.generateToken("automation", "Continuous Integration")
         println "Jenkins Version: ${jenkins.version()}"
         println "StackRox Metadata\n${MetadataService.metadata}"
