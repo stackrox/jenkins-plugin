@@ -10,24 +10,16 @@ class ApiTokenService extends BaseService {
     }
 
     static generateToken(String name, String... roles) {
-        try {
-            GenerateTokenRequest.Builder request =
-                    GenerateTokenRequest.newBuilder()
-                            .setName(name)
-                            .addAllRoles(Arrays.asList(roles))
-            return getApiTokenService().generateToken(request.build())
-        } catch (Exception e) {
-            println "Failed to generate token: ${e}"
-        }
+        GenerateTokenRequest.Builder request =
+                GenerateTokenRequest.newBuilder()
+                        .setName(name)
+                        .addAllRoles(Arrays.asList(roles))
+        return getApiTokenService().generateToken(request.build())
     }
 
     static revokeToken(String tokenId) {
-        try {
-            getApiTokenService().revokeToken(Common.ResourceByID.newBuilder()
-                    .setId(tokenId)
-                    .build())
-        } catch (Exception e) {
-            println "Failed to revoke token: ${e}"
-        }
+        getApiTokenService().revokeToken(Common.ResourceByID.newBuilder()
+                .setId(tokenId)
+                .build())
     }
 }

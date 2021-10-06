@@ -52,14 +52,14 @@ class Env {
         println System.getenv()
 
         if (isEnvVarEmpty("ROX_PASSWORD")) {
-            String password = null
+            String password
             try {
                 def cluster = envVars.getOrDefault("CLUSTER", "k8s").toString().toLowerCase()
                 def passwordPath = "../../rox/deploy/${cluster}/central-deploy/password"
                 BufferedReader br = new BufferedReader(new FileReader(passwordPath))
                 password = br.readLine()
             } catch (Exception ex) {
-                println "Failed to load password for current deployment: ${ex}"
+                throw new RuntimeException("Failed to load password for current deployment", ex)
             }
 
             if (password != null) {
@@ -82,7 +82,7 @@ class Env {
         try {
             port = Integer.parseInt(portString)
         } catch (NumberFormatException e) {
-            throw new RuntimeException("API_PORT " + portString + " is not a valid number " + e.toString())
+            throw new RuntimeException("API_PORT " + portString + " is not a valid number ", e)
         }
         return port
     }
