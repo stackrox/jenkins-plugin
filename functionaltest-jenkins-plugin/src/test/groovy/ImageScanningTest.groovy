@@ -79,17 +79,14 @@ class ImageScanningTest extends BaseSpecification {
         def policyId = policies.find { it.name == policyName }?.id
         assert policyId != null
         Policy policy = PolicyService.getPolicy(policyId)
-        Policy updatedPolicy = Policy.newBuilder(policy)
-                .clearExclusions()
-                .clearFields()
+        Policy updatedPolicy = Policy.newBuilder()
+                .setId(policyId)
+                .setName(policyName)
                 .setFields(PolicyFields.newBuilder().setImageName(
                         ImageNamePolicy.newBuilder().setTag(tag)))
-                .clearLifecycleStages()
                 .addAllLifecycleStages([BUILD])
                 .setSeverity(MEDIUM_SEVERITY)
-                .clearCategories()
                 .addAllCategories(["Image Assurance"])
-                .clearEnforcementActions()
                 .addAllEnforcementActions(enforcements)
                 .build()
         PolicyService.updatePolicy(updatedPolicy)
