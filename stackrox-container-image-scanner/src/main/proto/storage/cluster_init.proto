@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+option go_package = "storage";
+option java_package = "io.stackrox.proto.storage";
+
+import "google/protobuf/timestamp.proto";
+import "storage/user.proto";
+
+package storage;
+
+message InitBundleMeta {
+    string                    id          = 1;
+    string                    name        = 2;
+    google.protobuf.Timestamp created_at  = 3;
+    User                      created_by  = 4;
+    bool                      is_revoked  = 5;
+    google.protobuf.Timestamp expires_at  = 6;
+}
