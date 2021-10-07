@@ -5,7 +5,6 @@ import com.google.common.base.Strings;
 import java.util.List;
 
 public class ViolatedPolicy {
-    public static final String FAIL_BUILD_ENFORCEMENT = "FAIL_BUILD_ENFORCEMENT";
     public static final String NO_REMEDIATION_ACTIONS = "No remediation actions documented.";
 
     private final String name;

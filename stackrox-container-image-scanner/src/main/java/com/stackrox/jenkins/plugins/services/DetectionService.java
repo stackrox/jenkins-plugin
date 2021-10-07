@@ -26,6 +26,8 @@ import java.util.List;
 
 public class DetectionService {
 
+    private static final String FAIL_BUILD_ENFORCEMENT = "FAIL_BUILD_ENFORCEMENT";
+
     private final String portalAddress;
     private final Secret apiToken;
     private final CloseableHttpClient httpClient;
@@ -48,7 +50,7 @@ public class DetectionService {
             boolean isEnforced = false;
             JsonArray actions = policy.getJsonArray("enforcementActions");
             for (JsonString action : actions.getValuesAs(JsonString.class)) {
-                if (ViolatedPolicy.FAIL_BUILD_ENFORCEMENT.equals(action.getString())) {
+                if (FAIL_BUILD_ENFORCEMENT.equals(action.getString())) {
                     isEnforced = true;
                     break;
                 }
