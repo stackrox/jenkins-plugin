@@ -62,7 +62,6 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
     private String caCertPEM;
 
     private RunConfig runConfig;
-    private List<ImageCheckResults> results;
 
     @DataBoundConstructor
     public StackroxBuilder() {
@@ -136,7 +135,7 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
         runConfig = new RunConfig(run, workspace, launcher, listener);
 
         try {
-            checkImages();
+            List<ImageCheckResults> results = checkImages();
 
             ArtifactArchiver artifactArchiver = new ArtifactArchiver(runConfig.getArtifacts());
             artifactArchiver.setAllowEmptyArchive(true);
@@ -146,7 +145,7 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
 
             cleanupJenkinsWorkspace();
 
-            if (enforcedPolicyViolationExists()) {
+            if (enforcedPolicyViolationExists(results)) {
                 throw new PolicyEvalException(
                         "At least one image violated at least one enforced system policy. Marking StackRox Image Security plugin build step failed. Check the report for additional details.");
             } else {
@@ -166,12 +165,12 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
         }
     }
 
-    private void checkImages() throws IOException {
+    private List<ImageCheckResults> checkImages() throws IOException {
         CloseableHttpClient httpClient = HttpClientUtils.get(this.enableTLSVerification, this.caCertPEM);
         ImageService imageService = new ImageService(getPortalAddress(), getApiToken(), httpClient);
         DetectionService detectionService = new DetectionService(getPortalAddress(), getApiToken(), httpClient);
 
-        results = Lists.newArrayList();
+        List<ImageCheckResults> results = Lists.newArrayList();
 
         for (String name : runConfig.getImageNames()) {
             runConfig.getLog().printf("Checking image %s...%n", name);
@@ -187,11 +186,12 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
         });
 
         ReportGenerator.generateBuildReport(results, runConfig.getReportsDir());
+        return results;
     }
 
     // Runs an image scan and the build time policy checks on the image
 
-    private boolean enforcedPolicyViolationExists() {
+    private boolean enforcedPolicyViolationExists(List<ImageCheckResults> results) {
         for (ImageCheckResults result : results) {
             if (!result.getViolatedPolicies().isEmpty()) {
                 return true;
