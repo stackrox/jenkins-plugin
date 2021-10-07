@@ -57,16 +57,11 @@ public class DetectionService {
             }
 
             if (isEnforced) {
-                List<String> violations = Lists.newArrayList();
-                for (JsonObject violation : alert.getJsonArray("violations").getValuesAs(JsonObject.class)) {
-                    violations.add(violation.getString("message"));
-                }
-
                 violatedPolicies.add(new ViolatedPolicy(
                         policy.getString("name"),
                         policy.getString("description"),
                         policy.getString("severity"),
-                        policy.getString("remediation"), violations));
+                        policy.getString("remediation")));
             }
         }
         return violatedPolicies;
