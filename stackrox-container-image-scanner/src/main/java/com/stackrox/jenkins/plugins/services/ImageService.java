@@ -66,19 +66,17 @@ public class ImageService {
     }
 
     private JsonObject runImageScan(String imageName) throws IOException {
-        CloseableHttpResponse response = null;
         HttpPost imageScanRequest = null;
 
-        try {
-            imageScanRequest = new HttpPost(Joiner.on("/").join(portalAddress, "v1/images/scan"));
-            imageScanRequest.setHeader(HttpHeaders.ACCEPT, ContentType.APPLICATION_JSON.toString());
-            imageScanRequest.setHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.toString());
-            imageScanRequest.addHeader(HttpHeaders.AUTHORIZATION, Joiner.on(" ").join("Bearer", apiToken));
-            imageScanRequest.setEntity(new StringEntity(
-                    Json.createObjectBuilder().add("imageName", imageName).add("force", true).build().toString(),
-                    StandardCharsets.UTF_8));
+        imageScanRequest = new HttpPost(Joiner.on("/").join(portalAddress, "v1/images/scan"));
+        imageScanRequest.setHeader(HttpHeaders.ACCEPT, ContentType.APPLICATION_JSON.toString());
+        imageScanRequest.setHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.toString());
+        imageScanRequest.addHeader(HttpHeaders.AUTHORIZATION, Joiner.on(" ").join("Bearer", apiToken));
+        imageScanRequest.setEntity(new StringEntity(
+                Json.createObjectBuilder().add("imageName", imageName).add("force", true).build().toString(),
+                StandardCharsets.UTF_8));
 
-            response = httpClient.execute(imageScanRequest);
+        try (CloseableHttpResponse response = this.httpClient.execute(imageScanRequest)) {
             int statusCode = response.getStatusLine().getStatusCode();
 
             HttpEntity entity = response.getEntity();
@@ -91,13 +89,6 @@ public class ImageService {
             JsonObject object = reader.readObject();
             EntityUtils.consume(entity);
             return object.getJsonObject("scan");
-        } finally {
-            if (imageScanRequest != null) {
-                imageScanRequest.releaseConnection();
-            }
-            if (response != null) {
-                response.close();
-            }
         }
     }
 }

@@ -306,42 +306,22 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
 
         private boolean checkRoxAuthStatus(final String portalAddress, final String apiToken, final boolean tlsVerify, final String caCertPEM) throws Exception {
             // Cannot use the cached HttpClient here since this is before the perform step.
-            CloseableHttpClient httpClient = null;
-            CloseableHttpResponse response = null;
-            HttpGet authStatusRequest = null;
+            CloseableHttpClient httpClient = HttpClientUtils.get(tlsVerify, caCertPEM);
 
-            try {
-                httpClient = HttpClientUtils.get(tlsVerify, caCertPEM);
-                authStatusRequest = new HttpGet(Joiner.on("/").join(portalAddress, "v1/auth/status"));
-                authStatusRequest.addHeader("Accept", "application/json");
-                authStatusRequest.addHeader("Authorization", Joiner.on(" ").join("Bearer", apiToken));
+            HttpGet authStatusRequest = new HttpGet(Joiner.on("/").join(portalAddress, "v1/auth/status"));
+            authStatusRequest.addHeader("Accept", "application/json");
+            authStatusRequest.addHeader("Authorization", Joiner.on(" ").join("Bearer", apiToken));
 
-                response = httpClient.execute(authStatusRequest);
-
+            try (CloseableHttpResponse response = httpClient.execute(authStatusRequest)) {
                 int statusCode = response.getStatusLine().getStatusCode();
-
                 HttpEntity entity = response.getEntity();
-
                 if (statusCode != HttpURLConnection.HTTP_OK || entity == null) {
                     return false;
                 }
-
                 JsonReader reader = Json.createReader(new InputStreamReader(entity.getContent(), StandardCharsets.UTF_8));
                 JsonObject object = reader.readObject();
-
                 EntityUtils.consume(entity);
-
                 return !Strings.isNullOrEmpty(object.getString("userId"));
-            } finally {
-                if (authStatusRequest != null) {
-                    authStatusRequest.releaseConnection();
-                }
-                if (response != null) {
-                    response.close();
-                }
-                if (httpClient != null) {
-                    httpClient.close();
-                }
             }
         }
     }

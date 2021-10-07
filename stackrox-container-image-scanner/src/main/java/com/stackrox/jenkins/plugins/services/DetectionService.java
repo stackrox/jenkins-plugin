@@ -68,19 +68,15 @@ public class DetectionService {
     }
 
     private JsonObject runBuildTimeDetection(String imageName) throws IOException {
-        CloseableHttpResponse response = null;
-        HttpPost detectionRequest = null;
+        HttpPost detectionRequest = new HttpPost(Joiner.on("/").join(portalAddress, "v1/detect/build"));
+        detectionRequest.setHeader(HttpHeaders.ACCEPT, ContentType.APPLICATION_JSON.toString());
+        detectionRequest.setHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.toString());
+        detectionRequest.addHeader(HttpHeaders.AUTHORIZATION, Joiner.on(" ").join("Bearer", apiToken));
+        detectionRequest.setEntity(new StringEntity(
+                Json.createObjectBuilder().add("imageName", imageName).build().toString(),
+                StandardCharsets.UTF_8));
 
-        try {
-            detectionRequest = new HttpPost(Joiner.on("/").join(portalAddress, "v1/detect/build"));
-            detectionRequest.setHeader(HttpHeaders.ACCEPT, ContentType.APPLICATION_JSON.toString());
-            detectionRequest.setHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.toString());
-            detectionRequest.addHeader(HttpHeaders.AUTHORIZATION, Joiner.on(" ").join("Bearer", apiToken));
-            detectionRequest.setEntity(new StringEntity(
-                    Json.createObjectBuilder().add("imageName", imageName).build().toString(),
-                    StandardCharsets.UTF_8));
-
-            response = this.httpClient.execute(detectionRequest);
+        try (CloseableHttpResponse response = httpClient.execute(detectionRequest)) {
             int statusCode = response.getStatusLine().getStatusCode();
 
             HttpEntity entity = response.getEntity();
@@ -94,13 +90,6 @@ public class DetectionService {
             EntityUtils.consume(entity);
 
             return object;
-        } finally {
-            if (detectionRequest != null) {
-                detectionRequest.releaseConnection();
-            }
-            if (response != null) {
-                response.close();
-            }
         }
     }
 
