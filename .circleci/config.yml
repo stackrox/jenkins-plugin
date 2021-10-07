@@ -87,13 +87,25 @@ jobs:
     working_directory: /home/circleci/jenkins-plugin
     steps:
       - checkout
+      - restore_cache:
+            keys:
+              # when lock file changes, use increasingly general patterns to restore cache
+              - maven-repo-v1-{{ .Branch }}-{{ checksum "stackrox-container-image-scanner/pom.xml" }}
+              - maven-repo-v1-{{ .Branch }}-
+              - maven-repo-v1-
+      - run:
+          name: Unit tests
+          command: |
+            cd stackrox-container-image-scanner
+            mvn test
       - run:
           name: Build and package the Jenkins plugin
           command: |
             cd stackrox-container-image-scanner
             mvn package
             mvn hpi:hpi
-
+      - store_test_results:
+          path: /home/circleci/jenkins-plugin/stackrox-container-image-scanner/target/surefire-reports
       - store_artifacts:
           path: /home/circleci/jenkins-plugin/stackrox-container-image-scanner/target/stackrox-container-image-scanner.hpi
           destination: artifacts
@@ -101,6 +113,10 @@ jobs:
           root: /home/circleci/jenkins-plugin/
           paths:
             - stackrox-container-image-scanner/target/stackrox-container-image-scanner.hpi
+      - save_cache:
+            paths:
+              - ~/.m2
+            key: maven-repo-v1-{{ .Branch }}-{{ checksum "stackrox-container-image-scanner/pom.xml" }}
   provision-cluster-qa-tests:
    docker:
       - image: docker.io/stackrox/apollo-ci:0.2.8-2-g1e9382b6d6
