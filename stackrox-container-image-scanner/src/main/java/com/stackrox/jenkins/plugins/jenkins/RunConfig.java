@@ -19,9 +19,7 @@ public class RunConfig {
     private static final String IMAGE_LIST_FILENAME = "rox_images_to_scan";
     private static final String REPORTS_DIR_NAME = "rox_image_security_reports";
 
-    private final EnvVars envVars;
     private final PrintStream log;
-    private final FilePath jenkinsWorkspace;
     private final FilePath baseWorkDir;
     private final FilePath reportsDir;
     private final FilePath imagesToScanFilePath;
@@ -30,9 +28,8 @@ public class RunConfig {
 
     public RunConfig(Run<?, ?> run, FilePath workspace, TaskListener listener) throws AbortException {
         try {
-            envVars = run.getEnvironment(listener);
+            EnvVars envVars = run.getEnvironment(listener);
             log = listener.getLogger();
-            jenkinsWorkspace = workspace;
             baseWorkDir = new FilePath(workspace, envVars.get("BUILD_TAG"));
 
             imagesToScanFilePath = new FilePath(baseWorkDir, IMAGE_LIST_FILENAME);
