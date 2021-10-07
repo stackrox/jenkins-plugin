@@ -6,11 +6,11 @@ import com.stackrox.jenkins.plugins.data.ViolatedPolicy;
 import hudson.util.Secret;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHeaders;
-import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
 
 import javax.json.Json;
 import javax.json.JsonArray;
@@ -31,9 +31,9 @@ public class DetectionService {
 
     private final String portalAddress;
     private final Secret apiToken;
-    private final CloseableHttpClient httpClient;
+    private final HttpClient httpClient;
 
-    public DetectionService(String portalAddress, Secret apiToken, CloseableHttpClient httpClient) {
+    public DetectionService(String portalAddress, Secret apiToken, HttpClient httpClient) {
         this.portalAddress = portalAddress;
         this.apiToken = apiToken;
         this.httpClient = httpClient;
@@ -77,22 +77,20 @@ public class DetectionService {
                 Json.createObjectBuilder().add("imageName", imageName).build().toString(),
                 StandardCharsets.UTF_8));
 
-        try (CloseableHttpResponse response = httpClient.execute(detectionRequest)) {
-            int statusCode = response.getStatusLine().getStatusCode();
+        HttpResponse response = httpClient.execute(detectionRequest);
+        int statusCode = response.getStatusLine().getStatusCode();
 
-            HttpEntity entity = response.getEntity();
+        HttpEntity entity = response.getEntity();
 
-            if (statusCode != HttpURLConnection.HTTP_OK || entity == null) {
-                throw new IOException(String.format("Failed build time detection request. Status code: %d. Error: %s",
-                        statusCode, entity == null ? "" : entity.toString()));
-            }
-            try (InputStream contentStream = entity.getContent();
-                 InputStreamReader inputStreamReader = new InputStreamReader(contentStream, StandardCharsets.UTF_8);
-                 BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-                 JsonReader reader = Json.createReader(bufferedReader)) {
-                return reader.readObject();
-            }
+        if (statusCode != HttpURLConnection.HTTP_OK || entity == null) {
+            throw new IOException(String.format("Failed build time detection request. Status code: %d. Error: %s",
+                    statusCode, entity == null ? "" : entity.toString()));
+        }
+        try (InputStream contentStream = entity.getContent();
+             InputStreamReader inputStreamReader = new InputStreamReader(contentStream, StandardCharsets.UTF_8);
+             BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+             JsonReader reader = Json.createReader(bufferedReader)) {
+            return reader.readObject();
         }
     }
-
 }
