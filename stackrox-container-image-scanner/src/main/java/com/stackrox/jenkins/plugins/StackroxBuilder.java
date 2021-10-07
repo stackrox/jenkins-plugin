@@ -74,6 +74,8 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
     public StackroxBuilder() {
     }
 
+    //region Getters
+
     public String getPortalAddress() {
         return this.portalAddress;
     }
@@ -127,6 +129,8 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
     public void setCaCertPEM(String caCertPEM) {
         this.caCertPEM = caCertPEM;
     }
+
+    //endregion
 
     //TODO: Add console log for the plugin
     @Override
