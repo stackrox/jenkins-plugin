@@ -17,7 +17,9 @@
         <java.level>8</java.level>
     </properties>
     <name>StackRox Container Image Scanner</name>
-    <description>This plugin provides vulnerability scanning of container images for OS packages and language vulnerabilities using the StackRox Kubernetes Security Platform</description>
+    <description>This plugin provides vulnerability scanning of container images for OS packages and language
+        vulnerabilities using the StackRox Kubernetes Security Platform
+    </description>
     <url>https://github.com/jenkinsci/${project.artifactId}-plugin</url>
     <licenses>
         <license>
