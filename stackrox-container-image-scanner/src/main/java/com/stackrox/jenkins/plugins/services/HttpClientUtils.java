@@ -1,4 +1,4 @@
-package com.stackrox.jenkins.plugins;
+package com.stackrox.jenkins.plugins.services;
 
 import com.google.common.base.Strings;
 import org.apache.http.client.config.RequestConfig;

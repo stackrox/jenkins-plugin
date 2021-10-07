@@ -1,4 +1,4 @@
-package com.stackrox.jenkins.plugins;
+package com.stackrox.jenkins.plugins.jenkins;
 
 import com.stackrox.jenkins.plugins.data.ImageCheckResults;
 import hudson.model.Action;

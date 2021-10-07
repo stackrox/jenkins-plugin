@@ -1,4 +1,4 @@
-package com.stackrox.jenkins.plugins;
+package com.stackrox.jenkins.plugins.jenkins;
 
 import com.google.common.collect.Lists;
 import hudson.AbortException;
