@@ -11,14 +11,15 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.util.EntityUtils;
 
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 import javax.json.JsonString;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.nio.charset.StandardCharsets;
@@ -85,11 +86,12 @@ public class DetectionService {
                 throw new IOException(String.format("Failed build time detection request. Status code: %d. Error: %s",
                         statusCode, entity == null ? "" : entity.toString()));
             }
-            JsonReader reader = Json.createReader(new InputStreamReader(entity.getContent(), StandardCharsets.UTF_8));
-            JsonObject object = reader.readObject();
-            EntityUtils.consume(entity);
-
-            return object;
+            try (InputStream contentStream = entity.getContent();
+                 InputStreamReader inputStreamReader = new InputStreamReader(contentStream, StandardCharsets.UTF_8);
+                 BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+                 JsonReader reader = Json.createReader(bufferedReader)) {
+                return reader.readObject();
+            }
         }
     }
 
