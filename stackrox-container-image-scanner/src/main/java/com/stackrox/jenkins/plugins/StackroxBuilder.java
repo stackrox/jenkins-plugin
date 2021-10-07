@@ -42,6 +42,7 @@ import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.verb.POST;
 
+import javax.annotation.Nonnull;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
@@ -49,13 +50,10 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 @SuppressWarnings("unused")
 public class StackroxBuilder extends Builder implements SimpleBuildStep {
-    private static final String NOT_AVAILABLE = "-";
     private String portalAddress;
     private Secret apiToken = Secret.fromString("");
     private boolean failOnPolicyEvalFailure;
@@ -63,7 +61,6 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
     private boolean enableTLSVerification;
     private String caCertPEM;
 
-    private CloseableHttpClient httpClient;
     private RunConfig runConfig;
     private List<ImageCheckResults> results;
 
@@ -134,10 +131,14 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
 
     //TODO: Add console log for the plugin
     @Override
-    public void perform(Run<?, ?> run, FilePath workspace, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
+    public void perform(
+            @Nonnull Run<?, ?> run,
+            @Nonnull FilePath workspace,
+            @Nonnull Launcher launcher,
+            @Nonnull TaskListener listener) throws IOException, InterruptedException {
         runConfig = new RunConfig(run, workspace, launcher, listener);
 
-        httpClient = HttpClientUtils.get(this.enableTLSVerification, this.caCertPEM);
+        CloseableHttpClient httpClient = HttpClientUtils.get(this.enableTLSVerification, this.caCertPEM);
         imageService = new ImageService(getPortalAddress(), getApiToken(), httpClient);
         detectionService = new DetectionService(getPortalAddress(), getApiToken(), httpClient);
 
@@ -184,12 +185,9 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
             processImage(name);
         }
 
-        Collections.sort(results, new Comparator<ImageCheckResults>() {
-            @Override
-            public int compare(ImageCheckResults result1, ImageCheckResults result2) {
-                //descending order
-                return Boolean.compare(result1.isImageCheckStatusPass(), result2.isImageCheckStatusPass());
-            }
+        results.sort((result1, result2) -> {
+            //descending order
+            return Boolean.compare(result1.isImageCheckStatusPass(), result2.isImageCheckStatusPass());
         });
 
         ReportGenerator.generateBuildReport(results, runConfig.getReportsDir());
@@ -197,14 +195,14 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
 
     // Runs an image scan and the build time policy checks on the image
     private void processImage(String imageName) throws IOException {
-        runConfig.getLog().println(String.format("Checking image %s...", imageName));
+        runConfig.getLog().printf("Checking image %s...%n", imageName);
 
         try {
             List<CVE> cves = imageService.getImageScanResults(imageName);
             List<ViolatedPolicy> violatedPolicies = detectionService.getPolicyViolations(imageName);
             results.add(new ImageCheckResults(imageName, cves, violatedPolicies));
         } catch (IOException e) {
-            runConfig.getLog().println(String.format("Error processing image %s: %s", imageName, e.getMessage()));
+            runConfig.getLog().printf("Error processing image %s: %s%n", imageName, e.getMessage());
             throw e;
         }
     }
@@ -219,7 +217,7 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
     }
 
     private void cleanupJenkinsWorkspace() {
-        runConfig.getLog().println(String.format("Cleaning up the workspace ..."));
+        runConfig.getLog().println("Cleaning up the workspace ...");
 
         try {
             runConfig.getImagesToScanFilePath().delete();
@@ -248,6 +246,7 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
             return true;
         }
 
+        @Nonnull
         @Override
         public String getDisplayName() {
             return Messages.StackroxBuilder_DescriptorImpl_DisplayName();
