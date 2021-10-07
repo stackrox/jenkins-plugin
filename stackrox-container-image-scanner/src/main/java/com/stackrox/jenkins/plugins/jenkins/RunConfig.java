@@ -28,7 +28,7 @@ public class RunConfig {
     private final List<String> imageNames;
     private final String artifacts;
 
-    public RunConfig(Run<?, ?> run, FilePath workspace, Launcher launcher, TaskListener listener) throws AbortException {
+    public RunConfig(Run<?, ?> run, FilePath workspace, TaskListener listener) throws AbortException {
         try {
             envVars = run.getEnvironment(listener);
             log = listener.getLogger();
@@ -58,14 +58,6 @@ public class RunConfig {
 
     public String getArtifacts() {
         return artifacts;
-    }
-
-    public EnvVars getEnvVars() {
-        return envVars;
-    }
-
-    public FilePath getJenkinsWorkspace() {
-        return jenkinsWorkspace;
     }
 
     public FilePath getBaseWorkDir() {

@@ -132,7 +132,8 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
             @Nonnull FilePath workspace,
             @Nonnull Launcher launcher,
             @Nonnull TaskListener listener) throws IOException, InterruptedException {
-        runConfig = new RunConfig(run, workspace, launcher, listener);
+
+        runConfig = new RunConfig(run, workspace, listener);
 
         try {
             List<ImageCheckResults> results = checkImages();
@@ -166,18 +167,19 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
     }
 
     private List<ImageCheckResults> checkImages() throws IOException {
-        CloseableHttpClient httpClient = HttpClientUtils.get(this.enableTLSVerification, this.caCertPEM);
-        ImageService imageService = new ImageService(getPortalAddress(), getApiToken(), httpClient);
-        DetectionService detectionService = new DetectionService(getPortalAddress(), getApiToken(), httpClient);
-
         List<ImageCheckResults> results = Lists.newArrayList();
 
-        for (String name : runConfig.getImageNames()) {
-            runConfig.getLog().printf("Checking image %s...%n", name);
+        try (CloseableHttpClient httpClient = HttpClientUtils.get(this.enableTLSVerification, this.caCertPEM)) {
+            ImageService imageService = new ImageService(getPortalAddress(), getApiToken(), httpClient);
+            DetectionService detectionService = new DetectionService(getPortalAddress(), getApiToken(), httpClient);
 
-            List<CVE> cves = imageService.getImageScanResults(name);
-            List<ViolatedPolicy> violatedPolicies = detectionService.getPolicyViolations(name);
-            results.add(new ImageCheckResults(name, cves, violatedPolicies));
+            for (String name : runConfig.getImageNames()) {
+                runConfig.getLog().printf("Checking image %s...%n", name);
+
+                List<CVE> cves = imageService.getImageScanResults(name);
+                List<ViolatedPolicy> violatedPolicies = detectionService.getPolicyViolations(name);
+                results.add(new ImageCheckResults(name, cves, violatedPolicies));
+            }
         }
 
         results.sort((result1, result2) -> {
