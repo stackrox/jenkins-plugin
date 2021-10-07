@@ -64,9 +64,6 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
     private RunConfig runConfig;
     private List<ImageCheckResults> results;
 
-    private ImageService imageService;
-    private DetectionService detectionService;
-
     @DataBoundConstructor
     public StackroxBuilder() {
     }
@@ -138,10 +135,6 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
             @Nonnull TaskListener listener) throws IOException, InterruptedException {
         runConfig = new RunConfig(run, workspace, launcher, listener);
 
-        CloseableHttpClient httpClient = HttpClientUtils.get(this.enableTLSVerification, this.caCertPEM);
-        imageService = new ImageService(getPortalAddress(), getApiToken(), httpClient);
-        detectionService = new DetectionService(getPortalAddress(), getApiToken(), httpClient);
-
         try {
             checkImages();
 
@@ -170,19 +163,22 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
                 throw new AbortException(e.getMessage());
             }
             runConfig.getLog().println("Marking StackRox Image Security plugin build step as successful despite enforced policy violations.");
-        } finally {
-            if (httpClient != null) {
-                httpClient.close();
-            }
-
         }
     }
 
     private void checkImages() throws IOException {
+        CloseableHttpClient httpClient = HttpClientUtils.get(this.enableTLSVerification, this.caCertPEM);
+        ImageService imageService = new ImageService(getPortalAddress(), getApiToken(), httpClient);
+        DetectionService detectionService = new DetectionService(getPortalAddress(), getApiToken(), httpClient);
+
         results = Lists.newArrayList();
 
         for (String name : runConfig.getImageNames()) {
-            processImage(name);
+            runConfig.getLog().printf("Checking image %s...%n", name);
+
+            List<CVE> cves = imageService.getImageScanResults(name);
+            List<ViolatedPolicy> violatedPolicies = detectionService.getPolicyViolations(name);
+            results.add(new ImageCheckResults(name, cves, violatedPolicies));
         }
 
         results.sort((result1, result2) -> {
@@ -194,18 +190,6 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
     }
 
     // Runs an image scan and the build time policy checks on the image
-    private void processImage(String imageName) throws IOException {
-        runConfig.getLog().printf("Checking image %s...%n", imageName);
-
-        try {
-            List<CVE> cves = imageService.getImageScanResults(imageName);
-            List<ViolatedPolicy> violatedPolicies = detectionService.getPolicyViolations(imageName);
-            results.add(new ImageCheckResults(imageName, cves, violatedPolicies));
-        } catch (IOException e) {
-            runConfig.getLog().printf("Error processing image %s: %s%n", imageName, e.getMessage());
-            throw e;
-        }
-    }
 
     private boolean enforcedPolicyViolationExists() {
         for (ImageCheckResults result : results) {
