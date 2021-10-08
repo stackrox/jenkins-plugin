@@ -4,7 +4,7 @@ import groovy.transform.CompileStatic
 
 @CompileStatic
 class Constants {
-    public final static String BASEURL = "https://localhost:8000/v1/"
+    public final static String BASEURL = "https://localhost:8000"
     public final static String CLUSTERUSERNAME = "admin"
     public final static String GETPOLICY = "policies/{id}"
     public final static String PUTPOLICY = "policies/{id}"

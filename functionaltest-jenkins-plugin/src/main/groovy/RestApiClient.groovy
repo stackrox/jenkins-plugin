@@ -1,27 +1,35 @@
 import static com.jayway.restassured.RestAssured.given
 
-import com.google.gson.Gson
-import com.jayway.restassured.response.Response
 import com.jayway.restassured.specification.RequestSpecification
-import data.DataUtil
-import data.Policies
-import data.Policy
-import data.TokenResponse
 import groovy.transform.CompileStatic
+import okhttp3.OkHttpClient
+
+import com.stackrox.api.ApiTokenServiceApi
+import com.stackrox.api.PolicyServiceApi
+import com.stackrox.invoker.ApiClient
+import com.stackrox.model.StorageListPolicy
+import com.stackrox.model.StoragePolicy
+import com.stackrox.model.V1GenerateTokenRequest
 
 import common.Constants
 
 @CompileStatic
 class RestApiClient {
 
-    Gson gson
+    ApiClient apiClient
     String authHeaderValue
+    PolicyServiceApi policyServiceApi
 
     RestApiClient() {
-        gson = new Gson()
         def env = System.getenv()
-        String password = env['ROX_PASSWORD']
-        authHeaderValue = "Basic " + DataUtil.base64Encode(Constants.CLUSTERUSERNAME + ':' + password)
+
+        OkHttpClient client = UnsafeOkHttpClient.getUnsafeOkHttpClient()
+        apiClient = new ApiClient(client)
+        apiClient.setBasePath(Constants.BASEURL)
+        apiClient.setUsername(Constants.CLUSTERUSERNAME)
+        apiClient.setPassword(env['ROX_PASSWORD'])
+
+        policyServiceApi = new PolicyServiceApi(apiClient)
     }
 
     protected RequestSpecification createRequestSpecification() {
@@ -30,39 +38,21 @@ class RestApiClient {
         return given().relaxedHTTPSValidation().header(header, value)
     }
 
-    String getToken(Object tokenObj) {
-        String url = Constants.BASEURL + Constants.TOKENGENERATE
-        Response response = createRequestSpecification()
-                .body(gson.toJson(tokenObj))
-                .post(url)
-        TokenResponse token = gson.fromJson(response.asString(), TokenResponse)
-        return token.token
+    String getToken(String name, String role) {
+        V1GenerateTokenRequest tokenRequest = new V1GenerateTokenRequest().name(name).role(role)
+        return new ApiTokenServiceApi(apiClient).aPITokenServiceGenerateToken(tokenRequest).token
     }
 
-    Policies getPolicies() {
-        def url = Constants.BASEURL + Constants.GETPOLICIES
-        Response response = createRequestSpecification()
-                .get(url)
-        Policies policies = gson.fromJson(response.asString(), Policies)
-        return policies
+    List<StorageListPolicy> getPolicies() {
+        return policyServiceApi.policyServiceListPolicies(null, null, null, null, null).getPolicies()
     }
 
-    def updatePolicy(Object policyObj, String id) {
-        def url = Constants.BASEURL + Constants.PUTPOLICY.replace("{id}", id)
-        Response response = createRequestSpecification()
-                .body(gson.toJson(policyObj))
-                .put(url)
-        Policy policy = gson.fromJson(response.asString(), Policy)
-        return policy
+    def updatePolicy(StoragePolicy policyObj, String id) {
+        return (StoragePolicy) policyServiceApi.policyServicePutPolicy(id, policyObj)
     }
 
-    Policy getPolicy(String id) {
-        def url = Constants.BASEURL + Constants.GETPOLICY.replace("{id}", id)
-        println url
-        Response response = createRequestSpecification()
-                .get(url)
-        Policy policy = gson.fromJson(response.asString(), Policy)
-        return policy
+    StoragePolicy getPolicy(String id) {
+        return policyServiceApi.policyServiceGetPolicy(id)
     }
 }
 
