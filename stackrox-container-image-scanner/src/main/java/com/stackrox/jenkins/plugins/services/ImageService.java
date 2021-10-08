@@ -7,11 +7,11 @@ import com.stackrox.jenkins.plugins.data.CVE;
 import hudson.util.Secret;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHeaders;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
 
 import javax.json.Json;
@@ -29,9 +29,9 @@ public class ImageService {
     private static final String NOT_AVAILABLE = "-";
     private final String portalAddress;
     private final Secret apiToken;
-    private final HttpClient httpClient;
+    private final CloseableHttpClient httpClient;
 
-    public ImageService(String portalAddress, Secret apiToken, HttpClient httpClient) {
+    public ImageService(String portalAddress, Secret apiToken, CloseableHttpClient httpClient) {
         this.portalAddress = portalAddress;
         this.apiToken = apiToken;
         this.httpClient = httpClient;
@@ -66,7 +66,9 @@ public class ImageService {
     }
 
     private JsonObject runImageScan(String imageName) throws IOException {
-        HttpPost imageScanRequest = new HttpPost(Joiner.on("/").join(portalAddress, "v1/images/scan"));
+        HttpPost imageScanRequest = null;
+
+        imageScanRequest = new HttpPost(Joiner.on("/").join(portalAddress, "v1/images/scan"));
         imageScanRequest.setHeader(HttpHeaders.ACCEPT, ContentType.APPLICATION_JSON.toString());
         imageScanRequest.setHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.toString());
         imageScanRequest.addHeader(HttpHeaders.AUTHORIZATION, Joiner.on(" ").join("Bearer", apiToken));
@@ -74,18 +76,19 @@ public class ImageService {
                 Json.createObjectBuilder().add("imageName", imageName).add("force", true).build().toString(),
                 StandardCharsets.UTF_8));
 
-        HttpResponse response = this.httpClient.execute(imageScanRequest);
-        int statusCode = response.getStatusLine().getStatusCode();
+        try (CloseableHttpResponse response = this.httpClient.execute(imageScanRequest)) {
+            int statusCode = response.getStatusLine().getStatusCode();
 
-        HttpEntity entity = response.getEntity();
+            HttpEntity entity = response.getEntity();
 
-        if (statusCode != HttpURLConnection.HTTP_OK || entity == null) {
-            throw new IOException(String.format("Failed image scan request. Status code: %d. Error: %s", statusCode, entity));
+            if (statusCode != HttpURLConnection.HTTP_OK || entity == null) {
+                throw new IOException(String.format("Failed image scan request. Status code: %d. Error: %s", statusCode, entity));
+            }
+
+            JsonReader reader = Json.createReader(new InputStreamReader(entity.getContent(), StandardCharsets.UTF_8));
+            JsonObject object = reader.readObject();
+            EntityUtils.consume(entity);
+            return object.getJsonObject("scan");
         }
-
-        JsonReader reader = Json.createReader(new InputStreamReader(entity.getContent(), StandardCharsets.UTF_8));
-        JsonObject object = reader.readObject();
-        EntityUtils.consume(entity);
-        return object.getJsonObject("scan");
     }
 }
