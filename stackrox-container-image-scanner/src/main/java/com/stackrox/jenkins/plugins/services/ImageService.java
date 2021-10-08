@@ -66,9 +66,7 @@ public class ImageService {
     }
 
     private JsonObject runImageScan(String imageName) throws IOException {
-        HttpPost imageScanRequest = null;
-
-        imageScanRequest = new HttpPost(Joiner.on("/").join(portalAddress, "v1/images/scan"));
+        HttpPost imageScanRequest = new HttpPost(Joiner.on("/").join(portalAddress, "v1/images/scan"));
         imageScanRequest.setHeader(HttpHeaders.ACCEPT, ContentType.APPLICATION_JSON.toString());
         imageScanRequest.setHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.toString());
         imageScanRequest.addHeader(HttpHeaders.AUTHORIZATION, Joiner.on(" ").join("Bearer", apiToken));
@@ -85,9 +83,7 @@ public class ImageService {
                 throw new IOException(String.format("Failed image scan request. Status code: %d. Error: %s", statusCode, entity));
             }
 
-            JsonReader reader = Json.createReader(new InputStreamReader(entity.getContent(), StandardCharsets.UTF_8));
-            JsonObject object = reader.readObject();
-            EntityUtils.consume(entity);
+            JsonObject object = HttpClientUtils.getJsonObject(entity);
             return object.getJsonObject("scan");
         }
     }

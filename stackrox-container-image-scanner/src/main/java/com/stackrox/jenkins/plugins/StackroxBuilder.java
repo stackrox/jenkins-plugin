@@ -34,7 +34,6 @@ import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.util.EntityUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
@@ -43,13 +42,9 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.verb.POST;
 
 import javax.annotation.Nonnull;
-import javax.json.Json;
 import javax.json.JsonObject;
-import javax.json.JsonReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @SuppressWarnings("unused")
@@ -303,9 +298,8 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
                 if (statusCode != HttpURLConnection.HTTP_OK || entity == null) {
                     return false;
                 }
-                JsonReader reader = Json.createReader(new InputStreamReader(entity.getContent(), StandardCharsets.UTF_8));
-                JsonObject object = reader.readObject();
-                EntityUtils.consume(entity);
+
+                JsonObject object = HttpClientUtils.getJsonObject(entity);
                 return !Strings.isNullOrEmpty(object.getString("userId"));
             }
         }

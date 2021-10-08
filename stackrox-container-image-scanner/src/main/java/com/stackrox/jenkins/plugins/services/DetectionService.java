@@ -86,12 +86,7 @@ public class DetectionService {
                 throw new IOException(String.format("Failed build time detection request. Status code: %d. Error: %s",
                         statusCode, entity == null ? "" : entity.toString()));
             }
-            try (InputStream contentStream = entity.getContent();
-                 InputStreamReader inputStreamReader = new InputStreamReader(contentStream, StandardCharsets.UTF_8);
-                 BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-                 JsonReader reader = Json.createReader(bufferedReader)) {
-                return reader.readObject();
-            }
+            return HttpClientUtils.getJsonObject(entity);
         }
     }
 
