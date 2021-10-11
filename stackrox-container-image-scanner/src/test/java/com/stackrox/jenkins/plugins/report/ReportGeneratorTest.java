@@ -6,6 +6,7 @@ import com.stackrox.jenkins.plugins.data.ImageCheckResults;
 import com.stackrox.jenkins.plugins.data.ViolatedPolicy;
 import hudson.AbortException;
 import hudson.FilePath;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import org.apache.commons.io.FileUtils;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -104,26 +105,28 @@ class ReportGeneratorTest {
                         "Alert on deployments with fixable vulnerabilities with a Severity Rating at least Important",
                         "HIGH",
                         "Use your package manager to update to a fixed version in future builds or speak with your security team to mitigate the vulnerabilities.")
-        )), new ImageCheckResults("nginx:latest", ImmutableList.of(
-                CVE.Builder.newInstance()
-                        .withId("CVE-2007-6755")
-                        .withCvssScore((float) 5.8)
-                        .withScoreType("V2")
-                        .withPublishDate("2013-10-11T22:55:00Z")
-                        .withLink("https://security-tracker.debian.org/tracker/CVE-2007-6755")
-                        .inPackage("openssl")
-                        .inVersion("1.1.1d-0+deb10u7")
-                        .isFixable(false)
-                        .build()), ImmutableList.of(
-                new ViolatedPolicy("Latest Tag",
-                        "",
-                        "MEDIUM",
-                        "No remediation actions documented."),
-                new ViolatedPolicy("Fixable Severity at least Important",
-                        "Alert on deployments with fixable vulnerabilities with a Severity Rating at least Important",
-                        "HIGH",
-                        "Use your package manager to update to a fixed version in future builds or speak with your security team to mitigate the vulnerabilities.")
-        )));
+        )), new ImageCheckResults("nginx:latest",
+                ImmutableList.of(
+                        CVE.Builder.newInstance()
+                                .withId("CVE-2007-6755")
+                                .withCvssScore((float) 5.8)
+                                .withScoreType("V2")
+                                .withPublishDate("2013-10-11T22:55:00Z")
+                                .withLink("https://security-tracker.debian.org/tracker/CVE-2007-6755")
+                                .inPackage("openssl")
+                                .inVersion("1.1.1d-0+deb10u7")
+                                .isFixable(false)
+                                .build()),
+                ImmutableList.of(
+                        new ViolatedPolicy("Latest Tag",
+                                "",
+                                "MEDIUM",
+                                "No remediation actions documented."),
+                        new ViolatedPolicy("Fixable Severity at least Important",
+                                "Alert on deployments with fixable vulnerabilities with a Severity Rating at least Important",
+                                "HIGH",
+                                "Use your package manager to update to a fixed version in future builds or speak with your security team to mitigate the vulnerabilities.")
+                )));
         ReportGenerator.generateBuildReport(results, reportsDir);
 
         assertDirsAreEqual(Paths.get("src", "test", "resources", "report"), folder);
@@ -155,8 +158,8 @@ class ReportGeneratorTest {
                 Path relativize = expected.relativize(file);
                 Path actualFile = actual.resolve(relativize);
 
-                String actualContent = FileUtils.readFileToString(actualFile.toFile(), "UTF-8");
-                String expectedContent = FileUtils.readFileToString(file.toFile(), "UTF-8");
+                String actualContent = FileUtils.readFileToString(actualFile.toFile(), UTF_8.name());
+                String expectedContent = FileUtils.readFileToString(file.toFile(), UTF_8.name());
                 assertEquals(expectedContent, actualContent, String.format("%s differs from %s", file, actualFile));
                 return result;
             }
