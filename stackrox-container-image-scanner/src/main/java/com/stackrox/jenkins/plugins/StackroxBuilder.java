@@ -168,7 +168,7 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
         List<ImageCheckResults> results = Lists.newArrayList();
 
         try (CloseableHttpClient httpClient = HttpClientUtils.get(this.enableTLSVerification, this.caCertPEM)) {
-            ImageService imageService = new ImageService(getPortalAddress(), getApiToken(), httpClient);
+            ImageService imageService = new ImageService(getPortalAddress(), getApiToken().getPlainText(), httpClient);
             DetectionService detectionService = new DetectionService(getPortalAddress(), getApiToken(), httpClient);
 
             for (String name : runConfig.getImageNames()) {

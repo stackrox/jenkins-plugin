@@ -26,10 +26,10 @@ public class ImageService {
 
     private static final String NOT_AVAILABLE = "-";
     private final String portalAddress;
-    private final Secret apiToken;
+    private final String apiToken;
     private final CloseableHttpClient httpClient;
 
-    public ImageService(String portalAddress, Secret apiToken, CloseableHttpClient httpClient) {
+    public ImageService(String portalAddress, String apiToken, CloseableHttpClient httpClient) {
         this.portalAddress = portalAddress;
         this.apiToken = apiToken;
         this.httpClient = httpClient;
