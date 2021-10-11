@@ -144,9 +144,9 @@ class ReportGeneratorTest {
 
                 Path relativize = expected.relativize(dir);
                 File otherDir = actual.resolve(relativize).toFile();
-                Set<String> expectedDirs = Arrays.stream(Objects.requireNonNull(dir.toFile().list())).collect(Collectors.toSet());
-                Set<String> actialDirs = Arrays.stream(Objects.requireNonNull(otherDir.list())).collect(Collectors.toSet());
-                assertEquals(expectedDirs, actialDirs, String.format("%s and %s don't contain same files", dir, otherDir));
+                Set<String> expectedContents = Arrays.stream(Objects.requireNonNull(dir.toFile().list())).collect(Collectors.toSet());
+                Set<String> actualContents = Arrays.stream(Objects.requireNonNull(otherDir.list())).collect(Collectors.toSet());
+                assertEquals(expectedContents, actualContents, String.format("%s and %s don't contain same files", dir, otherDir));
                 return result;
             }
 
