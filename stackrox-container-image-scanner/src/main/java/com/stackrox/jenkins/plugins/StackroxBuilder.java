@@ -132,33 +132,35 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
 
         try {
             List<ImageCheckResults> results = checkImages();
-
-            ArtifactArchiver artifactArchiver = new ArtifactArchiver(runConfig.getArtifacts());
-            artifactArchiver.setAllowEmptyArchive(true);
-            artifactArchiver.perform(run, workspace, launcher, listener);
-
+            ReportGenerator.generateBuildReport(results, runConfig.getReportsDir());
+            prepareArtifacts(run, workspace, launcher, listener);
             run.addAction(new ViewStackroxResultsAction(results, run));
-
             cleanupJenkinsWorkspace();
 
             if (enforcedPolicyViolationExists(results)) {
                 throw new PolicyEvalException(
                         "At least one image violated at least one enforced system policy. Marking StackRox Image Security plugin build step failed. Check the report for additional details.");
-            } else {
-                runConfig.getLog().println("No system policy violations found. Marking StackRox Image Security plugin build step as successful.");
             }
+
         } catch (IOException e) {
             if (this.failOnCriticalPluginError) {
                 throw new AbortException(String.format("Fatal error: %s. Aborting ...", e.getMessage()));
             }
             runConfig.getLog().println("Marking StackRox Image Security plugin build step as successful despite error.");
-
         } catch (PolicyEvalException e) {
             if (this.failOnPolicyEvalFailure) {
                 throw new AbortException(e.getMessage());
             }
             runConfig.getLog().println("Marking StackRox Image Security plugin build step as successful despite enforced policy violations.");
         }
+
+        runConfig.getLog().println("No system policy violations found. Marking StackRox Image Security plugin build step as successful.");
+    }
+
+    private void prepareArtifacts(Run<?, ?> run, FilePath workspace, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
+        ArtifactArchiver artifactArchiver = new ArtifactArchiver(runConfig.getArtifacts());
+        artifactArchiver.setAllowEmptyArchive(true);
+        artifactArchiver.perform(run, workspace, launcher, listener);
     }
 
     private List<ImageCheckResults> checkImages() throws IOException {
@@ -181,8 +183,6 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
             //descending order
             return Boolean.compare(result1.isImageCheckStatusPass(), result2.isImageCheckStatusPass());
         });
-
-        ReportGenerator.generateBuildReport(results, runConfig.getReportsDir());
         return results;
     }
 
@@ -285,14 +285,13 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
         }
 
         private boolean checkRoxAuthStatus(final String portalAddress, final String apiToken, final boolean tlsVerify, final String caCertPEM) throws Exception {
-            // Cannot use the cached HttpClient here since this is before the perform step.
-            CloseableHttpClient httpClient = HttpClientUtils.get(tlsVerify, caCertPEM);
-
             HttpGet authStatusRequest = new HttpGet(Joiner.on("/").join(portalAddress, "v1/auth/status"));
             authStatusRequest.addHeader("Accept", "application/json");
             authStatusRequest.addHeader("Authorization", Joiner.on(" ").join("Bearer", apiToken));
 
-            try (CloseableHttpResponse response = httpClient.execute(authStatusRequest)) {
+            try (CloseableHttpClient httpClient = HttpClientUtils.get(tlsVerify, caCertPEM);
+                 CloseableHttpResponse response = httpClient.execute(authStatusRequest)) {
+
                 int statusCode = response.getStatusLine().getStatusCode();
                 HttpEntity entity = response.getEntity();
                 if (statusCode != HttpURLConnection.HTTP_OK || entity == null) {
