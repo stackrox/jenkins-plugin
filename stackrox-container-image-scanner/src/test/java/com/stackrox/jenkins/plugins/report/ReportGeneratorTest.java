@@ -6,6 +6,7 @@ import com.stackrox.jenkins.plugins.data.ImageCheckResults;
 import com.stackrox.jenkins.plugins.data.ViolatedPolicy;
 import hudson.AbortException;
 import hudson.FilePath;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
