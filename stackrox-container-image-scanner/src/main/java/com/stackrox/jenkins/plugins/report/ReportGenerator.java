@@ -38,8 +38,8 @@ public class ReportGenerator {
         imageResultDir.mkdirs();
 
         if (!result.getCves().isEmpty()) {
-            OutputStream outputStream = new FilePath(imageResultDir, CVES_FILENAME).write();
-            try (CSVPrinter printer = openCsv(outputStream, CVES_HEADER)) {
+            try (OutputStream outputStream = new FilePath(imageResultDir, CVES_FILENAME).write();
+                 CSVPrinter printer = openCsv(outputStream, CVES_HEADER)) {
                 for (CVE cve : result.getCves()) {
                     printer.printRecord(
                             cve.getId(),
