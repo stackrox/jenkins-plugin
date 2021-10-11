@@ -7,12 +7,11 @@ import com.stackrox.jenkins.plugins.data.ViolatedPolicy;
 import hudson.AbortException;
 import hudson.FilePath;
 import org.apache.commons.io.FileUtils;
-import org.junit.Rule;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.io.TempDir;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,13 +30,12 @@ import java.util.stream.Collectors;
 
 class ReportGeneratorTest {
 
-    @Rule
-    public TemporaryFolder folder = new TemporaryFolder();
+    @TempDir
+    Path folder;
 
     @Test
     void testGenerateReportFroEmptyResultGeneratesNothing() throws IOException, InterruptedException {
-        folder.create();
-        FilePath reportsDir = new FilePath(folder.newFolder());
+        FilePath reportsDir = new FilePath(folder.toFile());
         ReportGenerator.generateBuildReport(Collections.emptyList(), reportsDir);
 
         assertTrue(reportsDir.list().isEmpty());
@@ -45,8 +43,7 @@ class ReportGeneratorTest {
 
     @Test
     void testGenerateReportFroEmptyCVSAndViolationsGeneratesEmptyDir() throws IOException, InterruptedException {
-        folder.create();
-        FilePath reportsDir = new FilePath(folder.newFolder());
+        FilePath reportsDir = new FilePath(folder.toFile());
         ImmutableList<ImageCheckResults> results = ImmutableList.of(
                 new ImageCheckResults("mis-spelled:lts", Collections.emptyList(), Collections.emptyList()));
         ReportGenerator.generateBuildReport(results, reportsDir);
@@ -58,8 +55,8 @@ class ReportGeneratorTest {
 
     @Test
     void testGenerateReportForResultsThrowsOnWriteToNotExisitingDir() throws IOException {
-        folder.create();
-        FilePath reportsDir = new FilePath(folder.newFile());
+        Path tempFile = Files.createFile(folder.resolve("test.txt"));
+        FilePath reportsDir = new FilePath(tempFile.toFile());
         List<ImageCheckResults> results = ImmutableList.of(
                 new ImageCheckResults("jenkins:lts", Collections.emptyList(), Collections.emptyList()));
         Exception exception = assertThrows(AbortException.class, () -> ReportGenerator.generateBuildReport(results, reportsDir));
@@ -69,9 +66,8 @@ class ReportGeneratorTest {
 
     @Test
     void testGenerateReportForResultsWritesReportsForEveryImageInSeparatedDirectory() throws IOException {
-        folder.create();
 
-        FilePath reportsDir = new FilePath(folder.getRoot());
+        FilePath reportsDir = new FilePath(folder.toFile());
         List<ImageCheckResults> results = ImmutableList.of(new ImageCheckResults("jenkins:lts", ImmutableList.of(
                 CVE.Builder.newInstance()
                         .withId("CVE-2015-5224")
@@ -130,7 +126,7 @@ class ReportGeneratorTest {
         )));
         ReportGenerator.generateBuildReport(results, reportsDir);
 
-        assertDirsAreEqual(Paths.get("src", "test", "resources", "report"), folder.getRoot().toPath());
+        assertDirsAreEqual(Paths.get("src", "test", "resources", "report"), folder);
 
     }
 
