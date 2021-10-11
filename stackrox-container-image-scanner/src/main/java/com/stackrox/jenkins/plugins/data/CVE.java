@@ -1,4 +1,4 @@
-package com.stackrox.jenkins.plugins;
+package com.stackrox.jenkins.plugins.data;
 
 public class CVE {
     private final String id;

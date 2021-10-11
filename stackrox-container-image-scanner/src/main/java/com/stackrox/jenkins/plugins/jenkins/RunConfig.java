@@ -1,12 +1,12 @@
-package com.stackrox.jenkins.plugins;
+package com.stackrox.jenkins.plugins.jenkins;
 
 import com.google.common.collect.Lists;
 import hudson.AbortException;
 import hudson.EnvVars;
 import hudson.FilePath;
-import hudson.Launcher;
 import hudson.model.Run;
 import hudson.model.TaskListener;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -18,20 +18,17 @@ public class RunConfig {
     private static final String IMAGE_LIST_FILENAME = "rox_images_to_scan";
     private static final String REPORTS_DIR_NAME = "rox_image_security_reports";
 
-    private EnvVars envVars;
-    private PrintStream log;
-    private FilePath jenkinsWorkspace;
-    private FilePath baseWorkDir;
-    private FilePath reportsDir;
-    private FilePath imagesToScanFilePath;
-    private List<String> imageNames;
-    private String artifacts;
+    private final PrintStream log;
+    private final FilePath baseWorkDir;
+    private final FilePath reportsDir;
+    private final FilePath imagesToScanFilePath;
+    private final List<String> imageNames;
+    private final String artifacts;
 
-    public RunConfig(Run<?, ?> run, FilePath workspace, Launcher launcher, TaskListener listener) throws AbortException {
+    public RunConfig(Run<?, ?> run, FilePath workspace, TaskListener listener) throws AbortException {
         try {
-            envVars = run.getEnvironment(listener);
+            EnvVars envVars = run.getEnvironment(listener);
             log = listener.getLogger();
-            jenkinsWorkspace = workspace;
             baseWorkDir = new FilePath(workspace, envVars.get("BUILD_TAG"));
 
             imagesToScanFilePath = new FilePath(baseWorkDir, IMAGE_LIST_FILENAME);
@@ -57,14 +54,6 @@ public class RunConfig {
 
     public String getArtifacts() {
         return artifacts;
-    }
-
-    public EnvVars getEnvVars() {
-        return envVars;
-    }
-
-    public FilePath getJenkinsWorkspace() {
-        return jenkinsWorkspace;
     }
 
     public FilePath getBaseWorkDir() {
