@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 import hudson.AbortException;
 import hudson.EnvVars;
 import hudson.FilePath;
-import hudson.Launcher;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 
