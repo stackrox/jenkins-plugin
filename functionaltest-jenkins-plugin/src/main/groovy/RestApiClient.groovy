@@ -1,13 +1,15 @@
 import static com.jayway.restassured.RestAssured.given
+
 import com.google.gson.Gson
 import com.jayway.restassured.response.Response
 import com.jayway.restassured.specification.RequestSpecification
-import common.Constants
 import data.DataUtil
 import data.Policies
 import data.Policy
 import data.TokenResponse
 import groovy.transform.CompileStatic
+
+import common.Constants
 
 @CompileStatic
 class RestApiClient {

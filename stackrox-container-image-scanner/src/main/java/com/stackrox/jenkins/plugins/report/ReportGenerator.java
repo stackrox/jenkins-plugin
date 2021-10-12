@@ -1,20 +1,21 @@
 package com.stackrox.jenkins.plugins.report;
 
-import com.stackrox.jenkins.plugins.data.CVE;
-import com.stackrox.jenkins.plugins.data.ImageCheckResults;
-import com.stackrox.jenkins.plugins.data.ViolatedPolicy;
-import hudson.AbortException;
-import hudson.FilePath;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVPrinter;
-import org.apache.commons.csv.QuoteMode;
-
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+
+import hudson.AbortException;
+import hudson.FilePath;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
+import org.apache.commons.csv.QuoteMode;
+
+import com.stackrox.jenkins.plugins.data.CVE;
+import com.stackrox.jenkins.plugins.data.ImageCheckResults;
+import com.stackrox.jenkins.plugins.data.ViolatedPolicy;
 
 public class ReportGenerator {
 

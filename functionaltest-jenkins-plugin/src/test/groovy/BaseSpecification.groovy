@@ -1,5 +1,6 @@
 import data.Policy
 import data.Token
+
 import spock.lang.Specification
 
 class BaseSpecification extends Specification {

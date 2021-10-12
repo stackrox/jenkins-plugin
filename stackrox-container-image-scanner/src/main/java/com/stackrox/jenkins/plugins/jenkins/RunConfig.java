@@ -1,18 +1,18 @@
 package com.stackrox.jenkins.plugins.jenkins;
 
-import com.google.common.collect.Lists;
-import hudson.AbortException;
-import hudson.EnvVars;
-import hudson.FilePath;
-import hudson.model.Run;
-import hudson.model.TaskListener;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+
+import com.google.common.collect.Lists;
+import hudson.AbortException;
+import hudson.EnvVars;
+import hudson.FilePath;
+import hudson.model.Run;
+import hudson.model.TaskListener;
 
 public class RunConfig {
     private static final String IMAGE_LIST_FILENAME = "rox_images_to_scan";

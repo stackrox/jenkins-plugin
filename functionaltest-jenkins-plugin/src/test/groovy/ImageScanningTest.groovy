@@ -1,8 +1,10 @@
 import static com.offbytwo.jenkins.model.BuildResult.FAILURE
 import static com.offbytwo.jenkins.model.BuildResult.SUCCESS
+
 import com.offbytwo.jenkins.model.BuildResult
 import data.Policies
 import data.Policy
+
 import spock.lang.Unroll
 
 class ImageScanningTest extends BaseSpecification {

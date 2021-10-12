@@ -1,8 +1,16 @@
 package com.stackrox.jenkins.plugins.services;
 
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+import javax.json.JsonString;
+
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
-import com.stackrox.jenkins.plugins.data.ViolatedPolicy;
 import hudson.util.Secret;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHeaders;
@@ -12,14 +20,7 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-import javax.json.JsonString;
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.nio.charset.StandardCharsets;
-import java.util.List;
+import com.stackrox.jenkins.plugins.data.ViolatedPolicy;
 
 public class DetectionService {
 

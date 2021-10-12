@@ -27,6 +27,6 @@ class Timer {
     }
 
     int SecondsSince() {
-        return (System.currentTimeMillis() - this.startTime) / 1000
+        return ( System.currentTimeMillis() - this.startTime ) / 1000
     }
 }
