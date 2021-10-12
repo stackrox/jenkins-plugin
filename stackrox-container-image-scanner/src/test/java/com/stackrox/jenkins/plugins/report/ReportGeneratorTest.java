@@ -55,7 +55,7 @@ class ReportGeneratorTest {
     }
 
     @Test
-    void testGenerateReportForResultsThrowsOnWriteToNotExisitingDir() throws IOException {
+    void testGenerateReportForResultsThrowsOnWriteException() throws IOException {
         Path tempFile = Files.createFile(folder.resolve("test.txt"));
         FilePath reportsDir = new FilePath(tempFile.toFile());
         List<ImageCheckResults> results = ImmutableList.of(
