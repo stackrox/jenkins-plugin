@@ -1,3 +1,5 @@
+import java.security.SecureRandom
+
 import com.offbytwo.jenkins.JenkinsServer
 import com.offbytwo.jenkins.JenkinsTriggerHelper
 import com.offbytwo.jenkins.model.BuildResult
@@ -5,7 +7,6 @@ import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
 import groovy.util.slurpersupport.NodeChild
 import groovy.xml.XmlUtil
-import java.security.SecureRandom
 
 @CompileStatic
 class JenkinsClient {
