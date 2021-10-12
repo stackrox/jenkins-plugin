@@ -11,6 +11,7 @@ import javax.json.JsonObject;
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
+import hudson.util.Secret;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHeaders;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -24,10 +25,10 @@ import com.stackrox.jenkins.plugins.data.CVE;
 public class ImageService {
 
     private final String portalAddress;
-    private final String apiToken;
+    private final Secret apiToken;
     private final CloseableHttpClient httpClient;
 
-    public ImageService(String portalAddress, String apiToken, CloseableHttpClient httpClient) {
+    public ImageService(String portalAddress, Secret apiToken, CloseableHttpClient httpClient) {
         this.portalAddress = portalAddress;
         this.apiToken = apiToken;
         this.httpClient = httpClient;
