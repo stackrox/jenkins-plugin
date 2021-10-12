@@ -4,9 +4,7 @@
       {
         "vulns": [
           {
-            "cve": "CVE-MISSING-DATA",
-            "fixedBy": "",
-            "cvss": null
+            "cve": "CVE-MISSING-DATA"
           }
         ]
       }
