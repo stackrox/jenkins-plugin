@@ -43,7 +43,7 @@ curl -b cookies.txt -i -F file=@stackrox-container-image-scanner/target/stackrox
 1. Go to recent version of running rox instance (e.g. `https://k8s.demo.stackrox.com`)
 2. Navigate to API Docs `/main/apidocs`
 3. Download OpenAPI specification (link may change between versions)
-4. Convert JSON to YAML
+4. Convert JSON to YAML (e.g. with https://editor.swagger.io/)
 5. Add authorization methods if it's not defined
    - In `components:` add
     ```yaml
