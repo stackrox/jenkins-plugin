@@ -58,7 +58,7 @@ class ImageServiceTest {
     }
 
     @Test
-    public void shouldThrowWhenNoDaasdfasftadFor200() throws IOException {
+    public void shouldParseDataFromServer() throws IOException {
         wireMockServer.stubFor(postImagesScan().willReturn(
                 aResponse().withStatus(SC_OK).withBodyFile("v1/images/scan/nginx.latest.json")));
         imageService = new ImageService(wireMockServer.baseUrl(), "some token", HttpClientUtils.get(false, null));
@@ -103,12 +103,7 @@ class ImageServiceTest {
         ImmutableList<CVE> expected = ImmutableList.of(
                 CVE.Builder.newInstance().withId("CVE-MISSING-DATA")
                         .withCvssScore(0)
-                        .withScoreType("-")
-                        .withPublishDate("-")
-                        .inPackage("-")
-                        .inVersion("-")
                         .isFixable(false)
-                        .withLink("-")
                         .build());
         assertEquals(expected, actual);
     }
