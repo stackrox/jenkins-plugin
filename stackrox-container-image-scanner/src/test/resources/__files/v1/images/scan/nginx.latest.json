@@ -294,7 +294,7 @@
             "cvss": 9.8,
             "summary": "libseccomp before 2.4.0 did not correctly generate 64-bit syscall argument comparisons using the arithmetic operators (LT, GT, LE, GE), which might able to lead to bypassing seccomp filters and potential privilege escalations.",
             "link": "https://security-tracker.debian.org/tracker/CVE-2019-9893",
-            "fixedBy": "",
+            "fixedBy": "2.3.3-5",
             "scoreVersion": "V3",
             "cvssV2": {
               "vector": "AV:N/AC:L/Au:N/C:P/I:P/A:P",

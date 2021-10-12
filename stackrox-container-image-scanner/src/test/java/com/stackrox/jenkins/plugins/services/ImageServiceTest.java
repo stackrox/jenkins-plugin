@@ -88,7 +88,7 @@ class ImageServiceTest {
                         .withPublishDate("2019-03-21T16:01:00Z")
                         .inPackage("libseccomp")
                         .inVersion("2.3.3-4")
-                        .isFixable(false)
+                        .isFixable(true)
                         .withLink("https://security-tracker.debian.org/tracker/CVE-2019-9893")
                         .build());
         assertEquals(expected, actual);
