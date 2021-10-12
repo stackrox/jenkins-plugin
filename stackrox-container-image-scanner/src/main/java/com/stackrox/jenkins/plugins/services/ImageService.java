@@ -23,7 +23,6 @@ import com.stackrox.jenkins.plugins.data.CVE;
 
 public class ImageService {
 
-    private static final String NOT_AVAILABLE = "-";
     private final String portalAddress;
     private final String apiToken;
     private final CloseableHttpClient httpClient;

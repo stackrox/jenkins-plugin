@@ -122,6 +122,11 @@ class ReportGeneratorTest {
                                 .inPackage("openssl")
                                 .inVersion("1.1.1d-0+deb10u7")
                                 .isFixable(false)
+                                .build(),
+                        CVE.Builder.newInstance()
+                                .withId("CVE-MISSING-DATA")
+                                .withCvssScore(0F)
+                                .isFixable(false)
                                 .build()),
                 ImmutableList.of(
                         new ViolatedPolicy("Latest Tag",
