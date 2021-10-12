@@ -37,3 +37,28 @@ curl -b cookies.txt -i -F file=@stackrox-container-image-scanner/target/stackrox
 ```
 
 4. Create a new job with the plugin
+
+## Updating API Schema
+
+1. Go to recent version of running rox instance (e.g. `https://k8s.demo.stackrox.com`)
+2. Navigate to API Docs `/main/apidocs`
+3. Download OpenAPI specification (link may change between versions)
+4. Convert JSON to YAML
+5. Add authorization methods if it's not defined
+   - In `components:` add
+    ```yaml
+    securitySchemes:
+        basicAuth:
+            type: http
+            scheme: basic
+        bearerAuth:
+            type: http
+            scheme: bearer
+    ```
+    - In root add:
+    ```yaml
+    security:
+      - basicAuth: [ ]
+      - bearerAuth: [ ]
+    ```
+6. Save changes in `stackrox-container-image-scanner/api.yaml`

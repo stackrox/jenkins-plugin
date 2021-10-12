@@ -8,12 +8,6 @@ info:
   license:
     name: All Rights Reserved
     url: https://www.stackrox.com/
-##########################
-# Manually added to schema
-security:
-  - basicAuth: []
-  - bearerAuth: []
-##########################
 paths:
   /v1/alerts:
     get:
@@ -6476,16 +6470,6 @@ paths:
 servers:
   - url: https://k8s.demo.stackrox.com
 components:
-##########################
-# Manually added to schema
-  securitySchemes:
-    basicAuth:
-      type: http
-      scheme: basic
-    bearerAuth:
-      type: http
-      scheme: bearer
-##########################
   requestBodies:
     storageGroup:
       content:
@@ -13369,3 +13353,14 @@ components:
       title: |-
         UserAttributeTuple descript the auth:key:value tuple that decides group membership.
         Next Tag: 4
+  ##########################
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+    bearerAuth:
+      type: http
+      scheme: bearer
+security:
+  - basicAuth: [ ]
+  - bearerAuth: [ ]
