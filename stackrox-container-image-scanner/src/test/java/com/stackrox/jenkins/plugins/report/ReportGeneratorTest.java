@@ -37,6 +37,7 @@ class ReportGeneratorTest {
     @Test
     void testGenerateReportFroEmptyResultGeneratesNothing() throws IOException, InterruptedException {
         FilePath reportsDir = new FilePath(folder.toFile());
+
         ReportGenerator.generateBuildReport(Collections.emptyList(), reportsDir);
 
         assertTrue(reportsDir.list().isEmpty());
@@ -45,6 +46,7 @@ class ReportGeneratorTest {
     @Test
     void testGenerateReportFroEmptyCVSAndViolationsGeneratesEmptyDir() throws IOException, InterruptedException {
         FilePath reportsDir = new FilePath(folder.toFile());
+
         ImmutableList<ImageCheckResults> results = ImmutableList.of(
                 new ImageCheckResults("mis-spelled:lts", Collections.emptyList(), Collections.emptyList()));
         ReportGenerator.generateBuildReport(results, reportsDir);
@@ -60,14 +62,15 @@ class ReportGeneratorTest {
         FilePath reportsDir = new FilePath(tempFile.toFile());
         List<ImageCheckResults> results = ImmutableList.of(
                 new ImageCheckResults("jenkins:lts", Collections.emptyList(), Collections.emptyList()));
+
         Exception exception = assertThrows(AbortException.class, () -> ReportGenerator.generateBuildReport(results, reportsDir));
+
         String expected = String.format("Failed to write image scan results. Error: %s/jenkins.lts: Not a directory", reportsDir.getRemote());
         assertEquals(expected, exception.getMessage());
     }
 
     @Test
     void testGenerateReportForResultsWritesReportsForEveryImageInSeparatedDirectory() throws IOException {
-
         FilePath reportsDir = new FilePath(folder.toFile());
         List<ImageCheckResults> results = ImmutableList.of(new ImageCheckResults("jenkins:lts", ImmutableList.of(
                 CVE.Builder.newInstance()
