@@ -6,6 +6,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
+import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -17,7 +18,6 @@ import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.MappingBuilder;
 import com.google.common.collect.ImmutableList;
 import hudson.util.Secret;
-import org.apache.http.HttpStatus;
 
 import com.stackrox.jenkins.plugins.data.CVE;
 
@@ -28,31 +28,31 @@ import org.junit.jupiter.api.Test;
 
 class ImageServiceTest {
 
-    final static Secret apiToken = Secret.fromString("{some token}");
-    final static WireMockServer wireMockServer = new WireMockServer(wireMockConfig().httpDisabled(true).dynamicHttpsPort());
+    private static final Secret API_TOKEN = Secret.fromString("{some token}");
+    private static final WireMockServer WIRE_MOCK_SERVER = new WireMockServer(wireMockConfig().httpDisabled(true).dynamicHttpsPort());
 
-    ImageService imageService;
+    private ImageService imageService;
 
     @BeforeAll
     static void setup() {
-        wireMockServer.start();
+        WIRE_MOCK_SERVER.start();
     }
 
     @BeforeEach
     void beforeEach() throws IOException {
-        wireMockServer.resetAll();
-        imageService = new ImageService(wireMockServer.baseUrl(), apiToken, HttpClientUtils.get(false, null));
+        WIRE_MOCK_SERVER.resetAll();
+        imageService = new ImageService(WIRE_MOCK_SERVER.baseUrl(), API_TOKEN, HttpClientUtils.get(false, null));
     }
 
     @AfterAll
     static void teardown() {
-        wireMockServer.stop();
+        WIRE_MOCK_SERVER.stop();
     }
 
     @Test
     public void shouldThrowOn500() {
-        wireMockServer.stubFor(postImagesScan().willReturn(aResponse()
-                .withStatus(HttpStatus.SC_INTERNAL_SERVER_ERROR)
+        WIRE_MOCK_SERVER.stubFor(postImagesScan().willReturn(aResponse()
+                .withStatus(SC_INTERNAL_SERVER_ERROR)
                 .withBodyFile("v1/images/scan/error.json")));
 
         Exception exception = assertThrows(IOException.class, () -> imageService.getImageScanResults("nginx:latest"));
@@ -62,14 +62,14 @@ class ImageServiceTest {
 
     @Test
     public void shouldThrowWhenNoDataFor200() {
-        wireMockServer.stubFor(postImagesScan().willReturn(
+        WIRE_MOCK_SERVER.stubFor(postImagesScan().willReturn(
                 aResponse().withStatus(SC_OK).withBody("{}")));
         assertThrows(NullPointerException.class, () -> imageService.getImageScanResults("nginx:latest"));
     }
 
     @Test
     public void shouldParseDataFromServer() throws IOException {
-        wireMockServer.stubFor(postImagesScan().willReturn(
+        WIRE_MOCK_SERVER.stubFor(postImagesScan().willReturn(
                 aResponse().withStatus(SC_OK).withBodyFile("v1/images/scan/nginx.latest.json")));
         List<CVE> actual = imageService.getImageScanResults("nginx:latest");
         ImmutableList<CVE> expected = ImmutableList.of(
@@ -105,7 +105,7 @@ class ImageServiceTest {
 
     @Test
     public void shouldNotFailOnMissingData() throws IOException {
-        wireMockServer.stubFor(postImagesScan().willReturn(
+        WIRE_MOCK_SERVER.stubFor(postImagesScan().willReturn(
                 aResponse().withStatus(SC_OK).withBodyFile("v1/images/scan/minimal.json")));
         List<CVE> actual = imageService.getImageScanResults("nginx:latest");
         ImmutableList<CVE> expected = ImmutableList.of(
