@@ -34,56 +34,63 @@ public class HttpClientUtils {
     public static final int maxRetries = 3;
 
     public static CloseableHttpClient get(final boolean tlsVerify, final String caCertPEM) throws IOException {
+
+        SSLConnectionSocketFactory connectionFactory = null;
         try {
             // use the TrustSelfSignedStrategy to allow Self Signed Certificates
-            SSLContext sslContext;
+            SSLContext sslContext = getSslContext(tlsVerify, caCertPEM);
 
-            if (tlsVerify && !Strings.isNullOrEmpty(caCertPEM)) {
-
-                KeyStore keyStore = KeyStore.getInstance("pkcs12");
-                keyStore.load(null, "".toCharArray());
-
-                CertificateFactory cf = CertificateFactory.getInstance("X.509");
-                X509Certificate cert = (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(caCertPEM.getBytes(StandardCharsets.UTF_8)));
-                keyStore.setCertificateEntry("ca.crt", cert);
-
-                sslContext = SSLContextBuilder
-                        .create()
-                        .loadTrustMaterial(keyStore, null)
-                        .build();
-
-            } else if (tlsVerify) {
-                // Use default trust store to trust system root, caCertPEM is empty
-                sslContext = SSLContextBuilder
-                        .create()
-                        .build();
-            } else {
-                sslContext = SSLContextBuilder
-                        .create()
-                        .loadTrustMaterial(new TrustSelfSignedStrategy())
-                        .build();
-            }
-
-            SSLConnectionSocketFactory connectionFactory = new SSLConnectionSocketFactory(sslContext, SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
-
-            RequestConfig requestConfig = RequestConfig.custom()
-                    .setConnectTimeout(60 * 1000) // 1 minute
-                    .setConnectionRequestTimeout(60 * 1000) // 1 minute
-                    .setSocketTimeout(10 * 60 * 1000) // 10 minutes
-                    .build();
-
-            return HttpClients
-                    .custom()
-                    .setSSLSocketFactory(connectionFactory)
-                    .setDefaultRequestConfig(requestConfig)
-                    .setRetryHandler((IOException exception, int executionCount, HttpContext context) ->
-                            executionCount <= maxRetries &&
-                                    exception instanceof SocketException
-                    )
-                    .build();
-        } catch (KeyStoreException | CertificateException | IOException | NoSuchAlgorithmException | KeyManagementException e) {
+            connectionFactory = new SSLConnectionSocketFactory(sslContext, SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+        } catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | KeyManagementException e) {
             throw new IOException(e);
         }
+
+        RequestConfig requestConfig = RequestConfig.custom()
+                .setConnectTimeout(60 * 1000) // 1 minute
+                .setConnectionRequestTimeout(60 * 1000) // 1 minute
+                .setSocketTimeout(10 * 60 * 1000) // 10 minutes
+                .build();
+
+        return HttpClients
+                .custom()
+                .setSSLSocketFactory(connectionFactory)
+                .setDefaultRequestConfig(requestConfig)
+                .setRetryHandler((IOException exception, int executionCount, HttpContext context) ->
+                        executionCount <= maxRetries &&
+                                exception instanceof SocketException
+                )
+                .build();
+    }
+
+    public static SSLContext getSslContext(boolean tlsVerify, String caCertPEM) throws KeyStoreException, IOException, NoSuchAlgorithmException, CertificateException, KeyManagementException {
+        SSLContext sslContext;
+
+        if (tlsVerify && !Strings.isNullOrEmpty(caCertPEM)) {
+
+            KeyStore keyStore = KeyStore.getInstance("pkcs12");
+            keyStore.load(null, "".toCharArray());
+
+            CertificateFactory cf = CertificateFactory.getInstance("X.509");
+            X509Certificate cert = (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(caCertPEM.getBytes(StandardCharsets.UTF_8)));
+            keyStore.setCertificateEntry("ca.crt", cert);
+
+            sslContext = SSLContextBuilder
+                    .create()
+                    .loadTrustMaterial(keyStore, null)
+                    .build();
+
+        } else if (tlsVerify) {
+            // Use default trust store to trust system root, caCertPEM is empty
+            sslContext = SSLContextBuilder
+                    .create()
+                    .build();
+        } else {
+            sslContext = SSLContextBuilder
+                    .create()
+                    .loadTrustMaterial(new TrustSelfSignedStrategy())
+                    .build();
+        }
+        return sslContext;
     }
 
     public static JsonObject getJsonObject(HttpEntity entity) throws IOException {
