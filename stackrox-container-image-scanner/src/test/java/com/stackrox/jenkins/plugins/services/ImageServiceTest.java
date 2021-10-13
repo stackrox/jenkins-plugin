@@ -5,7 +5,6 @@ import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
-import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -14,39 +13,22 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.io.IOException;
 import java.util.List;
 
-import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.MappingBuilder;
 import com.google.common.collect.ImmutableList;
-import hudson.util.Secret;
 
 import com.stackrox.jenkins.plugins.data.CVE;
 
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class ImageServiceTest {
-
-    private static final Secret TOKEN = Secret.fromString("{some token}");
-    private static final WireMockServer SERVER = new WireMockServer(wireMockConfig().httpDisabled(true).dynamicHttpsPort());
+class ImageServiceTest extends AbstractServiceTest {
 
     private ImageService imageService;
-
-    @BeforeAll
-    static void setup() {
-        SERVER.start();
-    }
 
     @BeforeEach
     void beforeEach() throws IOException {
         SERVER.resetAll();
         imageService = new ImageService(SERVER.baseUrl(), TOKEN, HttpClientUtils.get(false, null));
-    }
-
-    @AfterAll
-    static void teardown() {
-        SERVER.stop();
     }
 
     @Test

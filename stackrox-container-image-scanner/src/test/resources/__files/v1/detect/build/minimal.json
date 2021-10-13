@@ -1,0 +1,10 @@
+{
+  "alerts": [
+    {
+      "policy": {
+        "enforcementActions": ["FAIL_BUILD_ENFORCEMENT"],
+        "severity": "LOW"
+      }
+    }
+  ]
+}

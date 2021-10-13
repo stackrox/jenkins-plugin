@@ -56,10 +56,10 @@ public class DetectionService {
 
             if (isEnforced) {
                 violatedPolicies.add(new ViolatedPolicy(
-                        policy.getString("name"),
-                        policy.getString("description"),
-                        policy.getString("severity"),
-                        policy.getString("remediation")));
+                        policy.getString("name", null),
+                        policy.getString("description", null),
+                        policy.getString("severity", null),
+                        policy.getString("remediation", null)));
             }
         }
         return violatedPolicies;
@@ -69,7 +69,7 @@ public class DetectionService {
         HttpPost detectionRequest = new HttpPost(Joiner.on("/").join(portalAddress, "v1/detect/build"));
         detectionRequest.setHeader(HttpHeaders.ACCEPT, ContentType.APPLICATION_JSON.toString());
         detectionRequest.setHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.toString());
-        detectionRequest.addHeader(HttpHeaders.AUTHORIZATION, Joiner.on(" ").join("Bearer", apiToken));
+        detectionRequest.addHeader(HttpHeaders.AUTHORIZATION, Joiner.on(" ").join("Bearer", apiToken.getPlainText()));
         detectionRequest.setEntity(new StringEntity(
                 Json.createObjectBuilder().add("imageName", imageName).build().toString(),
                 StandardCharsets.UTF_8));
