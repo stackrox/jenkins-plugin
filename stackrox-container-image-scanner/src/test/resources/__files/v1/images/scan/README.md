@@ -1,4 +1,4 @@
-This directory contains mocked resposnses for image scan request.
+This directory contains mocked responses for image scan request.
 This data were obtained with following commands and edited to fit in a unit test.
 
 ```
