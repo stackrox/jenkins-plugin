@@ -28,30 +28,30 @@ import org.junit.jupiter.api.Test;
 
 class ImageServiceTest {
 
-    private static final Secret API_TOKEN = Secret.fromString("{some token}");
-    private static final WireMockServer WIRE_MOCK_SERVER = new WireMockServer(wireMockConfig().httpDisabled(true).dynamicHttpsPort());
+    private static final Secret TOKEN = Secret.fromString("{some token}");
+    private static final WireMockServer SERVER = new WireMockServer(wireMockConfig().httpDisabled(true).dynamicHttpsPort());
 
     private ImageService imageService;
 
     @BeforeAll
     static void setup() {
-        WIRE_MOCK_SERVER.start();
+        SERVER.start();
     }
 
     @BeforeEach
     void beforeEach() throws IOException {
-        WIRE_MOCK_SERVER.resetAll();
-        imageService = new ImageService(WIRE_MOCK_SERVER.baseUrl(), API_TOKEN, HttpClientUtils.get(false, null));
+        SERVER.resetAll();
+        imageService = new ImageService(SERVER.baseUrl(), TOKEN, HttpClientUtils.get(false, null));
     }
 
     @AfterAll
     static void teardown() {
-        WIRE_MOCK_SERVER.stop();
+        SERVER.stop();
     }
 
     @Test
     public void shouldThrowOn500() {
-        WIRE_MOCK_SERVER.stubFor(postImagesScan().willReturn(aResponse()
+        SERVER.stubFor(postImagesScan().willReturn(aResponse()
                 .withStatus(SC_INTERNAL_SERVER_ERROR)
                 .withBodyFile("v1/images/scan/error.json")));
 
@@ -62,14 +62,14 @@ class ImageServiceTest {
 
     @Test
     public void shouldThrowWhenNoDataFor200() {
-        WIRE_MOCK_SERVER.stubFor(postImagesScan().willReturn(
+        SERVER.stubFor(postImagesScan().willReturn(
                 aResponse().withStatus(SC_OK).withBody("{}")));
         assertThrows(NullPointerException.class, () -> imageService.getImageScanResults("nginx:latest"));
     }
 
     @Test
     public void shouldParseDataFromServer() throws IOException {
-        WIRE_MOCK_SERVER.stubFor(postImagesScan().willReturn(
+        SERVER.stubFor(postImagesScan().willReturn(
                 aResponse().withStatus(SC_OK).withBodyFile("v1/images/scan/nginx.latest.json")));
         List<CVE> actual = imageService.getImageScanResults("nginx:latest");
         ImmutableList<CVE> expected = ImmutableList.of(
@@ -105,7 +105,7 @@ class ImageServiceTest {
 
     @Test
     public void shouldNotFailOnMissingData() throws IOException {
-        WIRE_MOCK_SERVER.stubFor(postImagesScan().willReturn(
+        SERVER.stubFor(postImagesScan().willReturn(
                 aResponse().withStatus(SC_OK).withBodyFile("v1/images/scan/minimal.json")));
         List<CVE> actual = imageService.getImageScanResults("nginx:latest");
         ImmutableList<CVE> expected = ImmutableList.of(
