@@ -1,5 +1,7 @@
 package com.stackrox.jenkins.plugins.data;
 
+import java.util.Objects;
+
 public class CVE {
     private final String id;
     private final float cvssScore;
@@ -51,6 +53,33 @@ public class CVE {
 
     public String getLink() {
         return link;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        CVE cve = (CVE) o;
+        return Float.compare(cve.cvssScore, cvssScore) == 0 && fixable == cve.fixable && Objects.equals(id, cve.id) && Objects.equals(scoreType, cve.scoreType) && Objects.equals(publishDate, cve.publishDate) && Objects.equals(packageName, cve.packageName) && Objects.equals(packageVersion, cve.packageVersion) && Objects.equals(link, cve.link);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, cvssScore, scoreType, publishDate, packageName, packageVersion, fixable, link);
+    }
+
+    @Override
+    public String toString() {
+        return "CVE{" +
+                "id='" + id + '\'' +
+                ", cvssScore=" + cvssScore +
+                ", scoreType='" + scoreType + '\'' +
+                ", publishDate='" + publishDate + '\'' +
+                ", packageName='" + packageName + '\'' +
+                ", packageVersion='" + packageVersion + '\'' +
+                ", fixable=" + fixable +
+                ", link='" + link + '\'' +
+                '}';
     }
 
     public static class Builder {

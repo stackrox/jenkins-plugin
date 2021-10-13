@@ -1,0 +1,13 @@
+{
+  "scan": {
+    "components": [
+      {
+        "vulns": [
+          {
+            "cve": "CVE-MISSING-DATA"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -24,7 +24,6 @@ import com.stackrox.jenkins.plugins.data.CVE;
 
 public class ImageService {
 
-    private static final String NOT_AVAILABLE = "-";
     private final String portalAddress;
     private final Secret apiToken;
     private final CloseableHttpClient httpClient;
@@ -45,16 +44,16 @@ public class ImageService {
         for (JsonObject component : components.getValuesAs(JsonObject.class)) {
             JsonArray componentCves = component.getJsonArray("vulns");
             for (JsonObject cve : componentCves.getValuesAs(JsonObject.class)) {
-                String publishDate = cve.getString("publishedOn", NOT_AVAILABLE);
+                String publishDate = cve.getString("publishedOn", null);
                 CVE cveToAdd = CVE.Builder.newInstance()
                         .withId(cve.getString("cve"))
-                        .withCvssScore(cve.isNull("cvss") ? (float) 0 : (float) cve.getJsonNumber("cvss").doubleValue())
-                        .withScoreType(cve.getString("scoreVersion", NOT_AVAILABLE))
-                        .withPublishDate(Strings.isNullOrEmpty(publishDate) ? NOT_AVAILABLE : publishDate)
-                        .withLink(cve.getString("link", NOT_AVAILABLE))
-                        .inPackage(component.getString("name", NOT_AVAILABLE))
-                        .inVersion(component.getString("version", NOT_AVAILABLE))
-                        .isFixable(!Strings.isNullOrEmpty(cve.getString("fixedBy")))
+                        .withCvssScore(!cve.containsKey("cvss") || cve.isNull("cvss") ? 0F : ((float) cve.getJsonNumber("cvss").doubleValue()))
+                        .withScoreType(cve.getString("scoreVersion", null))
+                        .withPublishDate(Strings.isNullOrEmpty(publishDate) ? null : publishDate)
+                        .withLink(cve.getString("link", null))
+                        .inPackage(component.getString("name", null))
+                        .inVersion(component.getString("version", null))
+                        .isFixable(!Strings.isNullOrEmpty(cve.getString("fixedBy", null)))
                         .build();
                 cves.add(cveToAdd);
             }

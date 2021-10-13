@@ -23,6 +23,7 @@ public class ReportGenerator {
     private static final String[] VIOLATED_POLICIES_HEADER = {"Policy Name", "Policy Description", "Severity", "Remediation"};
     private static final String CVES_FILENAME = "cves.csv";
     private static final String POLICY_VIOLATIONS_FILENAME = "policyViolations.csv";
+    private static final String NOT_AVAILABLE = "\"-\"";
 
     public static void generateBuildReport(List<ImageCheckResults> results, FilePath reportsDir) throws AbortException {
         try {
@@ -75,6 +76,7 @@ public class ReportGenerator {
         return new CSVPrinter(new BufferedWriter(new OutputStreamWriter(outputStream, StandardCharsets.UTF_8)),
                 CSVFormat.EXCEL
                         .withQuoteMode(QuoteMode.NON_NUMERIC)
+                        .withNullString(NOT_AVAILABLE)
                         .withHeader(header));
     }
 }

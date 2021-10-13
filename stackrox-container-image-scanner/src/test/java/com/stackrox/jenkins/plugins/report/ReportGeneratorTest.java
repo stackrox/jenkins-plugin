@@ -1,18 +1,9 @@
 package com.stackrox.jenkins.plugins.report;
 
-import com.google.common.collect.ImmutableList;
-import com.stackrox.jenkins.plugins.data.CVE;
-import com.stackrox.jenkins.plugins.data.ImageCheckResults;
-import com.stackrox.jenkins.plugins.data.ViolatedPolicy;
-import hudson.AbortException;
-import hudson.FilePath;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import org.apache.commons.io.FileUtils;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
 
 import java.io.File;
 import java.io.IOException;
@@ -28,6 +19,18 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import com.google.common.collect.ImmutableList;
+import hudson.AbortException;
+import hudson.FilePath;
+import org.apache.commons.io.FileUtils;
+
+import com.stackrox.jenkins.plugins.data.CVE;
+import com.stackrox.jenkins.plugins.data.ImageCheckResults;
+import com.stackrox.jenkins.plugins.data.ViolatedPolicy;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 class ReportGeneratorTest {
 
@@ -118,6 +121,11 @@ class ReportGeneratorTest {
                                 .withLink("https://security-tracker.debian.org/tracker/CVE-2007-6755")
                                 .inPackage("openssl")
                                 .inVersion("1.1.1d-0+deb10u7")
+                                .isFixable(false)
+                                .build(),
+                        CVE.Builder.newInstance()
+                                .withId("CVE-MISSING-DATA")
+                                .withCvssScore(0F)
                                 .isFixable(false)
                                 .build()),
                 ImmutableList.of(
