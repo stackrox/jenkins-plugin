@@ -22,7 +22,6 @@ import org.apache.http.HttpStatus;
 import com.stackrox.jenkins.plugins.data.CVE;
 
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -41,12 +40,8 @@ class ImageServiceTest {
 
     @BeforeEach
     void beforeEach() throws IOException {
-        imageService = new ImageService(wireMockServer.baseUrl(), apiToken, HttpClientUtils.get(false, null));
-    }
-
-    @AfterEach
-    void afterEach() {
         wireMockServer.resetAll();
+        imageService = new ImageService(wireMockServer.baseUrl(), apiToken, HttpClientUtils.get(false, null));
     }
 
     @AfterAll
