@@ -23,18 +23,24 @@ import com.stackrox.jenkins.plugins.data.CVE;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class ImageServiceTest {
 
-    static WireMockServer wireMockServer;
-    final Secret apiToken = Secret.fromString("{some token}");
+    final static Secret apiToken = Secret.fromString("{some token}");
+    final static WireMockServer wireMockServer = new WireMockServer(wireMockConfig().httpDisabled(true).dynamicHttpsPort());
+
     ImageService imageService;
 
     @BeforeAll
     static void setup() {
-        wireMockServer = new WireMockServer(wireMockConfig().httpDisabled(true).dynamicHttpsPort());
         wireMockServer.start();
+    }
+
+    @BeforeEach
+    void beforeEach() throws IOException {
+        imageService = new ImageService(wireMockServer.baseUrl(), apiToken, HttpClientUtils.get(false, null));
     }
 
     @AfterEach
@@ -43,22 +49,20 @@ class ImageServiceTest {
     }
 
     @Test
-    public void shouldThrowOn500() throws IOException {
+    public void shouldThrowOn500() {
         wireMockServer.stubFor(postImagesScan().willReturn(aResponse()
                 .withStatus(HttpStatus.SC_INTERNAL_SERVER_ERROR)
                 .withBodyFile("v1/images/scan/error.json")));
 
-        imageService = new ImageService(wireMockServer.baseUrl(), apiToken, HttpClientUtils.get(false, null));
         Exception exception = assertThrows(IOException.class, () -> imageService.getImageScanResults("nginx:latest"));
         String expected = "Failed image scan request. Status code: 500. Error: ResponseEntityProxy{[Chunked: true]}";
         assertEquals(expected, exception.getMessage());
     }
 
     @Test
-    public void shouldThrowWhenNoDataFor200() throws IOException {
+    public void shouldThrowWhenNoDataFor200() {
         wireMockServer.stubFor(postImagesScan().willReturn(
                 aResponse().withStatus(SC_OK).withBody("{}")));
-        imageService = new ImageService(wireMockServer.baseUrl(), apiToken, HttpClientUtils.get(false, null));
         assertThrows(NullPointerException.class, () -> imageService.getImageScanResults("nginx:latest"));
     }
 
@@ -66,7 +70,6 @@ class ImageServiceTest {
     public void shouldParseDataFromServer() throws IOException {
         wireMockServer.stubFor(postImagesScan().willReturn(
                 aResponse().withStatus(SC_OK).withBodyFile("v1/images/scan/nginx.latest.json")));
-        imageService = new ImageService(wireMockServer.baseUrl(), apiToken, HttpClientUtils.get(false, null));
         List<CVE> actual = imageService.getImageScanResults("nginx:latest");
         ImmutableList<CVE> expected = ImmutableList.of(
                 CVE.Builder.newInstance().withId("CVE-2007-6755")
@@ -103,7 +106,6 @@ class ImageServiceTest {
     public void shouldNotFailOnMissingData() throws IOException {
         wireMockServer.stubFor(postImagesScan().willReturn(
                 aResponse().withStatus(SC_OK).withBodyFile("v1/images/scan/minimal.json")));
-        imageService = new ImageService(wireMockServer.baseUrl(), apiToken, HttpClientUtils.get(false, null));
         List<CVE> actual = imageService.getImageScanResults("nginx:latest");
         ImmutableList<CVE> expected = ImmutableList.of(
                 CVE.Builder.newInstance().withId("CVE-MISSING-DATA")
