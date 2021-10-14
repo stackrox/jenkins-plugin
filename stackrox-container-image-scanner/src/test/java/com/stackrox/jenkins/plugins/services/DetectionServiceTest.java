@@ -1,28 +1,26 @@
 package com.stackrox.jenkins.plugins.services;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
+import static com.github.tomakehurst.wiremock.client.WireMock.ok;
+import static com.github.tomakehurst.wiremock.client.WireMock.post;
+import static com.github.tomakehurst.wiremock.client.WireMock.serverError;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import java.io.IOException;
+import java.util.List;
+
 import com.github.tomakehurst.wiremock.client.MappingBuilder;
 import com.google.common.collect.ImmutableList;
 
 import com.stackrox.jenkins.plugins.data.ViolatedPolicy;
 
-import org.apache.http.HttpStatus;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
-import java.util.List;
-
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
-import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
-import static com.github.tomakehurst.wiremock.client.WireMock.post;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
-import static javax.servlet.http.HttpServletResponse.SC_OK;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-
-class DetectionServiceTest extends  AbstractServiceTest {
+class DetectionServiceTest extends AbstractServiceTest {
 
     DetectionService detectionService;
 
@@ -33,8 +31,7 @@ class DetectionServiceTest extends  AbstractServiceTest {
 
     @Test
     public void shouldThrowOn500() throws IOException {
-        SERVER.stubFor(postDetectBuild().willReturn(aResponse()
-                .withStatus(HttpStatus.SC_INTERNAL_SERVER_ERROR)
+        SERVER.stubFor(postDetectBuild().willReturn(serverError()
                 .withBodyFile("v1/detect/build/error.json")));
 
         detectionService = new DetectionService(SERVER.baseUrl(), TOKEN, HttpClientUtils.get(false, null));
@@ -46,14 +43,14 @@ class DetectionServiceTest extends  AbstractServiceTest {
     @Test
     public void shouldThrowWhenNoDataFor200() {
         SERVER.stubFor(postDetectBuild().willReturn(
-                aResponse().withStatus(SC_OK).withBody("{}")));
+                ok().withBody("{}")));
         assertThrows(NullPointerException.class, () -> detectionService.getPolicyViolations("nginx:latest"));
     }
 
     @Test
     public void shouldParseDataFromServer() throws IOException {
         SERVER.stubFor(postDetectBuild().willReturn(
-                aResponse().withStatus(SC_OK).withBodyFile("v1/detect/build/nginx.latest.json")));
+                ok().withBodyFile("v1/detect/build/nginx.latest.json")));
         List<ViolatedPolicy> actual = detectionService.getPolicyViolations("nginx:latest");
 
         List<ViolatedPolicy> expected = ImmutableList.of(new ViolatedPolicy("Docker CIS 4.4: Ensure images are scanned and rebuilt to include security patches",
@@ -68,7 +65,7 @@ class DetectionServiceTest extends  AbstractServiceTest {
     @Test
     public void shouldNotFailOnMissingData() throws IOException {
         SERVER.stubFor(postDetectBuild().willReturn(
-                aResponse().withStatus(SC_OK).withBodyFile("v1/detect/build/minimal.json")));
+                ok().withBodyFile("v1/detect/build/minimal.json")));
         List<ViolatedPolicy> actual = detectionService.getPolicyViolations("nginx:latest");
 
         List<ViolatedPolicy> expected = ImmutableList.of(new ViolatedPolicy(null, null, "LOW", null));

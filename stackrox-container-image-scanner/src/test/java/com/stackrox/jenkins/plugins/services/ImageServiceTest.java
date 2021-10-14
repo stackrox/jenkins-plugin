@@ -1,12 +1,11 @@
 package com.stackrox.jenkins.plugins.services;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
+import static com.github.tomakehurst.wiremock.client.WireMock.ok;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
+import static com.github.tomakehurst.wiremock.client.WireMock.serverError;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
-import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
-import static org.apache.http.HttpStatus.SC_OK;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -27,14 +26,12 @@ class ImageServiceTest extends AbstractServiceTest {
 
     @BeforeEach
     void beforeEach() throws IOException {
-        SERVER.resetAll();
         imageService = new ImageService(SERVER.baseUrl(), TOKEN, HttpClientUtils.get(false, null));
     }
 
     @Test
     public void shouldThrowOn500() {
-        SERVER.stubFor(postImagesScan().willReturn(aResponse()
-                .withStatus(SC_INTERNAL_SERVER_ERROR)
+        SERVER.stubFor(postImagesScan().willReturn(serverError()
                 .withBodyFile("v1/images/scan/error.json")));
 
         Exception exception = assertThrows(IOException.class, () -> imageService.getImageScanResults("nginx:latest"));
@@ -45,14 +42,14 @@ class ImageServiceTest extends AbstractServiceTest {
     @Test
     public void shouldThrowWhenNoDataFor200() {
         SERVER.stubFor(postImagesScan().willReturn(
-                aResponse().withStatus(SC_OK).withBody("{}")));
+                ok().withBody("{}")));
         assertThrows(NullPointerException.class, () -> imageService.getImageScanResults("nginx:latest"));
     }
 
     @Test
     public void shouldParseDataFromServer() throws IOException {
         SERVER.stubFor(postImagesScan().willReturn(
-                aResponse().withStatus(SC_OK).withBodyFile("v1/images/scan/nginx.latest.json")));
+                ok().withBodyFile("v1/images/scan/nginx.latest.json")));
         List<CVE> actual = imageService.getImageScanResults("nginx:latest");
         ImmutableList<CVE> expected = ImmutableList.of(
                 CVE.Builder.newInstance().withId("CVE-2007-6755")
@@ -88,7 +85,7 @@ class ImageServiceTest extends AbstractServiceTest {
     @Test
     public void shouldNotFailOnMissingData() throws IOException {
         SERVER.stubFor(postImagesScan().willReturn(
-                aResponse().withStatus(SC_OK).withBodyFile("v1/images/scan/minimal.json")));
+                ok().withBodyFile("v1/images/scan/minimal.json")));
         List<CVE> actual = imageService.getImageScanResults("nginx:latest");
         ImmutableList<CVE> expected = ImmutableList.of(
                 CVE.Builder.newInstance().withId("CVE-MISSING-DATA")
