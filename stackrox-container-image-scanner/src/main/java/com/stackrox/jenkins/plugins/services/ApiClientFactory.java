@@ -10,6 +10,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.time.Duration;
 import javax.annotation.Nonnull;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
@@ -23,6 +24,8 @@ import okhttp3.OkHttpClient;
 import com.stackrox.invoker.ApiClient;
 
 public class ApiClientFactory {
+
+    private static final Duration TIMEOUT = Duration.ofSeconds(30);
 
     public static ApiClient newApiClient(String basePath, String apiKey, String caCert, boolean insecure) throws IOException {
         OkHttpClient client = newHttpClient(insecure, caCert);
@@ -38,23 +41,27 @@ public class ApiClientFactory {
 
     @Nonnull
     public static OkHttpClient newHttpClient(boolean insecure, String caCert) throws IOException {
-        OkHttpClient client;
+        OkHttpClient.Builder builder;
         try {
             if (insecure) {
-                client = getUnsafeOkHttpClient();
+                builder = getUnsafeBuilder();
             } else {
-                client = getSecureClient(caCert);
+                builder = getSecureBuilder(caCert);
             }
         } catch (KeyManagementException | NoSuchAlgorithmException | CertificateException | KeyStoreException | IOException e) {
             throw new IOException(e);
         }
-        return client;
+        builder.retryOnConnectionFailure(true);
+        builder.connectTimeout(TIMEOUT);
+        builder.readTimeout(TIMEOUT);
+        builder.writeTimeout(TIMEOUT);
+        return builder.build();
     }
 
     /*
      * @link https://stackoverflow.com/a/25992879
      */
-    private static OkHttpClient getUnsafeOkHttpClient() throws KeyManagementException, NoSuchAlgorithmException {
+    private static OkHttpClient.Builder getUnsafeBuilder() throws KeyManagementException, NoSuchAlgorithmException {
         // Create a trust manager that does not validate certificate chains
         final TrustManager[] trustAllCerts = new TrustManager[]{
                 new X509TrustManager() {
@@ -83,12 +90,12 @@ public class ApiClientFactory {
         builder.sslSocketFactory(sslSocketFactory, (X509TrustManager) trustAllCerts[0]);
         builder.hostnameVerifier((hostname, session) -> true);
 
-        return builder.build();
+        return builder;
     }
 
-    private static OkHttpClient getSecureClient(String caCertPEM) throws CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException, KeyManagementException {
+    private static OkHttpClient.Builder getSecureBuilder(String caCertPEM) throws CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException, KeyManagementException {
         if (Strings.isNullOrEmpty(caCertPEM)) {
-            return new OkHttpClient();
+            return new OkHttpClient().newBuilder();
         }
 
         SSLContext sslContext;
@@ -111,7 +118,6 @@ public class ApiClientFactory {
         }
 
         return new OkHttpClient.Builder()
-                .sslSocketFactory(sslContext.getSocketFactory(), (X509TrustManager) trustManagers[0])
-                .build();
+                .sslSocketFactory(sslContext.getSocketFactory(), (X509TrustManager) trustManagers[0]);
     }
 }
