@@ -27,12 +27,12 @@ class DetectionServiceTest extends AbstractServiceTest {
 
     @BeforeEach
     void beforeEach() throws IOException {
-        detectionService = new DetectionService(SERVER.baseUrl(), TOKEN, HttpClientUtils.get(false, null));
+        detectionService = new DetectionService(MOCK_SERVER.baseUrl(), MOCK_TOKEN, HttpClientUtils.get(false, null));
     }
 
     @Test
     public void shouldThrowOn500() throws IOException {
-        SERVER.stubFor(post(anyUrl()).willReturn(serverError()
+        MOCK_SERVER.stubFor(post(anyUrl()).willReturn(serverError()
                 .withBodyFile("v1/detect/build/error.json")));
 
         Exception exception = assertThrows(IOException.class, () -> detectionService.getPolicyViolations("jenkins:lts"));
@@ -42,14 +42,14 @@ class DetectionServiceTest extends AbstractServiceTest {
 
     @Test
     public void shouldThrowWhenNoDataFor200() {
-        SERVER.stubFor(postDetectBuild().willReturn(
+        MOCK_SERVER.stubFor(postDetectBuild().willReturn(
                 ok().withBody("{}")));
         assertThrows(NullPointerException.class, () -> detectionService.getPolicyViolations("nginx:latest"));
     }
 
     @Test
     public void shouldParseDataFromServer() throws IOException {
-        SERVER.stubFor(postDetectBuild().willReturn(
+        MOCK_SERVER.stubFor(postDetectBuild().willReturn(
                 ok().withBodyFile("v1/detect/build/nginx.latest.json")));
         List<ViolatedPolicy> actual = detectionService.getPolicyViolations("nginx:latest");
 
@@ -64,7 +64,7 @@ class DetectionServiceTest extends AbstractServiceTest {
 
     @Test
     public void shouldNotFailOnMissingData() throws IOException {
-        SERVER.stubFor(postDetectBuild().willReturn(
+        MOCK_SERVER.stubFor(postDetectBuild().willReturn(
                 ok().withBodyFile("v1/detect/build/minimal.json")));
         List<ViolatedPolicy> actual = detectionService.getPolicyViolations("nginx:latest");
 

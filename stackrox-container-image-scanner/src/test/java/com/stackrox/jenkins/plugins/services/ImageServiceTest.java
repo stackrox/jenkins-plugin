@@ -27,12 +27,12 @@ class ImageServiceTest extends AbstractServiceTest {
 
     @BeforeEach
     void beforeEach() throws IOException {
-        imageService = new ImageService(SERVER.baseUrl(), TOKEN, HttpClientUtils.get(false, null));
+        imageService = new ImageService(MOCK_SERVER.baseUrl(), MOCK_TOKEN, HttpClientUtils.get(false, null));
     }
 
     @Test
     public void shouldThrowOn500() {
-        SERVER.stubFor(post(anyUrl()).willReturn(serverError()
+        MOCK_SERVER.stubFor(post(anyUrl()).willReturn(serverError()
                 .withBodyFile("v1/images/scan/error.json")));
 
         Exception exception = assertThrows(IOException.class, () -> imageService.getImageScanResults("jenkins:lts"));
@@ -42,14 +42,14 @@ class ImageServiceTest extends AbstractServiceTest {
 
     @Test
     public void shouldThrowWhenNoDataFor200() {
-        SERVER.stubFor(postImagesScan().willReturn(
+        MOCK_SERVER.stubFor(postImagesScan().willReturn(
                 ok().withBody("{}")));
         assertThrows(NullPointerException.class, () -> imageService.getImageScanResults("nginx:latest"));
     }
 
     @Test
     public void shouldParseDataFromServer() throws IOException {
-        SERVER.stubFor(postImagesScan().willReturn(
+        MOCK_SERVER.stubFor(postImagesScan().willReturn(
                 ok().withBodyFile("v1/images/scan/nginx.latest.json")));
         List<CVE> actual = imageService.getImageScanResults("nginx:latest");
         ImmutableList<CVE> expected = ImmutableList.of(
@@ -85,7 +85,7 @@ class ImageServiceTest extends AbstractServiceTest {
 
     @Test
     public void shouldNotFailOnMissingData() throws IOException {
-        SERVER.stubFor(postImagesScan().willReturn(
+        MOCK_SERVER.stubFor(postImagesScan().willReturn(
                 ok().withBodyFile("v1/images/scan/minimal.json")));
         List<CVE> actual = imageService.getImageScanResults("nginx:latest");
         ImmutableList<CVE> expected = ImmutableList.of(
