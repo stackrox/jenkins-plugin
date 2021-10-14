@@ -40,7 +40,7 @@ public class ImageService {
         try {
             scan = api.imageServiceScanImage(request).getScan();
         } catch (ApiException e) {
-            throw handle(e);
+            throw new ServiceException("Failed image scan request", e);
         }
 
         List<CVE> cves = Lists.newArrayList();
@@ -61,21 +61,5 @@ public class ImageService {
             }
         }
         return cves;
-    }
-
-    private IOException handle(ApiException e) {
-        Gson gson = new Gson();
-        String message;
-        if (Strings.isNullOrEmpty(e.getResponseBody())) {
-            message = e.getMessage();
-        } else {
-            try {
-                RuntimeError error = gson.fromJson(e.getResponseBody(), RuntimeError.class);
-                message = error.getMessage();
-            } catch (JsonSyntaxException ex) {
-                message = e.getMessage();
-            }
-        }
-        return new IOException(String.format("Failed image scan request. Status code: %d. Error: %s", e.getCode(), message));
     }
 }
