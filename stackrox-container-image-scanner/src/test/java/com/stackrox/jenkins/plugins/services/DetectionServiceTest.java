@@ -35,7 +35,6 @@ class DetectionServiceTest extends AbstractServiceTest {
         SERVER.stubFor(post(anyUrl()).willReturn(serverError()
                 .withBodyFile("v1/detect/build/error.json")));
 
-        detectionService = new DetectionService(SERVER.baseUrl(), TOKEN, HttpClientUtils.get(false, null));
         Exception exception = assertThrows(IOException.class, () -> detectionService.getPolicyViolations("jenkins:lts"));
         String expected = "Failed build time detection request. Status code: 500. Error: ResponseEntityProxy{[Chunked: true]}";
         assertEquals(expected, exception.getMessage());
