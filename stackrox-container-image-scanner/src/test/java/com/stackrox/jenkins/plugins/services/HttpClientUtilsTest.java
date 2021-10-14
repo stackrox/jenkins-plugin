@@ -1,8 +1,8 @@
 package com.stackrox.jenkins.plugins.services;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.anyUrl;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.ok;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -15,7 +15,6 @@ import javax.json.JsonObject;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
 import org.apache.commons.io.FileUtils;
-import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -37,7 +36,7 @@ class HttpClientUtilsTest {
 
     @BeforeAll
     static void beforeAll() {
-        SERVER.stubFor(get(anyUrl()).willReturn(aResponse().withStatus(HttpStatus.SC_OK).withBody("{}")));
+        SERVER.stubFor(get(anyUrl()).willReturn(ok().withBody("{}")));
         SERVER.start();
     }
 
@@ -46,14 +45,14 @@ class HttpClientUtilsTest {
         SERVER.stop();
     }
 
-    @DisplayName("TLS should work when")
+    @DisplayName("HTTPS should work when")
     @ParameterizedTest(name = "tlsVerify: {0} and custom PEM: {1}")
     @CsvSource({"true,true", "false,true", "false,false"})
-    void shouldBeAbleT(boolean tlsVerify, boolean caCert) throws IOException {
-        File clientPem = Paths.get("src", "test", "resources", "cert", "client.pem").toFile();
-        String pem = caCert ? FileUtils.readFileToString(clientPem, StandardCharsets.UTF_8) : null;
+    void shouldWorkWithProperlyConfiguredTLS(boolean tlsVerify, boolean useCaCert) throws IOException {
+        File caPemFile = Paths.get("src", "test", "resources", "cert", "client.pem").toFile();
+        String caPem = useCaCert ? FileUtils.readFileToString(caPemFile, StandardCharsets.UTF_8) : null;
 
-        CloseableHttpClient closeableHttpClient = HttpClientUtils.get(tlsVerify, pem);
+        CloseableHttpClient closeableHttpClient = HttpClientUtils.get(tlsVerify, caPem);
 
         HttpGet req = new HttpGet(SERVER.baseUrl());
         CloseableHttpResponse response = closeableHttpClient.execute(req);
