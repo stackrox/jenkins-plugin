@@ -1,15 +1,26 @@
 package com.stackrox.jenkins.plugins;
 
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.util.List;
-import javax.annotation.Nonnull;
-import javax.json.JsonObject;
-
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
+
+import com.stackrox.invoker.ApiClient;
+import com.stackrox.jenkins.plugins.data.CVE;
+import com.stackrox.jenkins.plugins.data.ImageCheckResults;
+import com.stackrox.jenkins.plugins.data.ViolatedPolicy;
+import com.stackrox.jenkins.plugins.jenkins.RunConfig;
+import com.stackrox.jenkins.plugins.jenkins.ViewStackroxResultsAction;
+import com.stackrox.jenkins.plugins.report.ReportGenerator;
+import com.stackrox.jenkins.plugins.services.ApiClientFactory;
+import com.stackrox.jenkins.plugins.services.DetectionService;
+import com.stackrox.jenkins.plugins.services.HttpClientUtils;
+import com.stackrox.jenkins.plugins.services.ImageService;
+
+import com.stackrox.model.StorageEmbeddedImageScanComponent;
+
+import com.stackrox.model.StorageEmbeddedVulnerability;
+
 import hudson.AbortException;
 import hudson.Extension;
 import hudson.FilePath;
@@ -38,15 +49,11 @@ import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.verb.POST;
 
-import com.stackrox.jenkins.plugins.data.CVE;
-import com.stackrox.jenkins.plugins.data.ImageCheckResults;
-import com.stackrox.jenkins.plugins.data.ViolatedPolicy;
-import com.stackrox.jenkins.plugins.jenkins.RunConfig;
-import com.stackrox.jenkins.plugins.jenkins.ViewStackroxResultsAction;
-import com.stackrox.jenkins.plugins.report.ReportGenerator;
-import com.stackrox.jenkins.plugins.services.DetectionService;
-import com.stackrox.jenkins.plugins.services.HttpClientUtils;
-import com.stackrox.jenkins.plugins.services.ImageService;
+import javax.annotation.Nonnull;
+import javax.json.JsonObject;
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.util.List;
 
 @SuppressWarnings("unused")
 public class StackroxBuilder extends Builder implements SimpleBuildStep {
@@ -167,8 +174,11 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
     private List<ImageCheckResults> checkImages() throws IOException {
         List<ImageCheckResults> results = Lists.newArrayList();
 
+        ApiClient apiClient = ApiClientFactory.newApiClient(
+                getPortalAddress(), getApiToken().getPlainText(), getCaCertPEM(), !enableTLSVerification);
+        ImageService imageService = new ImageService(apiClient);
+
         try (CloseableHttpClient httpClient = HttpClientUtils.get(this.enableTLSVerification, this.caCertPEM)) {
-            ImageService imageService = new ImageService(getPortalAddress(), getApiToken(), httpClient);
             DetectionService detectionService = new DetectionService(getPortalAddress(), getApiToken(), httpClient);
 
             for (String name : runConfig.getImageNames()) {

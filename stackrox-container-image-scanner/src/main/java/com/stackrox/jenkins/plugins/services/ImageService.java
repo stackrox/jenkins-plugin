@@ -1,87 +1,81 @@
 package com.stackrox.jenkins.plugins.services;
 
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.nio.charset.StandardCharsets;
-import java.util.List;
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-
-import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
-import hudson.util.Secret;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpHeaders;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
 
+import com.google.gson.Gson;
+
+import com.google.gson.JsonSyntaxException;
+
+import com.stackrox.api.ImageServiceApi;
+import com.stackrox.invoker.ApiClient;
+import com.stackrox.invoker.ApiException;
 import com.stackrox.jenkins.plugins.data.CVE;
+import com.stackrox.model.RuntimeError;
+import com.stackrox.model.StorageEmbeddedImageScanComponent;
+import com.stackrox.model.StorageEmbeddedVulnerability;
+import com.stackrox.model.StorageImageScan;
+import com.stackrox.model.V1ScanImageRequest;
+
+import org.threeten.bp.OffsetDateTime;
+import org.threeten.bp.format.DateTimeFormatter;
+
+import java.io.IOException;
+import java.util.List;
+
+import static org.threeten.bp.format.DateTimeFormatter.ISO_DATE_TIME;
 
 public class ImageService {
 
-    private final String portalAddress;
-    private final Secret apiToken;
-    private final CloseableHttpClient httpClient;
+    private final ImageServiceApi api;
 
-    public ImageService(String portalAddress, Secret apiToken, CloseableHttpClient httpClient) {
-        this.portalAddress = portalAddress;
-        this.apiToken = apiToken;
-        this.httpClient = httpClient;
+    public ImageService(ApiClient client) {
+        api = new ImageServiceApi(client);
     }
 
 
     public List<CVE> getImageScanResults(String imageName) throws IOException {
+        V1ScanImageRequest request = new V1ScanImageRequest().imageName(imageName).force(true);
+        StorageImageScan scan;
+        try {
+            scan = api.imageServiceScanImage(request).getScan();
+        } catch (ApiException e) {
+            throw handle(e);
+        }
+
         List<CVE> cves = Lists.newArrayList();
-
-        JsonObject scanResult = runImageScan(imageName);
-
-        JsonArray components = scanResult.getJsonArray("components");
-        for (JsonObject component : components.getValuesAs(JsonObject.class)) {
-            JsonArray componentCves = component.getJsonArray("vulns");
-            for (JsonObject cve : componentCves.getValuesAs(JsonObject.class)) {
-                String publishDate = cve.getString("publishedOn", null);
+        for (StorageEmbeddedImageScanComponent component : scan.getComponents()) {
+            for (StorageEmbeddedVulnerability cve : component.getVulns()) {
+                OffsetDateTime publishDate = cve.getPublishedOn();
                 CVE cveToAdd = CVE.Builder.newInstance()
-                        .withId(cve.getString("cve"))
-                        .withCvssScore(!cve.containsKey("cvss") || cve.isNull("cvss") ? 0F : ((float) cve.getJsonNumber("cvss").doubleValue()))
-                        .withScoreType(cve.getString("scoreVersion", null))
-                        .withPublishDate(Strings.isNullOrEmpty(publishDate) ? null : publishDate)
-                        .withLink(cve.getString("link", null))
-                        .inPackage(component.getString("name", null))
-                        .inVersion(component.getString("version", null))
-                        .isFixable(!Strings.isNullOrEmpty(cve.getString("fixedBy", null)))
+                        .withId(cve.getCve())
+                        .withCvssScore(cve.getCvss() == null ? 0F : cve.getCvss())
+                        .withScoreType(cve.getScoreVersion() == null ? null : cve.getScoreVersion().toString())
+                        .withPublishDate(publishDate == null ? null : publishDate.format(ISO_DATE_TIME))
+                        .withLink(cve.getLink())
+                        .inPackage(component.getName())
+                        .inVersion(component.getVersion())
+                        .isFixable(!Strings.isNullOrEmpty(cve.getFixedBy()))
                         .build();
                 cves.add(cveToAdd);
             }
         }
-
         return cves;
     }
 
-    private JsonObject runImageScan(String imageName) throws IOException {
-        HttpPost imageScanRequest = new HttpPost(Joiner.on("/").join(portalAddress, "v1/images/scan"));
-        imageScanRequest.setHeader(HttpHeaders.ACCEPT, ContentType.APPLICATION_JSON.toString());
-        imageScanRequest.setHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.toString());
-        imageScanRequest.addHeader(HttpHeaders.AUTHORIZATION, Joiner.on(" ").join("Bearer", apiToken));
-        imageScanRequest.setEntity(new StringEntity(
-                Json.createObjectBuilder().add("imageName", imageName).add("force", true).build().toString(),
-                StandardCharsets.UTF_8));
-
-        try (CloseableHttpResponse response = this.httpClient.execute(imageScanRequest)) {
-            int statusCode = response.getStatusLine().getStatusCode();
-
-            HttpEntity entity = response.getEntity();
-
-            if (statusCode != HttpURLConnection.HTTP_OK || entity == null) {
-                throw new IOException(String.format("Failed image scan request. Status code: %d. Error: %s", statusCode, entity));
+    private IOException handle(ApiException e) {
+        Gson gson = new Gson();
+        String message;
+        if (Strings.isNullOrEmpty(e.getResponseBody())) {
+            message = e.getMessage();
+        } else {
+            try {
+                RuntimeError error = gson.fromJson(e.getResponseBody(), RuntimeError.class);
+                message = error.getMessage();
+            } catch (JsonSyntaxException ex) {
+                message = e.getMessage();
             }
-
-            JsonObject object = HttpClientUtils.getJsonObject(entity);
-            return object.getJsonObject("scan");
         }
+        return new IOException(String.format("Failed image scan request. Status code: %d. Error: %s", e.getCode(), message));
     }
 }
