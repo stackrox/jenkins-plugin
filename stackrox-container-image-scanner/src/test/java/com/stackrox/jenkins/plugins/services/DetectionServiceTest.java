@@ -31,7 +31,7 @@ class DetectionServiceTest extends AbstractServiceTest {
     }
 
     @Test
-    public void shouldThrowOn500() throws IOException {
+    public void shouldThrowOn500() {
         MOCK_SERVER.stubFor(post(anyUrl()).willReturn(serverError()
                 .withBodyFile("v1/detect/build/error.json")));
 
@@ -41,10 +41,11 @@ class DetectionServiceTest extends AbstractServiceTest {
     }
 
     @Test
-    public void shouldThrowWhenNoDataFor200() {
+    public void shouldThrowWhenNoDataFor200() throws IOException {
         MOCK_SERVER.stubFor(postDetectBuild().willReturn(
                 ok().withBody("{}")));
-        assertThrows(NullPointerException.class, () -> detectionService.getPolicyViolations("nginx:latest"));
+        List<ViolatedPolicy> violations = detectionService.getPolicyViolations("nginx:latest");
+        assertEquals(0, violations.size());
     }
 
     @Test

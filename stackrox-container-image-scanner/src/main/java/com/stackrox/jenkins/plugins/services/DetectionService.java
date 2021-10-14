@@ -1,19 +1,17 @@
 package com.stackrox.jenkins.plugins.services;
 
+import static com.stackrox.jenkins.plugins.data.ListUtil.safe;
 import static com.stackrox.model.StorageEnforcementAction.FAIL_BUILD_ENFORCEMENT;
 
 import java.io.IOException;
 import java.util.List;
-
-import com.google.common.collect.Lists;
+import java.util.stream.Collectors;
 
 import com.stackrox.api.DetectionServiceApi;
 import com.stackrox.invoker.ApiClient;
 import com.stackrox.invoker.ApiException;
 import com.stackrox.jenkins.plugins.data.ViolatedPolicy;
 import com.stackrox.model.StorageAlert;
-import com.stackrox.model.StorageEnforcementAction;
-import com.stackrox.model.StoragePolicy;
 import com.stackrox.model.V1BuildDetectionRequest;
 
 public class DetectionService {
@@ -34,22 +32,14 @@ public class DetectionService {
             throw new ServiceException("Failed build time detection request", e);
         }
 
-
-        List<ViolatedPolicy> violatedPolicies = Lists.newArrayList();
-        for (StorageAlert alert : alerts) {
-            StoragePolicy policy = alert.getPolicy();
-
-            List<StorageEnforcementAction> actions = policy.getEnforcementActions();
-            boolean isEnforced = actions.contains(FAIL_BUILD_ENFORCEMENT);
-
-            if (isEnforced) {
-                violatedPolicies.add(new ViolatedPolicy(
+        return safe(alerts).stream()
+                .map(StorageAlert::getPolicy)
+                .filter(p -> p != null && safe(p.getEnforcementActions()).contains(FAIL_BUILD_ENFORCEMENT))
+                .map(policy -> new ViolatedPolicy(
                         policy.getName(),
                         policy.getDescription(),
                         policy.getSeverity().toString(),
-                        policy.getRemediation()));
-            }
-        }
-        return violatedPolicies;
+                        policy.getRemediation()))
+                .collect(Collectors.toList());
     }
 }
