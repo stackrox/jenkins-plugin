@@ -1,5 +1,6 @@
 package com.stackrox.jenkins.plugins.services;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.anyUrl;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
 import static com.github.tomakehurst.wiremock.client.WireMock.ok;
@@ -31,10 +32,10 @@ class ImageServiceTest extends AbstractServiceTest {
 
     @Test
     public void shouldThrowOn500() {
-        SERVER.stubFor(postImagesScan().willReturn(serverError()
+        SERVER.stubFor(post(anyUrl()).willReturn(serverError()
                 .withBodyFile("v1/images/scan/error.json")));
 
-        Exception exception = assertThrows(IOException.class, () -> imageService.getImageScanResults("nginx:latest"));
+        Exception exception = assertThrows(IOException.class, () -> imageService.getImageScanResults("jenkins:lts"));
         String expected = "Failed image scan request. Status code: 500. Error: ResponseEntityProxy{[Chunked: true]}";
         assertEquals(expected, exception.getMessage());
     }
