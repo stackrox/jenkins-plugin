@@ -46,17 +46,7 @@ public class ImageService {
         List<CVE> cves = Lists.newArrayList();
         for (StorageEmbeddedImageScanComponent component : scan.getComponents()) {
             for (StorageEmbeddedVulnerability cve : component.getVulns()) {
-                OffsetDateTime publishDate = cve.getPublishedOn();
-                CVE cveToAdd = CVE.Builder.newInstance()
-                        .withId(cve.getCve())
-                        .withCvssScore(cve.getCvss() == null ? 0F : cve.getCvss())
-                        .withScoreType(cve.getScoreVersion() == null ? null : cve.getScoreVersion().toString())
-                        .withPublishDate(publishDate == null ? null : publishDate.format(ISO_DATE_TIME))
-                        .withLink(cve.getLink())
-                        .inPackage(component.getName())
-                        .inVersion(component.getVersion())
-                        .isFixable(!Strings.isNullOrEmpty(cve.getFixedBy()))
-                        .build();
+                CVE cveToAdd = new CVE(component.getName(), component.getVersion(), cve);
                 cves.add(cveToAdd);
             }
         }
