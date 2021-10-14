@@ -36,7 +36,6 @@ import com.stackrox.invoker.ApiClient;
 import com.stackrox.invoker.ApiException;
 import com.stackrox.jenkins.plugins.data.CVE;
 import com.stackrox.jenkins.plugins.data.ImageCheckResults;
-import com.stackrox.jenkins.plugins.data.ViolatedPolicy;
 import com.stackrox.jenkins.plugins.jenkins.RunConfig;
 import com.stackrox.jenkins.plugins.jenkins.ViewStackroxResultsAction;
 import com.stackrox.jenkins.plugins.report.ReportGenerator;
@@ -44,6 +43,7 @@ import com.stackrox.jenkins.plugins.services.ApiClientFactory;
 import com.stackrox.jenkins.plugins.services.DetectionService;
 import com.stackrox.jenkins.plugins.services.ImageService;
 import com.stackrox.jenkins.plugins.services.ServiceException;
+import com.stackrox.model.StoragePolicy;
 import com.stackrox.model.V1AuthStatus;
 
 @SuppressWarnings("unused")
@@ -174,7 +174,7 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
             runConfig.getLog().printf("Checking image %s...%n", name);
 
             List<CVE> cves = imageService.getImageScanResults(name);
-            List<ViolatedPolicy> violatedPolicies = detectionService.getPolicyViolations(name);
+            List<StoragePolicy> violatedPolicies = detectionService.getPolicyViolations(name);
             results.add(new ImageCheckResults(name, cves, violatedPolicies));
         }
 

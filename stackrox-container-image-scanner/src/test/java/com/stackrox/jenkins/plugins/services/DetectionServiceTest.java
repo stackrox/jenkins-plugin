@@ -7,6 +7,8 @@ import static com.github.tomakehurst.wiremock.client.WireMock.ok;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.serverError;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.stackrox.model.StorageEnforcementAction.FAIL_BUILD_ENFORCEMENT;
+import static com.stackrox.model.StorageSeverity.MEDIUM_SEVERITY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -16,12 +18,16 @@ import java.util.List;
 import com.github.tomakehurst.wiremock.client.MappingBuilder;
 import com.google.common.collect.ImmutableList;
 
-import com.stackrox.jenkins.plugins.data.ViolatedPolicy;
+import com.stackrox.model.StorageEnforcementAction;
+import com.stackrox.model.StoragePolicy;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class DetectionServiceTest extends AbstractServiceTest {
+
+    final private static List<StorageEnforcementAction> FAIL_BUILD_ENFORCEMENTS = ImmutableList.of(FAIL_BUILD_ENFORCEMENT);
+
 
     DetectionService detectionService;
 
@@ -44,7 +50,7 @@ class DetectionServiceTest extends AbstractServiceTest {
     public void shouldThrowWhenNoDataFor200() throws IOException {
         MOCK_SERVER.stubFor(postDetectBuild().willReturn(
                 ok().withBody("{}")));
-        List<ViolatedPolicy> violations = detectionService.getPolicyViolations("nginx:latest");
+        List<StoragePolicy> violations = detectionService.getPolicyViolations("nginx:latest");
         assertEquals(0, violations.size());
     }
 
@@ -52,13 +58,21 @@ class DetectionServiceTest extends AbstractServiceTest {
     public void shouldParseDataFromServer() throws IOException {
         MOCK_SERVER.stubFor(postDetectBuild().willReturn(
                 ok().withBodyFile("v1/detect/build/nginx.latest.json")));
-        List<ViolatedPolicy> actual = detectionService.getPolicyViolations("nginx:latest");
+        List<StoragePolicy> actual = detectionService.getPolicyViolations("nginx:latest");
 
-        List<ViolatedPolicy> expected = ImmutableList.of(new ViolatedPolicy("Docker CIS 4.4: Ensure images are scanned and rebuilt to include security patches",
-                        "Images should be scanned frequently for any vulnerabilities...",
-                        "MEDIUM",
-                        "Images should be re-built ensuring that the latest version of the base images are used..."),
-                new ViolatedPolicy("Latest tag", "", "MEDIUM", ""));
+        List<StoragePolicy> expected = ImmutableList.of(
+                new StoragePolicy()
+                        .name("Docker CIS 4.4: Ensure images are scanned and rebuilt to include security patches")
+                        .description("Images should be scanned frequently for any vulnerabilities...")
+                        .severity(MEDIUM_SEVERITY)
+                        .enforcementActions(FAIL_BUILD_ENFORCEMENTS)
+                        .remediation("Images should be re-built ensuring that the latest version of the base images are used..."),
+                new StoragePolicy()
+                        .name("Latest tag")
+                        .description("")
+                        .severity(MEDIUM_SEVERITY)
+                        .enforcementActions(FAIL_BUILD_ENFORCEMENTS)
+                        .remediation(""));
 
         assertEquals(expected, actual);
     }
@@ -67,9 +81,10 @@ class DetectionServiceTest extends AbstractServiceTest {
     public void shouldNotFailOnMissingData() throws IOException {
         MOCK_SERVER.stubFor(postDetectBuild().willReturn(
                 ok().withBodyFile("v1/detect/build/minimal.json")));
-        List<ViolatedPolicy> actual = detectionService.getPolicyViolations("nginx:latest");
+        List<StoragePolicy> actual = detectionService.getPolicyViolations("nginx:latest");
 
-        List<ViolatedPolicy> expected = ImmutableList.of(new ViolatedPolicy(null, null, "UNSET", null));
+        List<StoragePolicy> expected = ImmutableList.of(new StoragePolicy().enforcementActions(FAIL_BUILD_ENFORCEMENTS)
+        );
 
         assertEquals(expected, actual);
     }

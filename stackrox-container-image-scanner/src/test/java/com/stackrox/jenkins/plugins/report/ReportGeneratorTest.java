@@ -2,6 +2,8 @@ package com.stackrox.jenkins.plugins.report;
 
 import static com.stackrox.model.StorageEmbeddedVulnerabilityScoreVersion.V2;
 import static com.stackrox.model.StorageEmbeddedVulnerabilityScoreVersion.V3;
+import static com.stackrox.model.StorageSeverity.HIGH_SEVERITY;
+import static com.stackrox.model.StorageSeverity.MEDIUM_SEVERITY;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -30,8 +32,8 @@ import org.threeten.bp.OffsetDateTime;
 
 import com.stackrox.jenkins.plugins.data.CVE;
 import com.stackrox.jenkins.plugins.data.ImageCheckResults;
-import com.stackrox.jenkins.plugins.data.ViolatedPolicy;
 import com.stackrox.model.StorageEmbeddedVulnerability;
+import com.stackrox.model.StoragePolicy;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -100,10 +102,11 @@ class ReportGeneratorTest {
                         .link("https://security-tracker.debian.org/tracker/CVE-2016-3189")
                         .fixedBy("1.0.6-8"))
         ), ImmutableList.of(
-                new ViolatedPolicy("Fixable Severity at least Important",
-                        "Alert on deployments with fixable vulnerabilities with a Severity Rating at least Important",
-                        "HIGH",
-                        "Use your package manager to update to a fixed version in future builds or speak with your security team to mitigate the vulnerabilities.")
+                new StoragePolicy()
+                        .name("Fixable Severity at least Important")
+                        .description("Alert on deployments with fixable vulnerabilities with a Severity Rating at least Important")
+                        .severity(HIGH_SEVERITY)
+                        .remediation("Use your package manager to update to a fixed version in future builds or speak with your security team to mitigate the vulnerabilities.")
         )), new ImageCheckResults("nginx:latest",
                 ImmutableList.of(
                         new CVE("openssl", "1.1.1d-0+deb10u7", new StorageEmbeddedVulnerability()
@@ -117,14 +120,15 @@ class ReportGeneratorTest {
                                 .scoreVersion(null)
                                 .cvss(0F))),
                 ImmutableList.of(
-                        new ViolatedPolicy("Latest Tag",
-                                "",
-                                "MEDIUM",
-                                "No remediation actions documented."),
-                        new ViolatedPolicy("Fixable Severity at least Important",
-                                "Alert on deployments with fixable vulnerabilities with a Severity Rating at least Important",
-                                "HIGH",
-                                "Use your package manager to update to a fixed version in future builds or speak with your security team to mitigate the vulnerabilities.")
+                        new StoragePolicy().name("Latest Tag")
+                                .description("")
+                                .severity(MEDIUM_SEVERITY)
+                                .remediation("No remediation actions documented."),
+                        new StoragePolicy()
+                                .name("Fixable Severity at least Important")
+                                .description("Alert on deployments with fixable vulnerabilities with a Severity Rating at least Important")
+                                .severity(HIGH_SEVERITY)
+                                .remediation("Use your package manager to update to a fixed version in future builds or speak with your security team to mitigate the vulnerabilities.")
                 )));
         ReportGenerator.generateBuildReport(results, reportsDir);
 
@@ -164,5 +168,4 @@ class ReportGeneratorTest {
             }
         });
     }
-
 }

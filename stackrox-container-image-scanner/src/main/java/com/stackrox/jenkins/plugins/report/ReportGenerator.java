@@ -12,10 +12,12 @@ import hudson.FilePath;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.QuoteMode;
+import org.apache.commons.lang3.StringUtils;
 
 import com.stackrox.jenkins.plugins.data.CVE;
 import com.stackrox.jenkins.plugins.data.ImageCheckResults;
-import com.stackrox.jenkins.plugins.data.ViolatedPolicy;
+import com.stackrox.model.StoragePolicy;
+import com.stackrox.model.StorageSeverity;
 
 public class ReportGenerator {
 
@@ -60,16 +62,23 @@ public class ReportGenerator {
         if (!result.getViolatedPolicies().isEmpty()) {
             try (OutputStream outputStream = new FilePath(imageResultDir, POLICY_VIOLATIONS_FILENAME).write();
                  CSVPrinter printer = openCsv(outputStream, VIOLATED_POLICIES_HEADER)) {
-                for (ViolatedPolicy policy : result.getViolatedPolicies()) {
+                for (StoragePolicy policy : result.getViolatedPolicies()) {
                     printer.printRecord(
                             policy.getName(),
                             policy.getDescription(),
-                            policy.getSeverity(),
+                            prettySeverity(policy.getSeverity()),
                             policy.getRemediation()
                     );
                 }
             }
         }
+    }
+
+    private static String prettySeverity(StorageSeverity severity) {
+        if (severity == null) {
+            return null;
+        }
+        return StringUtils.substringBefore(severity.toString(), "_");
     }
 
     private static CSVPrinter openCsv(OutputStream outputStream, String[] header) throws IOException {

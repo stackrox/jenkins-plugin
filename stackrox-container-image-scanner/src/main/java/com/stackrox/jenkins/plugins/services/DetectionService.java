@@ -10,8 +10,8 @@ import java.util.stream.Collectors;
 import com.stackrox.api.DetectionServiceApi;
 import com.stackrox.invoker.ApiClient;
 import com.stackrox.invoker.ApiException;
-import com.stackrox.jenkins.plugins.data.ViolatedPolicy;
 import com.stackrox.model.StorageAlert;
+import com.stackrox.model.StoragePolicy;
 import com.stackrox.model.V1BuildDetectionRequest;
 
 public class DetectionService {
@@ -23,7 +23,7 @@ public class DetectionService {
         api = new DetectionServiceApi(client);
     }
 
-    public List<ViolatedPolicy> getPolicyViolations(String imageName) throws IOException {
+    public List<StoragePolicy> getPolicyViolations(String imageName) throws IOException {
 
         List<StorageAlert> alerts;
         try {
@@ -35,11 +35,6 @@ public class DetectionService {
         return safe(alerts).stream()
                 .map(StorageAlert::getPolicy)
                 .filter(p -> p != null && safe(p.getEnforcementActions()).contains(FAIL_BUILD_ENFORCEMENT))
-                .map(policy -> new ViolatedPolicy(
-                        policy.getName(),
-                        policy.getDescription(),
-                        policy.getSeverity().toString(),
-                        policy.getRemediation()))
                 .collect(Collectors.toList());
     }
 }
