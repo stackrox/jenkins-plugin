@@ -3,6 +3,7 @@ package com.stackrox.jenkins.plugins.services;
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.anyUrl;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.ok;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -17,7 +18,6 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import org.apache.commons.io.FileUtils;
-import org.apache.http.HttpStatus;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -36,7 +36,7 @@ class ApiClientFactoryTest {
 
     @BeforeAll
     static void beforeAll() {
-        SERVER.stubFor(get(anyUrl()).willReturn(aResponse().withStatus(HttpStatus.SC_OK).withBody("{}")));
+        SERVER.stubFor(get(anyUrl()).willReturn(ok().withBody("{}")));
         SERVER.start();
     }
 
@@ -81,7 +81,7 @@ class ApiClientFactoryTest {
 
         WireMockServer server = new WireMockServer(wireMockConfig().httpDisabled(true)
                 .dynamicHttpsPort().keystorePath(keyStorePath).keystorePassword(KEY_STORE_PASSWORD));
-        server.stubFor(get(anyUrl()).willReturn(aResponse().withStatus(HttpStatus.SC_OK).withBody("{}")));
+        server.stubFor(get(anyUrl()).willReturn(ok().withBody("{}")));
         server.start();
 
         OkHttpClient client = ApiClientFactory.newHttpClient(false, pem);

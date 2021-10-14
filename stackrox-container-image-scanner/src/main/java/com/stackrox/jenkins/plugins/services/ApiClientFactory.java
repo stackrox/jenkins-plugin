@@ -1,17 +1,5 @@
 package com.stackrox.jenkins.plugins.services;
 
-import com.google.common.base.Strings;
-
-import com.stackrox.invoker.ApiClient;
-
-import okhttp3.OkHttpClient;
-
-import javax.annotation.Nonnull;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSocketFactory;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.TrustManagerFactory;
-import javax.net.ssl.X509TrustManager;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -22,6 +10,17 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import javax.annotation.Nonnull;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
+import javax.net.ssl.X509TrustManager;
+
+import com.google.common.base.Strings;
+import okhttp3.OkHttpClient;
+
+import com.stackrox.invoker.ApiClient;
 
 public class ApiClientFactory {
 
@@ -105,7 +104,8 @@ public class ApiClientFactory {
             TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
             trustManagerFactory.init(keyStore);
             trustManagers = trustManagerFactory.getTrustManagers();
-            sslContext = HttpClientUtils.getSslContext(true, caCertPEM);
+            sslContext = SSLContext.getInstance("TLS");
+            sslContext.init(null, trustManagers, null);
         } catch (Exception e) {
             throw new IOException(e);
         }
