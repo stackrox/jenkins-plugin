@@ -37,7 +37,7 @@ sourceSets.each { ss ->
 dependencies {
     implementation 'com.google.code.gson:gson:2.7'
     implementation 'io.fabric8:kubernetes-client:4.1.2'
-    implementation 'io.kubernetes:client-java:2.0.0-beta1'
+    implementation 'io.kubernetes:client-java:13.0.0'
     implementation 'org.codehaus.groovy:groovy-all:2.4.18'
     implementation group: 'com.jayway.restassured', name: 'rest-assured', version: '2.4.1'
     implementation group: 'com.github.docker-java', name: 'docker-java', version: '3.1.0-rc-3'
