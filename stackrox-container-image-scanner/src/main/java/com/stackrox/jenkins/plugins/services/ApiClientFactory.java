@@ -1,27 +1,26 @@
 package com.stackrox.jenkins.plugins.services;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.security.KeyManagementException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
-import java.time.Duration;
+import com.google.common.base.Strings;
+
+import com.stackrox.invoker.ApiClient;
+
+import okhttp3.OkHttpClient;
+
 import javax.annotation.Nonnull;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
-
-import com.google.common.base.Strings;
-import okhttp3.OkHttpClient;
-
-import com.stackrox.invoker.ApiClient;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.security.KeyManagementException;
+import java.security.KeyStore;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
+import java.time.Duration;
 
 public class ApiClientFactory {
 
@@ -48,8 +47,8 @@ public class ApiClientFactory {
             } else {
                 builder = getSecureBuilder(caCert);
             }
-        } catch (KeyManagementException | NoSuchAlgorithmException | CertificateException | KeyStoreException | IOException e) {
-            throw new IOException(e);
+        } catch (Exception e) {
+            throw new IOException("Could not load certificate", e);
         }
         builder.retryOnConnectionFailure(true);
         builder.connectTimeout(TIMEOUT);
@@ -66,11 +65,11 @@ public class ApiClientFactory {
         final TrustManager[] trustAllCerts = new TrustManager[]{
                 new X509TrustManager() {
                     @Override
-                    public void checkClientTrusted(java.security.cert.X509Certificate[] chain, String authType) throws CertificateException {
+                    public void checkClientTrusted(java.security.cert.X509Certificate[] chain, String authType) {
                     }
 
                     @Override
-                    public void checkServerTrusted(java.security.cert.X509Certificate[] chain, String authType) throws CertificateException {
+                    public void checkServerTrusted(java.security.cert.X509Certificate[] chain, String authType) {
                     }
 
                     @Override
@@ -93,29 +92,24 @@ public class ApiClientFactory {
         return builder;
     }
 
-    private static OkHttpClient.Builder getSecureBuilder(String caCertPEM) throws CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException, KeyManagementException {
+    private static OkHttpClient.Builder getSecureBuilder(String caCertPEM) throws Exception {
         if (Strings.isNullOrEmpty(caCertPEM)) {
             return new OkHttpClient().newBuilder();
         }
 
-        SSLContext sslContext;
-        TrustManager[] trustManagers;
-        try {
-            KeyStore keyStore = KeyStore.getInstance("pkcs12");
-            keyStore.load(null, "".toCharArray());
+        KeyStore keyStore = KeyStore.getInstance("pkcs12");
+        keyStore.load(null, "".toCharArray());
 
-            CertificateFactory cf = CertificateFactory.getInstance("X.509");
-            X509Certificate cert = (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(caCertPEM.getBytes(StandardCharsets.UTF_8)));
-            keyStore.setCertificateEntry("ca.crt", cert);
+        CertificateFactory cf = CertificateFactory.getInstance("X.509");
+        X509Certificate cert = (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(caCertPEM.getBytes(StandardCharsets.UTF_8)));
+        keyStore.setCertificateEntry("ca.crt", cert);
 
-            TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-            trustManagerFactory.init(keyStore);
-            trustManagers = trustManagerFactory.getTrustManagers();
-            sslContext = SSLContext.getInstance("TLS");
-            sslContext.init(null, trustManagers, null);
-        } catch (Exception e) {
-            throw new IOException(e);
-        }
+        TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+        trustManagerFactory.init(keyStore);
+        TrustManager[] trustManagers = trustManagerFactory.getTrustManagers();
+        SSLContext sslContext = SSLContext.getInstance("TLS");
+        sslContext.init(null, trustManagers, null);
+
 
         return new OkHttpClient.Builder()
                 .sslSocketFactory(sslContext.getSocketFactory(), (X509TrustManager) trustManagers[0]);
