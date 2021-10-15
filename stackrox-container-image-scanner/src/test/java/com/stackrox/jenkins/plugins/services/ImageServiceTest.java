@@ -9,6 +9,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.serverError;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.stackrox.model.StorageEmbeddedVulnerabilityScoreVersion.V2;
 import static com.stackrox.model.StorageEmbeddedVulnerabilityScoreVersion.V3;
+import static java.time.OffsetDateTime.parse;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -17,7 +18,6 @@ import java.util.List;
 
 import com.github.tomakehurst.wiremock.client.MappingBuilder;
 import com.google.common.collect.ImmutableList;
-import org.threeten.bp.OffsetDateTime;
 
 import com.stackrox.jenkins.plugins.data.CVE;
 import com.stackrox.model.StorageEmbeddedVulnerability;
@@ -71,20 +71,20 @@ class ImageServiceTest extends AbstractServiceTest {
                         .cvss(5.8F)
                         .scoreVersion(V2)
                         .fixedBy("")
-                        .publishedOn(OffsetDateTime.parse("2013-10-11T22:55:00Z"))
+                        .publishedOn(parse("2013-10-11T22:55:00Z"))
                         .link("https://security-tracker.debian.org/tracker/CVE-2007-6755")),
                 new CVE("openssl", "1.1.1d-0+deb10u7", new StorageEmbeddedVulnerability()
                         .cve("CVE-2010-0928")
                         .cvss(4.0F)
                         .scoreVersion(V2)
                         .fixedBy("")
-                        .publishedOn(OffsetDateTime.parse("2010-03-05T19:30:00Z"))
+                        .publishedOn(parse("2010-03-05T19:30:00Z"))
                         .link("https://security-tracker.debian.org/tracker/CVE-2010-0928")),
                 new CVE("libseccomp", "2.3.3-4", new StorageEmbeddedVulnerability()
                         .cve("CVE-2019-9893")
                         .cvss(9.8F)
                         .scoreVersion(V3)
-                        .publishedOn(OffsetDateTime.parse("2019-03-21T16:01:00Z"))
+                        .publishedOn(parse("2019-03-21T16:01:00Z"))
                         .fixedBy("2.3.3-5")
                         .link("https://security-tracker.debian.org/tracker/CVE-2019-9893"))
         );

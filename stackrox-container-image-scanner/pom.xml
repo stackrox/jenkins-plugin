@@ -117,19 +117,9 @@
             <version>1.8.5</version>
         </dependency>
         <dependency>
-            <groupId>org.apache.oltu.oauth2</groupId>
-            <artifactId>org.apache.oltu.oauth2.client</artifactId>
-            <version>1.0.2</version>
-        </dependency>
-        <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
             <version>3.12.0</version>
-        </dependency>
-        <dependency>
-            <groupId>org.threeten</groupId>
-            <artifactId>threetenbp</artifactId>
-            <version>1.5.1</version>
         </dependency>
         <dependency>
             <groupId>org.openapitools</groupId>
@@ -206,6 +196,8 @@
                             <invokerPackage>com.stackrox.invoker</invokerPackage>
                             <modelPackage>com.stackrox.model</modelPackage>
                             <configOptions>
+                                <dateLibrary>java8</dateLibrary>
+                                <java8>true</java8>
                                 <sourceFolder>src/gen/java/main</sourceFolder>
                             </configOptions>
                         </configuration>

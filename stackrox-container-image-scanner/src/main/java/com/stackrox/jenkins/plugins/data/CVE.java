@@ -6,7 +6,7 @@ import com.stackrox.model.StorageEmbeddedVulnerability;
 
 import java.util.Objects;
 
-import static org.threeten.bp.format.DateTimeFormatter.ISO_DATE_TIME;
+import static java.time.format.DateTimeFormatter.ISO_DATE_TIME;
 
 public class CVE {
     private final String packageName;
