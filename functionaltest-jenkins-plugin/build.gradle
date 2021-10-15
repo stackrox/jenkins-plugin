@@ -42,7 +42,7 @@ dependencies {
     implementation group: 'com.jayway.restassured', name: 'rest-assured', version: '2.4.1'
     implementation group: 'com.github.docker-java', name: 'docker-java', version: '3.1.0-rc-3'
     implementation group: 'commons-cli', name: 'commons-cli', version: '1.2'
-    implementation group: 'commons-httpclient', name: 'commons-httpclient', version: '3.1'
+    implementation group: 'commons-httpclient', name: 'commons-httpclient', version: '3.1-jenkins-3'
     implementation group: 'org.spockframework', name: 'spock-core', version: '1.2-groovy-2.4'
     implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.7'
     testImplementation group: 'junit', name: 'junit', version: '4.11'
