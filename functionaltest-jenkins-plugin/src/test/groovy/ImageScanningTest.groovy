@@ -1,7 +1,6 @@
 import static com.offbytwo.jenkins.model.BuildResult.FAILURE
 import static com.offbytwo.jenkins.model.BuildResult.SUCCESS
 import static com.stackrox.model.StorageEnforcementAction.FAIL_BUILD_ENFORCEMENT
-import static com.stackrox.model.StorageEnforcementAction.UNSET_ENFORCEMENT
 import static com.stackrox.model.StorageLifecycleStage.BUILD
 
 import com.offbytwo.jenkins.model.BuildResult
@@ -20,52 +19,40 @@ class ImageScanningTest extends BaseSpecification {
     private static final String CENTRAL_URI = "https://central.stackrox:443"
 
     @Unroll
-    def "image scanning test with toggle enforcement(#imageName, #policyName,  #enforcement, #endStatus)"() {
-        given:
-        "a scanner repo with images"
+    def "image scanning test with toggle enforcement(#imageName, #policyName,  #enforcements, #endStatus)"() {
         when:
-        "Jenkins is setup"
+        StoragePolicy enforcementPolicy = updatePolicy(policyName, "latest", enforcements)
+
         then:
-        StoragePolicy updatedPolicy = getUpdatedPolicy(policyName, "latest", enforcement)
-        List<StorageListPolicy> policies = restApiClient.getPolicies()
-        def policyId = policies.find { it.name == policyName }?.id
-        assert policyId != null
-        restApiClient.updatePolicy(updatedPolicy, policyId)
-        StoragePolicy enforcementPolicy = restApiClient.getPolicy(policyId)
-        if (enforcement == UNSET_ENFORCEMENT) {
-            assert enforcementPolicy.enforcementActions.empty
-        } else {
-            assert enforcementPolicy.enforcementActions == [enforcement]
-        }
+        assert enforcementPolicy.enforcementActions == enforcements
         assert enforcementPolicy.lifecycleStages == [BUILD]
+
+        when:
         BuildResult status = jenkins.createAndRunJob(imageName, CENTRAL_URI, token, true, true)
-        println "Jenkins job status is ${status}, expecting ${endStatus}"
+
+        then:
         assert status == endStatus
 
         where:
         "data inputs are: "
-        imageName      | policyName          | enforcement            | endStatus
-        "nginx:latest" | "Fixable CVSS >= 7" | UNSET_ENFORCEMENT      | SUCCESS
-        "nginx:latest" | "Fixable CVSS >= 7" | FAIL_BUILD_ENFORCEMENT | FAILURE
+        imageName      | policyName          | enforcements             | endStatus
+        "nginx:latest" | "Fixable CVSS >= 7" | []                       | SUCCESS
+        "nginx:latest" | "Fixable CVSS >= 7" | [FAIL_BUILD_ENFORCEMENT] | FAILURE
     }
 
     @Unroll
     def "image scanning test with images enforcement turned on (#imageName, #policyName, #tag, #enforcement)"() {
-        given:
-        "a repo with images in the scanner repo"
         when:
-        "Jenkins is setup"
+        StoragePolicy enforcementPolicy = updatePolicy(policyName, tag, [enforcement])
+
         then:
-        StoragePolicy updatedPolicy = getUpdatedPolicy(policyName, tag, enforcement)
-        List<StorageListPolicy> policies = restApiClient.getPolicies()
-        def policyId = policies.find { it.name == policyName }?.id
-        println "Updating the policy $policyName"
-        assert policyId != null
-        restApiClient.updatePolicy(updatedPolicy, policyId)
-        StoragePolicy enforcementPolicy = restApiClient.getPolicy(policyId)
         assert enforcementPolicy.enforcementActions == [FAIL_BUILD_ENFORCEMENT]
         assert enforcementPolicy.lifecycleStages == [BUILD]
+
+        when:
         BuildResult status = jenkins.createAndRunJob(imageName, CENTRAL_URI, token, true, true)
+
+        then:
         assert status == FAILURE
 
         where:
@@ -77,13 +64,10 @@ class ImageScanningTest extends BaseSpecification {
 
     @Unroll
     def "Negative image scanning tests (#imageName, #failOnCriticalPluginError,#endStatus)"() {
-        given:
-        "a repo with images in the scanner repo"
         when:
-        "Jenkins is setup"
-        then:
         BuildResult status = jenkins.createAndRunJob(imageName, CENTRAL_URI, token, false, failOnCriticalPluginError)
-        println "Jenkins job status is ${status}, expecting ${endStatus}"
+
+        then:
         assert status == endStatus
 
         where:
@@ -94,7 +78,17 @@ class ImageScanningTest extends BaseSpecification {
         "mis-spelled:lts" | false                     | SUCCESS
     }
 
-    StoragePolicy getUpdatedPolicy(String policyName, String tag, StorageEnforcementAction enforcement) {
+    StoragePolicy updatePolicy(String policyName, String tag, List<StorageEnforcementAction> enforcements) {
+        List<StorageListPolicy> policies = restApiClient.getPolicies()
+        def policyId = policies.find { it.name == policyName }?.id
+        assert policyId != null
+
+        StoragePolicy updatedPolicy = getUpdatedPolicy(policyName, tag, enforcements)
+        restApiClient.updatePolicy(updatedPolicy, policyId)
+        return restApiClient.getPolicy(policyId)
+    }
+
+    StoragePolicy getUpdatedPolicy(String policyName, String tag, List<StorageEnforcementAction> enforcements) {
         StoragePolicy updatedPolicy = new StoragePolicy()
                 .name(policyName)
                 .lifecycleStages([BUILD])
@@ -102,7 +96,7 @@ class ImageScanningTest extends BaseSpecification {
                 .fields(new StoragePolicyFields().imageName(
                         new StorageImageNamePolicy().tag(tag)))
                 .categories(["Image Assurance"])
-                .enforcementActions([enforcement])
+                .enforcementActions(enforcements)
         return updatedPolicy
     }
 }
