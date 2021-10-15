@@ -79,7 +79,7 @@ class ImageScanningTest extends BaseSpecification {
     }
 
     StoragePolicy updatePolicy(String policyName, String tag, List<StorageEnforcementAction> enforcements) {
-        List<StorageListPolicy> policies = restApiClient.getPolicies()
+        List<StorageListPolicy> policies = restApiClient.policies
         def policyId = policies.find { it.name == policyName }?.id
         assert policyId != null
 
