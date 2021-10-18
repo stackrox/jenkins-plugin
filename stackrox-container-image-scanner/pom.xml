@@ -196,6 +196,7 @@
                             <invokerPackage>com.stackrox.invoker</invokerPackage>
                             <modelPackage>com.stackrox.model</modelPackage>
                             <configOptions>
+                                <disallowAdditionalPropertiesIfNotPresent>false</disallowAdditionalPropertiesIfNotPresent>
                                 <dateLibrary>java8</dateLibrary>
                                 <java8>true</java8>
                                 <sourceFolder>src/gen/java/main</sourceFolder>
