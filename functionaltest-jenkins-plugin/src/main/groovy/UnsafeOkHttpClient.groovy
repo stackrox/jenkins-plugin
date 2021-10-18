@@ -31,7 +31,7 @@ class UnsafeOkHttpClient {
 
         // Install the all-trusting trust manager
         final SSLContext sslContext = SSLContext.getInstance("SSL")
-        sslContext.init(null, trustAllCerts, new SecureRandom())
+        sslContext.init(null, trustAllCerts, null)
 
         // Create an ssl socket factory with our all-trusting manager
         final SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory()
