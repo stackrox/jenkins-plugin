@@ -45,7 +45,7 @@ class HttpClientUtilsTest {
         SERVER.stop();
     }
 
-    @DisplayName("HTTPS should work when")
+    @DisplayName("TLS should work when")
     @ParameterizedTest(name = "tlsVerify: {0} and custom PEM: {1}")
     @CsvSource({"true,true", "false,true", "false,false"})
     void shouldWorkWithProperlyConfiguredTLS(boolean tlsVerify, boolean useCaCert) throws IOException {
