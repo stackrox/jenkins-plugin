@@ -84,12 +84,6 @@ class ImageScanningTest extends BaseSpecification {
         def policyId = policies.find { it.name == policyName }?.id
         assert policyId != null
 
-        StoragePolicy updatedPolicy = getUpdatedPolicy(policyName, tag, enforcements)
-        restApiClient.updatePolicy(updatedPolicy, policyId)
-        return restApiClient.getPolicy(policyId)
-    }
-
-    StoragePolicy getUpdatedPolicy(String policyName, String tag, List<StorageEnforcementAction> enforcements) {
         StoragePolicy updatedPolicy = new StoragePolicy()
                 .name(policyName)
                 .lifecycleStages([BUILD])
@@ -98,6 +92,8 @@ class ImageScanningTest extends BaseSpecification {
                         new StorageImageNamePolicy().tag(tag)))
                 .categories(["Image Assurance"])
                 .enforcementActions(enforcements)
-        return updatedPolicy
+        restApiClient.updatePolicy(updatedPolicy, policyId)
+        return restApiClient.getPolicy(policyId)
     }
+
 }
