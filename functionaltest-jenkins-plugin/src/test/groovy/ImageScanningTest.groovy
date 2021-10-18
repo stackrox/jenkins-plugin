@@ -41,12 +41,13 @@ class ImageScanningTest extends BaseSpecification {
     }
 
     @Unroll
-    def "image scanning test with images enforcement turned on (#imageName, #policyName, #tag, #enforcement)"() {
+    def "image scanning test with images enforcement turned on (#imageName, #policyName, #tag)"() {
         when:
-        StoragePolicy enforcementPolicy = updatePolicy(policyName, tag, [enforcement])
+        def enforcements = [FAIL_BUILD_ENFORCEMENT]
+        StoragePolicy enforcementPolicy = updatePolicy(policyName, tag, enforcements)
 
         then:
-        assert enforcementPolicy.enforcementActions == [FAIL_BUILD_ENFORCEMENT]
+        assert enforcementPolicy.enforcementActions == enforcements
         assert enforcementPolicy.lifecycleStages == [BUILD]
 
         when:
@@ -57,9 +58,9 @@ class ImageScanningTest extends BaseSpecification {
 
         where:
         "data inputs are: "
-        imageName             | policyName          | tag      | enforcement
-        "jenkins/jenkins:lts" | "Fixable CVSS >= 7" | "lts"    | FAIL_BUILD_ENFORCEMENT
-        "nginx:latest"        | "Latest tag"        | "latest" | FAIL_BUILD_ENFORCEMENT
+        imageName             | policyName          | tag
+        "jenkins/jenkins:lts" | "Fixable CVSS >= 7" | "lts"
+        "nginx:latest"        | "Latest tag"        | "latest"
     }
 
     @Unroll
