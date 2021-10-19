@@ -46,7 +46,7 @@ openApiGenerate {
             dateLibrary                             : "java8",
             library                                 : "okhttp-gson",
             java8                                   : "true",
-            disallowAdditionalPropertiesIfNotPresent: false,
+            disallowAdditionalPropertiesIfNotPresent: "false",
     ]
 }
 
