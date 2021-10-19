@@ -44,8 +44,8 @@ class RestApiClient {
         return policyServiceApi.policyServiceListPolicies(null, null, null, null, null).getPolicies()
     }
 
-    def updatePolicy(StoragePolicy policyObj, String id) {
-        return (StoragePolicy) policyServiceApi.policyServicePutPolicy(id, policyObj)
+    void updatePolicy(StoragePolicy policyObj, String id) {
+        policyServiceApi.policyServicePutPolicy(id, policyObj)
     }
 
     StoragePolicy getPolicy(String id) {
