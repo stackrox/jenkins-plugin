@@ -1,10 +1,9 @@
 package com.stackrox.jenkins.plugins.data;
 
+import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 
 import com.stackrox.model.StorageEmbeddedVulnerability;
-
-import java.util.Objects;
 
 import static java.time.format.DateTimeFormatter.ISO_DATE_TIME;
 
@@ -56,22 +55,13 @@ public class CVE {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-
         CVE cve = (CVE) o;
-
-        if (getPackageName() != null ? !getPackageName().equals(cve.getPackageName()) : cve.getPackageName() != null)
-            return false;
-        if (getPackageVersion() != null ? !getPackageVersion().equals(cve.getPackageVersion()) : cve.getPackageVersion() != null)
-            return false;
-        return Objects.equals(vulnerability, cve.vulnerability);
+        return Objects.equal(getPackageName(), cve.getPackageName()) && Objects.equal(getPackageVersion(), cve.getPackageVersion()) && Objects.equal(vulnerability, cve.vulnerability);
     }
 
     @Override
     public int hashCode() {
-        int result = getPackageName() != null ? getPackageName().hashCode() : 0;
-        result = 31 * result + (getPackageVersion() != null ? getPackageVersion().hashCode() : 0);
-        result = 31 * result + (vulnerability != null ? vulnerability.hashCode() : 0);
-        return result;
+        return Objects.hashCode(getPackageName(), getPackageVersion(), vulnerability);
     }
 
     @Override
