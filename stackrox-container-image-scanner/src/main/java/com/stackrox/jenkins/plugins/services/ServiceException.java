@@ -19,12 +19,14 @@ public class ServiceException extends IOException {
 
     public static ServiceException fromApiException(String ownMessage, ApiException apiException) {
         String innerMessage = apiException.getMessage();
-        if (!Strings.isNullOrEmpty(apiException.getResponseBody())) {
+        String body = apiException.getResponseBody();
+        if (!Strings.isNullOrEmpty(body)) {
             try {
-                RuntimeError error = GSON.fromJson(apiException.getResponseBody(), RuntimeError.class);
+                RuntimeError error = GSON.fromJson(body, RuntimeError.class);
                 innerMessage = error.getMessage();
             } catch (JsonSyntaxException ignored) {
-
+                String detailMessage = String.format("%s. Status code: %d. Body: %s", ownMessage, apiException.getCode(), body);
+                return new ServiceException(detailMessage, apiException);
             }
         }
         String detailMessage;
