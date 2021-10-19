@@ -22,12 +22,19 @@ import okhttp3.OkHttpClient;
 
 import com.stackrox.invoker.ApiClient;
 
+import static com.stackrox.jenkins.plugins.services.ApiClientFactory.StackRoxTlsValidationMode.INSECURE_ACCEPT_ANY;
+
 public class ApiClientFactory {
+
+    public enum StackRoxTlsValidationMode {
+        VALIDATE,
+        INSECURE_ACCEPT_ANY
+    }
 
     private static final Duration TIMEOUT = Duration.ofSeconds(30);
 
-    public static ApiClient newApiClient(String basePath, String apiKey, @Nullable String caCert, boolean insecure) throws IOException {
-        OkHttpClient client = newHttpClient(insecure, caCert);
+    public static ApiClient newApiClient(String basePath, String apiKey, @Nullable String caCert, StackRoxTlsValidationMode tlsValidationMode) throws IOException {
+        OkHttpClient client = newHttpClient(tlsValidationMode, caCert);
         ApiClient apiClient = new ApiClient(client);
         apiClient.setBearerToken(apiKey);
         apiClient.setBasePath(basePath);
@@ -35,14 +42,14 @@ public class ApiClientFactory {
     }
 
     static ApiClient newInsecureApiClient(String basePath, String apiKey) throws IOException {
-        return newApiClient(basePath, apiKey, "", true);
+        return newApiClient(basePath, apiKey, "", INSECURE_ACCEPT_ANY);
     }
 
     @Nonnull
-    static OkHttpClient newHttpClient(boolean insecure, @Nullable String caCert) throws IOException {
+    static OkHttpClient newHttpClient(StackRoxTlsValidationMode tlsValidationMode, @Nullable String caCert) throws IOException {
         OkHttpClient.Builder builder;
         try {
-            if (insecure) {
+            if (tlsValidationMode == INSECURE_ACCEPT_ANY) {
                 builder = getUnsafeBuilder();
             } else {
                 if (Strings.isNullOrEmpty(caCert)) {
@@ -84,8 +91,7 @@ public class ApiClientFactory {
         };
 
         // Install the all-trusting trust manager
-        final SSLContext sslContext = SSLContext.getInstance("SSL");
-        sslContext.init(null, trustAllCerts, null);
+        final SSLContext sslContext = getSslContext(trustAllCerts);
         // Create an ssl socket factory with our all-trusting manager
         final SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
 
@@ -107,11 +113,16 @@ public class ApiClientFactory {
         TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
         trustManagerFactory.init(keyStore);
         TrustManager[] trustManagers = trustManagerFactory.getTrustManagers();
-        SSLContext sslContext = SSLContext.getInstance("SSL");
-        sslContext.init(null, trustManagers, null);
-
+        SSLContext sslContext = getSslContext(trustManagers);
 
         return new OkHttpClient.Builder()
                 .sslSocketFactory(sslContext.getSocketFactory(), (X509TrustManager) trustManagers[0]);
+    }
+
+    @Nonnull
+    private static SSLContext getSslContext(TrustManager[] trustAllCerts) throws NoSuchAlgorithmException, KeyManagementException {
+        final SSLContext sslContext = SSLContext.getInstance("SSL");
+        sslContext.init(null, trustAllCerts, null);
+        return sslContext;
     }
 }

@@ -103,6 +103,13 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
         return enableTLSVerification;
     }
 
+    ApiClientFactory.StackRoxTlsValidationMode getTLSValidationMode() {
+        if (enableTLSVerification) {
+            return ApiClientFactory.StackRoxTlsValidationMode.VALIDATE;
+        }
+        return ApiClientFactory.StackRoxTlsValidationMode.INSECURE_ACCEPT_ANY;
+    }
+
     @DataBoundSetter
     public void setEnableTLSVerification(boolean enableTLSVerification) {
         this.enableTLSVerification = enableTLSVerification;
@@ -166,7 +173,7 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
         List<ImageCheckResults> results = Lists.newArrayList();
 
         ApiClient apiClient = ApiClientFactory.newApiClient(
-                getPortalAddress(), getApiToken().getPlainText(), getCaCertPEM(), !enableTLSVerification);
+                getPortalAddress(), getApiToken().getPlainText(), getCaCertPEM(), getTLSValidationMode());
         ImageService imageService = new ImageService(apiClient);
         DetectionService detectionService = new DetectionService(apiClient);
 
@@ -282,7 +289,7 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
         }
 
         private boolean checkRoxAuthStatus(final String portalAddress, final String apiToken, final boolean tlsVerify, final String caCertPEM) throws IOException {
-            ApiClient apiClient = ApiClientFactory.newApiClient(portalAddress, apiToken, caCertPEM, !tlsVerify);
+            ApiClient apiClient = ApiClientFactory.newApiClient(portalAddress, apiToken, caCertPEM, validationMode(tlsVerify));
             V1AuthStatus status;
             try {
                 status = new AuthServiceApi(apiClient).authServiceGetAuthStatus();
@@ -291,6 +298,13 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
             }
 
             return !Strings.isNullOrEmpty(status.getUserId());
+        }
+
+        ApiClientFactory.StackRoxTlsValidationMode validationMode(boolean tlsVerify) {
+            if (tlsVerify) {
+                return ApiClientFactory.StackRoxTlsValidationMode.VALIDATE;
+            }
+            return ApiClientFactory.StackRoxTlsValidationMode.INSECURE_ACCEPT_ANY;
         }
     }
 }

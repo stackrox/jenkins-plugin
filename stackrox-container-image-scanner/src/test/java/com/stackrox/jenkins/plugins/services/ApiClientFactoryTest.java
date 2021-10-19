@@ -1,10 +1,10 @@
 package com.stackrox.jenkins.plugins.services;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.anyUrl;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.ok;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
+import static com.stackrox.jenkins.plugins.services.ApiClientFactory.StackRoxTlsValidationMode.VALIDATE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -46,13 +46,14 @@ class ApiClientFactoryTest {
     }
 
     @DisplayName("TLS should work when")
-    @ParameterizedTest(name = "tlsVerify: {0} and custom PEM: {1}")
-    @CsvSource({"true,true", "false,true", "false,false"})
-    void shouldBeAbleT(boolean tlsVerify, boolean caCert) throws IOException {
+    @ParameterizedTest(name = "TLS: {0} and custom PEM: {1}")
+    @CsvSource({"VALIDATE,true", "INSECURE_ACCEPT_ANY,true", "INSECURE_ACCEPT_ANY,false"})
+    void shouldBeAbleT(ApiClientFactory.StackRoxTlsValidationMode tlsVerify, boolean caCert) throws IOException {
         File clientPem = Paths.get("src", "test", "resources", "cert", "localhost.pem").toFile();
         String pem = caCert ? FileUtils.readFileToString(clientPem, StandardCharsets.UTF_8) : null;
 
-        OkHttpClient client = ApiClientFactory.newHttpClient(!tlsVerify, pem);
+
+        OkHttpClient client = ApiClientFactory.newHttpClient(tlsVerify, pem);
 
         Request request = new Request.Builder().url(SERVER.baseUrl()).build();
         Response response = client.newCall(request).execute();
@@ -61,9 +62,9 @@ class ApiClientFactoryTest {
     }
 
     @Test
-    @DisplayName("TLS should FAIL when tlsVerify: true and custom PEM: false")
+    @DisplayName("TLS should FAIL when VALIDATE TLS and no PEM")
     void shouldThrowWhenTLSCouldNotBeVerified() throws IOException {
-        OkHttpClient client = ApiClientFactory.newHttpClient(false, "");
+        OkHttpClient client = ApiClientFactory.newHttpClient(VALIDATE, "");
 
         Request request = new Request.Builder().url(SERVER.baseUrl()).build();
         Exception exception = assertThrows(IOException.class, () -> client.newCall(request).execute());
@@ -73,7 +74,7 @@ class ApiClientFactoryTest {
     }
 
     @Test
-    @DisplayName("TLS should FAIL when tlsVerify: true and custom PEM has wrong host")
+    @DisplayName("TLS should FAIL when VALIDATE TLS and custom PEM has wrong host")
     void shouldThrowWhenHostIsInvalid() throws IOException {
         String keyStorePath = Paths.get("src", "test", "resources", "cert", "selfsigned.jks").toString();
         File clientPem = Paths.get("src", "test", "resources", "cert", "client.pem").toFile();
@@ -84,7 +85,7 @@ class ApiClientFactoryTest {
         server.stubFor(get(anyUrl()).willReturn(ok().withBody("{}")));
         server.start();
 
-        OkHttpClient client = ApiClientFactory.newHttpClient(false, pem);
+        OkHttpClient client = ApiClientFactory.newHttpClient(VALIDATE, pem);
 
         Request request = new Request.Builder().url(server.baseUrl()).build();
         Exception exception = assertThrows(IOException.class, () -> client.newCall(request).execute());
