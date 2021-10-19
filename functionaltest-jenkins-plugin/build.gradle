@@ -2,6 +2,7 @@ plugins {
     id 'groovy'
     id 'java'
     id "codenarc"
+    id "org.openapi.generator" version "5.2.1"
 }
 
 group 'functional-automation'
@@ -33,21 +34,39 @@ sourceSets.each { ss ->
     ss.java.srcDirs = []
 }
 
+openApiGenerate {
+    generatorName = "java"
+    generateApiTests = false
+    inputSpec = "../stackrox-container-image-scanner/api.yaml"
+    outputDir = "$buildDir/generated".toString()
+    apiPackage = "com.stackrox.api"
+    invokerPackage = "com.stackrox.invoker"
+    modelPackage = "com.stackrox.model"
+    configOptions = [
+            dateLibrary                             : "java8",
+            library                                 : "okhttp-gson",
+            java8                                   : "true",
+            disallowAdditionalPropertiesIfNotPresent: "false",
+    ]
+}
+
+sourceSets.main.java.srcDirs += "$buildDir/generated/src/main".toString()
+compileJava.dependsOn tasks.openApiGenerate
 
 dependencies {
-    implementation 'com.google.code.gson:gson:2.7'
-    implementation 'io.fabric8:kubernetes-client:4.1.2'
-    implementation 'io.kubernetes:client-java:2.0.0-beta1'
-    implementation 'org.codehaus.groovy:groovy-all:2.4.18'
-    implementation group: 'com.jayway.restassured', name: 'rest-assured', version: '2.4.1'
-    implementation group: 'com.github.docker-java', name: 'docker-java', version: '3.1.0-rc-3'
-    implementation group: 'commons-cli', name: 'commons-cli', version: '1.2'
-    implementation group: 'commons-httpclient', name: 'commons-httpclient', version: '3.1'
+    implementation 'org.codehaus.groovy:groovy-all:2.4.19'
     implementation group: 'org.spockframework', name: 'spock-core', version: '1.2-groovy-2.4'
-    implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.7'
-    testImplementation group: 'junit', name: 'junit', version: '4.11'
     implementation group: 'com.offbytwo.jenkins', name: 'jenkins-client', version: '0.3.8'
     // JAX-B dependencies for JDK 9+
     implementation "jakarta.xml.bind:jakarta.xml.bind-api:2.3.2"
     implementation "org.glassfish.jaxb:jaxb-runtime:2.3.2"
+
+    implementation 'io.swagger:swagger-annotations:1.5.24'
+    implementation "com.google.code.findbugs:jsr305:3.0.2"
+    implementation 'com.squareup.okhttp3:okhttp:4.9.1'
+    implementation 'com.squareup.okhttp3:logging-interceptor:4.9.1'
+    implementation 'com.google.code.gson:gson:2.8.6'
+    implementation 'io.gsonfire:gson-fire:1.8.4'
+    implementation 'org.openapitools:jackson-databind-nullable:0.2.1'
+    implementation "jakarta.annotation:jakarta.annotation-api:1.3.5"
 }
