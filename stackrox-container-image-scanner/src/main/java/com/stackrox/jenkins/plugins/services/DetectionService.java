@@ -29,7 +29,7 @@ public class DetectionService {
         try {
             alerts = api.detectionServiceDetectBuildTime(new V1BuildDetectionRequest().imageName(imageName)).getAlerts();
         } catch (ApiException e) {
-            throw new ServiceException("Failed build time detection request", e);
+            throw ServiceException.fromApiException("Failed build time detection request", e);
         }
 
         return emptyIfNull(alerts).stream()

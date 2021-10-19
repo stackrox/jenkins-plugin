@@ -32,7 +32,7 @@ public class ImageService {
         try {
             scan = api.imageServiceScanImage(request).getScan();
         } catch (ApiException e) {
-            throw new ServiceException("Failed image scan request", e);
+            throw ServiceException.fromApiException("Failed image scan request", e);
         }
 
         if (scan == null) {

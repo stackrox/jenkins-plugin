@@ -13,27 +13,26 @@ public class ServiceException extends IOException {
 
     public static final Gson GSON = new Gson();
 
-    private final String detailMessage;
-
-    public ServiceException(String message, ApiException e) {
-        super(e);
-        String msg;
-        if (Strings.isNullOrEmpty(e.getResponseBody())) {
-            msg = e.getMessage();
-        } else {
-            try {
-                RuntimeError error = GSON.fromJson(e.getResponseBody(), RuntimeError.class);
-                msg = error.getMessage();
-            } catch (JsonSyntaxException ex) {
-                msg = e.getMessage();
-            }
-        }
-        detailMessage = String.format("%s. Status code: %d. Error: %s", message, e.getCode(), msg);
-        setStackTrace(e.getStackTrace());
+    protected ServiceException(String message, ApiException cause) {
+        super(message, cause);
     }
 
-    @Override
-    public String getMessage() {
-        return this.detailMessage;
+    public static ServiceException fromApiException(String ownMessage, ApiException apiException) {
+        String innerMessage = apiException.getMessage();
+        if (!Strings.isNullOrEmpty(apiException.getResponseBody())) {
+            try {
+                RuntimeError error = GSON.fromJson(apiException.getResponseBody(), RuntimeError.class);
+                innerMessage = error.getMessage();
+            } catch (JsonSyntaxException ignored) {
+
+            }
+        }
+        String detailMessage;
+        if (Strings.isNullOrEmpty(innerMessage)) {
+            detailMessage = String.format("%s. Status code: %d.", ownMessage, apiException.getCode());
+        } else {
+            detailMessage = String.format("%s. Status code: %d. Error: %s", ownMessage, apiException.getCode(), innerMessage);
+        }
+        return new ServiceException(detailMessage, apiException);
     }
 }

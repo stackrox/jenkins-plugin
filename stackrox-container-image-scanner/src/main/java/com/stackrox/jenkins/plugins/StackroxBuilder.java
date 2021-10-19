@@ -287,7 +287,7 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
             try {
                 status = new AuthServiceApi(apiClient).authServiceGetAuthStatus();
             } catch (ApiException e) {
-                throw new ServiceException("Could not get auth status.", e);
+                throw ServiceException.fromApiException("Could not get auth status.", e);
             }
 
             return !Strings.isNullOrEmpty(status.getUserId());
