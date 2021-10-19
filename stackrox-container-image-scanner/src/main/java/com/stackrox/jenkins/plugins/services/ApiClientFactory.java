@@ -34,7 +34,7 @@ public class ApiClientFactory {
         return apiClient;
     }
 
-    public static ApiClient newInsecureApiClient(String basePath, String apiKey) throws IOException {
+    static ApiClient newInsecureApiClient(String basePath, String apiKey) throws IOException {
         return newApiClient(basePath, apiKey, "", true);
     }
 
