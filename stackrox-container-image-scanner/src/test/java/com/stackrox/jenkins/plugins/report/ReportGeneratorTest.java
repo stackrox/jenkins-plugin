@@ -122,8 +122,7 @@ class ReportGeneratorTest {
                 ImmutableList.of(
                         new StoragePolicy().name("Latest Tag")
                                 .description("")
-                                .severity(MEDIUM_SEVERITY)
-                                .remediation("No remediation actions documented."),
+                                .severity(MEDIUM_SEVERITY),
                         new StoragePolicy()
                                 .name("Fixable Severity at least Important")
                                 .description("Alert on deployments with fixable vulnerabilities with a Severity Rating at least Important")

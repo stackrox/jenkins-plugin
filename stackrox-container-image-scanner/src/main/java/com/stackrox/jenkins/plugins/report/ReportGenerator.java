@@ -1,5 +1,7 @@
 package com.stackrox.jenkins.plugins.report;
 
+import com.google.common.base.Strings;
+
 import com.stackrox.jenkins.plugins.data.CVE;
 import com.stackrox.jenkins.plugins.data.ImageCheckResults;
 import com.stackrox.model.StoragePolicy;
@@ -26,6 +28,7 @@ public class ReportGenerator {
     private static final String CVES_FILENAME = "cves.csv";
     private static final String POLICY_VIOLATIONS_FILENAME = "policyViolations.csv";
     private static final String NOT_AVAILABLE = "\"-\"";
+    private static final String NO_REMEDIATION_ACTIONS = "No remediation actions documented.";
 
     public static void generateBuildReport(List<ImageCheckResults> results, FilePath reportsDir) throws AbortException {
         try {
@@ -67,7 +70,7 @@ public class ReportGenerator {
                             policy.getName(),
                             policy.getDescription(),
                             prettySeverity(policy.getSeverity()),
-                            policy.getRemediation()
+                            prettyRemediation(policy.getRemediation())
                     );
                 }
             }
@@ -79,6 +82,10 @@ public class ReportGenerator {
             return null;
         }
         return StringUtils.substringBefore(severity.toString(), "_");
+    }
+
+    private static String prettyRemediation(String remediation) {
+        return Strings.isNullOrEmpty(remediation) ? NO_REMEDIATION_ACTIONS : remediation;
     }
 
     private static CSVPrinter openCsv(OutputStream outputStream, String[] header) throws IOException {
