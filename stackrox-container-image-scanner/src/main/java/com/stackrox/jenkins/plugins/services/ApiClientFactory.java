@@ -45,7 +45,11 @@ public class ApiClientFactory {
             if (insecure) {
                 builder = getUnsafeBuilder();
             } else {
-                builder = getSecureBuilder(caCert);
+                if (Strings.isNullOrEmpty(caCert)) {
+                    builder = new OkHttpClient().newBuilder();
+                } else {
+                    builder = getSecureBuilder(caCert);
+                }
             }
         } catch (Exception e) {
             throw new IOException("Could not load certificate", e);
@@ -92,11 +96,7 @@ public class ApiClientFactory {
         return builder;
     }
 
-    private static OkHttpClient.Builder getSecureBuilder(String caCertPEM) throws Exception {
-        if (Strings.isNullOrEmpty(caCertPEM)) {
-            return new OkHttpClient().newBuilder();
-        }
-
+    private static OkHttpClient.Builder getSecureBuilder(@Nonnull String caCertPEM) throws Exception {
         KeyStore keyStore = KeyStore.getInstance("pkcs12");
         keyStore.load(null, "".toCharArray());
 
@@ -107,7 +107,7 @@ public class ApiClientFactory {
         TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
         trustManagerFactory.init(keyStore);
         TrustManager[] trustManagers = trustManagerFactory.getTrustManagers();
-        SSLContext sslContext = SSLContext.getInstance("TLS");
+        SSLContext sslContext = SSLContext.getInstance("SSL");
         sslContext.init(null, trustManagers, null);
 
 
