@@ -1,6 +1,6 @@
 package com.stackrox.jenkins.plugins.services;
 
-import static com.stackrox.jenkins.plugins.data.ListUtil.safe;
+import static com.stackrox.jenkins.plugins.data.ListUtil.emptyIfNull;
 import static com.stackrox.model.StorageEnforcementAction.FAIL_BUILD_ENFORCEMENT;
 
 import java.io.IOException;
@@ -32,9 +32,9 @@ public class DetectionService {
             throw new ServiceException("Failed build time detection request", e);
         }
 
-        return safe(alerts).stream()
+        return emptyIfNull(alerts).stream()
                 .map(StorageAlert::getPolicy)
-                .filter(p -> p != null && safe(p.getEnforcementActions()).contains(FAIL_BUILD_ENFORCEMENT))
+                .filter(p -> p != null && emptyIfNull(p.getEnforcementActions()).contains(FAIL_BUILD_ENFORCEMENT))
                 .collect(Collectors.toList());
     }
 }

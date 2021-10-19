@@ -1,11 +1,10 @@
 package com.stackrox.jenkins.plugins.services;
 
-import static com.stackrox.jenkins.plugins.data.ListUtil.safe;
+import static com.stackrox.jenkins.plugins.data.ListUtil.emptyIfNull;
 
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import com.google.common.collect.Lists;
 
@@ -41,8 +40,8 @@ public class ImageService {
         }
 
         List<CVE> cves = Lists.newArrayList();
-        for (StorageEmbeddedImageScanComponent component : safe(scan.getComponents())) {
-            for (StorageEmbeddedVulnerability cve : safe(component.getVulns())) {
+        for (StorageEmbeddedImageScanComponent component : emptyIfNull(scan.getComponents())) {
+            for (StorageEmbeddedVulnerability cve : emptyIfNull(component.getVulns())) {
                 CVE cveToAdd = new CVE(component.getName(), component.getVersion(), cve);
                 cves.add(cveToAdd);
             }
