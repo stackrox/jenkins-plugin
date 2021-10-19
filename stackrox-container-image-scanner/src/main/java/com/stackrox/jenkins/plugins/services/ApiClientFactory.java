@@ -1,17 +1,5 @@
 package com.stackrox.jenkins.plugins.services;
 
-import com.google.common.base.Strings;
-
-import com.stackrox.invoker.ApiClient;
-
-import okhttp3.OkHttpClient;
-
-import javax.annotation.Nonnull;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSocketFactory;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.TrustManagerFactory;
-import javax.net.ssl.X509TrustManager;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -21,12 +9,24 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.time.Duration;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
+import javax.net.ssl.X509TrustManager;
+
+import com.google.common.base.Strings;
+import okhttp3.OkHttpClient;
+
+import com.stackrox.invoker.ApiClient;
 
 public class ApiClientFactory {
 
     private static final Duration TIMEOUT = Duration.ofSeconds(30);
 
-    public static ApiClient newApiClient(String basePath, String apiKey, String caCert, boolean insecure) throws IOException {
+    public static ApiClient newApiClient(String basePath, String apiKey, @Nullable String caCert, boolean insecure) throws IOException {
         OkHttpClient client = newHttpClient(insecure, caCert);
         ApiClient apiClient = new ApiClient(client);
         apiClient.setBearerToken(apiKey);
@@ -39,7 +39,7 @@ public class ApiClientFactory {
     }
 
     @Nonnull
-    public static OkHttpClient newHttpClient(boolean insecure, String caCert) throws IOException {
+    static OkHttpClient newHttpClient(boolean insecure, @Nullable String caCert) throws IOException {
         OkHttpClient.Builder builder;
         try {
             if (insecure) {
