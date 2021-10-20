@@ -1,8 +1,5 @@
 package com.stackrox.jenkins.plugins;
 
-import static com.stackrox.jenkins.plugins.services.ApiClientFactory.StackRoxTlsValidationMode.INSECURE_ACCEPT_ANY;
-import static com.stackrox.jenkins.plugins.services.ApiClientFactory.StackRoxTlsValidationMode.VALIDATE;
-
 import java.io.IOException;
 import java.util.List;
 import javax.annotation.Nonnull;
@@ -55,7 +52,7 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
     private Secret apiToken = Secret.fromString("");
     private boolean failOnPolicyEvalFailure;
     private boolean failOnCriticalPluginError;
-    private ApiClientFactory.StackRoxTlsValidationMode tlsValidationMode = INSECURE_ACCEPT_ANY;
+    private boolean enableTLSVerification;
     private String caCertPEM;
 
     private RunConfig runConfig;
@@ -103,12 +100,19 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
     }
 
     public boolean isEnableTLSVerification() {
-        return tlsValidationMode == VALIDATE;
+        return enableTLSVerification;
+    }
+
+    ApiClientFactory.StackRoxTlsValidationMode getTLSValidationMode() {
+        if (enableTLSVerification) {
+            return ApiClientFactory.StackRoxTlsValidationMode.VALIDATE;
+        }
+        return ApiClientFactory.StackRoxTlsValidationMode.INSECURE_ACCEPT_ANY;
     }
 
     @DataBoundSetter
     public void setEnableTLSVerification(boolean enableTLSVerification) {
-        this.tlsValidationMode = enableTLSVerification ? VALIDATE : INSECURE_ACCEPT_ANY;
+        this.enableTLSVerification = enableTLSVerification;
     }
 
     public String getCaCertPEM() {
@@ -169,7 +173,7 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
         List<ImageCheckResults> results = Lists.newArrayList();
 
         ApiClient apiClient = ApiClientFactory.newApiClient(
-                getPortalAddress(), getApiToken().getPlainText(), getCaCertPEM(), tlsValidationMode);
+                getPortalAddress(), getApiToken().getPlainText(), getCaCertPEM(), getTLSValidationMode());
         ImageService imageService = new ImageService(apiClient);
         DetectionService detectionService = new DetectionService(apiClient);
 
@@ -297,7 +301,10 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
         }
 
         ApiClientFactory.StackRoxTlsValidationMode validationMode(boolean tlsVerify) {
-            return tlsVerify ? VALIDATE : INSECURE_ACCEPT_ANY;
+            if (tlsVerify) {
+                return ApiClientFactory.StackRoxTlsValidationMode.VALIDATE;
+            }
+            return ApiClientFactory.StackRoxTlsValidationMode.INSECURE_ACCEPT_ANY;
         }
     }
 }
