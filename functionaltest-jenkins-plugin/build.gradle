@@ -55,7 +55,7 @@ compileJava.dependsOn tasks.openApiGenerate
 
 dependencies {
     implementation 'org.codehaus.groovy:groovy-all:2.4.19'
-    implementation group: 'org.spockframework', name: 'spock-core', version: '1.2-groovy-2.4'
+    implementation group: 'org.spockframework', name: 'spock-core', version: '2.0-groovy-3.0'
     implementation group: 'com.offbytwo.jenkins', name: 'jenkins-client', version: '0.3.8'
     // JAX-B dependencies for JDK 9+
     implementation "jakarta.xml.bind:jakarta.xml.bind-api:2.3.2"
