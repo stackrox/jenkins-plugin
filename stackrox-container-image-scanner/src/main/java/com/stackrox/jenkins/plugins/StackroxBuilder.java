@@ -1,5 +1,8 @@
 package com.stackrox.jenkins.plugins;
 
+import static com.stackrox.jenkins.plugins.services.ApiClientFactory.StackRoxTlsValidationMode.INSECURE_ACCEPT_ANY;
+import static com.stackrox.jenkins.plugins.services.ApiClientFactory.StackRoxTlsValidationMode.VALIDATE;
+
 import java.io.IOException;
 import java.util.List;
 import javax.annotation.Nonnull;
@@ -104,10 +107,7 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
     }
 
     ApiClientFactory.StackRoxTlsValidationMode getTLSValidationMode() {
-        if (enableTLSVerification) {
-            return ApiClientFactory.StackRoxTlsValidationMode.VALIDATE;
-        }
-        return ApiClientFactory.StackRoxTlsValidationMode.INSECURE_ACCEPT_ANY;
+        return enableTLSVerification ? VALIDATE : INSECURE_ACCEPT_ANY;
     }
 
     @DataBoundSetter
@@ -301,10 +301,7 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
         }
 
         ApiClientFactory.StackRoxTlsValidationMode validationMode(boolean tlsVerify) {
-            if (tlsVerify) {
-                return ApiClientFactory.StackRoxTlsValidationMode.VALIDATE;
-            }
-            return ApiClientFactory.StackRoxTlsValidationMode.INSECURE_ACCEPT_ANY;
+            return tlsVerify ? VALIDATE : INSECURE_ACCEPT_ANY;
         }
     }
 }
