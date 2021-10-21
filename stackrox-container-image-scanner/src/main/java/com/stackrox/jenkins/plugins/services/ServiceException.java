@@ -18,23 +18,23 @@ public class ServiceException extends IOException {
     }
 
     public static ServiceException fromApiException(String ownMessage, ApiException apiException) {
-        String innerMessage = apiException.getMessage();
-        String body = apiException.getResponseBody();
-        if (!Strings.isNullOrEmpty(body)) {
+        StringBuilder messageBuilder = new StringBuilder();
+        messageBuilder.append(String.format("%s. Status code: %d.", ownMessage, apiException.getCode()));
+        String responseBody = apiException.getResponseBody();
+        if (!Strings.isNullOrEmpty(responseBody)) {
             try {
-                RuntimeError error = GSON.fromJson(body, RuntimeError.class);
-                innerMessage = error.getMessage();
-            } catch (JsonSyntaxException ignored) {
-                String detailMessage = String.format("%s. Status code: %d. Body: %s", ownMessage, apiException.getCode(), body);
-                return new ServiceException(detailMessage, apiException);
+                RuntimeError error = GSON.fromJson(responseBody, RuntimeError.class);
+                if (!Strings.isNullOrEmpty(error.getMessage())) {
+                    messageBuilder.append(String.format(" Error: %s", error.getMessage()));
+                }
+            } catch (JsonSyntaxException jsonException) {
+                messageBuilder.append(String.format(" Failed to parse error response as JSON document %s. Response body: %s", jsonException.getMessage(), responseBody));
+            }
+        } else {
+            if (!Strings.isNullOrEmpty(apiException.getMessage())) {
+                messageBuilder.append(String.format(" Error: %s", apiException.getMessage()));
             }
         }
-        String detailMessage;
-        if (Strings.isNullOrEmpty(innerMessage)) {
-            detailMessage = String.format("%s. Status code: %d.", ownMessage, apiException.getCode());
-        } else {
-            detailMessage = String.format("%s. Status code: %d. Error: %s", ownMessage, apiException.getCode(), innerMessage);
-        }
-        return new ServiceException(detailMessage, apiException);
+        return new ServiceException(messageBuilder.toString(), apiException);
     }
 }
