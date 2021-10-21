@@ -23,12 +23,14 @@ public class ImageService {
     private final ImageServiceApi api;
 
     public ImageService(ApiClient client) {
-        api = new ImageServiceApi(client);
+        this.api = new ImageServiceApi(client);
     }
 
 
     public List<CVE> getImageScanResults(String imageName) throws IOException {
-        V1ScanImageRequest request = new V1ScanImageRequest().imageName(imageName).force(true);
+        V1ScanImageRequest request = new V1ScanImageRequest()
+                .imageName(imageName)
+                .force(true);
         StorageImageScan scan;
         try {
             scan = api.imageServiceScanImage(request).getScan();

@@ -39,7 +39,7 @@ public class ApiClientFactory {
     private static final Duration TIMEOUT = Duration.ofSeconds(30);
     private static final int MAXIMUM_CACHE_SIZE = 5; // arbitrary chosen as there are no data to support this decision
 
-    static private class CacheKey {
+    private static class CacheKey {
         final private String caCert;
         final private StackRoxTlsValidationMode tlsValidationMode;
 

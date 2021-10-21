@@ -11,7 +11,7 @@ import com.stackrox.model.RuntimeError;
 
 public class ServiceException extends IOException {
 
-    public static final Gson GSON = new Gson();
+    private static final Gson GSON = new Gson();
 
     protected ServiceException(String message, ApiException cause) {
         super(message, cause);
@@ -30,10 +30,8 @@ public class ServiceException extends IOException {
             } catch (JsonSyntaxException jsonException) {
                 messageBuilder.append(String.format(" Failed to parse error response as JSON document %s. Response body: %s", jsonException.getMessage(), responseBody));
             }
-        } else {
-            if (!Strings.isNullOrEmpty(apiException.getMessage())) {
-                messageBuilder.append(String.format(" Error: %s", apiException.getMessage()));
-            }
+        } else if (!Strings.isNullOrEmpty(apiException.getMessage())) {
+            messageBuilder.append(String.format(" Error: %s", apiException.getMessage()));
         }
         return new ServiceException(messageBuilder.toString(), apiException);
     }
