@@ -290,14 +290,12 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
 
         private boolean checkRoxAuthStatus(final String portalAddress, final String apiToken, final boolean tlsVerify, final String caCertPEM) throws IOException {
             ApiClient apiClient = ApiClientFactory.newApiClient(portalAddress, apiToken, caCertPEM, validationMode(tlsVerify));
-            V1AuthStatus status;
             try {
-                status = new AuthServiceApi(apiClient).authServiceGetAuthStatus();
+                V1AuthStatus status = new AuthServiceApi(apiClient).authServiceGetAuthStatus();
+                return !Strings.isNullOrEmpty(status.getUserId());
             } catch (ApiException e) {
                 throw ServiceException.fromApiException("Could not get auth status.", e);
             }
-
-            return !Strings.isNullOrEmpty(status.getUserId());
         }
 
         private ApiClientFactory.StackRoxTlsValidationMode validationMode(boolean tlsVerify) {
