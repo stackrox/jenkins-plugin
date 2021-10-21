@@ -1,5 +1,7 @@
 package com.stackrox.jenkins.plugins.services;
 
+import static com.stackrox.jenkins.plugins.services.ApiClientFactory.StackRoxTlsValidationMode.INSECURE_ACCEPT_ANY;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -9,6 +11,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.time.Duration;
+import java.util.concurrent.ExecutionException;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.net.ssl.SSLContext;
@@ -17,12 +20,14 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 
+import com.google.common.base.Objects;
 import com.google.common.base.Strings;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import okhttp3.OkHttpClient;
 
 import com.stackrox.invoker.ApiClient;
-
-import static com.stackrox.jenkins.plugins.services.ApiClientFactory.StackRoxTlsValidationMode.INSECURE_ACCEPT_ANY;
 
 public class ApiClientFactory {
 
@@ -33,8 +38,41 @@ public class ApiClientFactory {
 
     private static final Duration TIMEOUT = Duration.ofSeconds(30);
 
+    static private class CacheKey {
+        final private String caCert;
+        final private StackRoxTlsValidationMode tlsValidationMode;
+
+        private CacheKey(@Nullable String caCert, StackRoxTlsValidationMode tlsValidationMode) {
+            this.caCert = caCert;
+            this.tlsValidationMode = tlsValidationMode;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            CacheKey cacheKey = (CacheKey) o;
+            return Objects.equal(caCert, cacheKey.caCert) && tlsValidationMode == cacheKey.tlsValidationMode;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hashCode(caCert, tlsValidationMode);
+        }
+    }
+
+    private static final LoadingCache<CacheKey, OkHttpClient> clientCache =
+            CacheBuilder.newBuilder().maximumSize(5).build(
+                    new CacheLoader<CacheKey, OkHttpClient>() {
+                        @Override
+                        public OkHttpClient load(@Nonnull CacheKey key) throws IOException {
+                            return newHttpClient(key.tlsValidationMode, key.caCert);
+                        }
+                    });
+
+
     public static ApiClient newApiClient(String basePath, String apiKey, @Nullable String caCert, StackRoxTlsValidationMode tlsValidationMode) throws IOException {
-        OkHttpClient client = newHttpClient(tlsValidationMode, caCert);
+        OkHttpClient client = getClient(tlsValidationMode, caCert);
         ApiClient apiClient = new ApiClient(client);
         apiClient.setBearerToken(apiKey);
         apiClient.setBasePath(basePath);
@@ -42,7 +80,17 @@ public class ApiClientFactory {
     }
 
     @Nonnull
-    static OkHttpClient newHttpClient(StackRoxTlsValidationMode tlsValidationMode, @Nullable String caCert) throws IOException {
+    static OkHttpClient getClient(StackRoxTlsValidationMode tlsValidationMode, @Nullable String caCert) throws IOException {
+        System.out.printf("Caches: %d", clientCache.size());
+        try {
+            return clientCache.get(new CacheKey(caCert, tlsValidationMode));
+        } catch (ExecutionException e) {
+            throw new IOException("Could not get HTTP client from cache", e);
+        }
+    }
+
+    @Nonnull
+    private static OkHttpClient newHttpClient(StackRoxTlsValidationMode tlsValidationMode, @Nullable String caCert) throws IOException {
         OkHttpClient.Builder builder;
         try {
             if (tlsValidationMode == INSECURE_ACCEPT_ANY) {

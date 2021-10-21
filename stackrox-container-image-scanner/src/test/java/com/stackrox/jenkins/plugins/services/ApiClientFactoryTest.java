@@ -53,7 +53,7 @@ class ApiClientFactoryTest {
         String pem = caCert ? FileUtils.readFileToString(clientPem, StandardCharsets.UTF_8) : null;
 
 
-        OkHttpClient client = ApiClientFactory.newHttpClient(tlsVerify, pem);
+        OkHttpClient client = ApiClientFactory.getClient(tlsVerify, pem);
 
         Request request = new Request.Builder().url(SERVER.baseUrl()).build();
         Response response = client.newCall(request).execute();
@@ -64,7 +64,7 @@ class ApiClientFactoryTest {
     @Test
     @DisplayName("TLS should FAIL when VALIDATE TLS and no PEM")
     void shouldThrowWhenTLSCouldNotBeVerified() throws IOException {
-        OkHttpClient client = ApiClientFactory.newHttpClient(VALIDATE, "");
+        OkHttpClient client = ApiClientFactory.getClient(VALIDATE, "");
 
         Request request = new Request.Builder().url(SERVER.baseUrl()).build();
         Exception exception = assertThrows(IOException.class, () -> client.newCall(request).execute());
@@ -85,7 +85,7 @@ class ApiClientFactoryTest {
         server.stubFor(get(anyUrl()).willReturn(ok().withBody("{}")));
         server.start();
 
-        OkHttpClient client = ApiClientFactory.newHttpClient(VALIDATE, pem);
+        OkHttpClient client = ApiClientFactory.getClient(VALIDATE, pem);
 
         Request request = new Request.Builder().url(server.baseUrl()).build();
         Exception exception = assertThrows(IOException.class, () -> client.newCall(request).execute());
