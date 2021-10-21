@@ -13,7 +13,7 @@ public class ServiceException extends IOException {
 
     private static final Gson GSON = new Gson();
 
-    protected ServiceException(String message, ApiException cause) {
+    private ServiceException(String message, ApiException cause) {
         super(message, cause);
     }
 
