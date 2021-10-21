@@ -300,7 +300,7 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
             return !Strings.isNullOrEmpty(status.getUserId());
         }
 
-        ApiClientFactory.StackRoxTlsValidationMode validationMode(boolean tlsVerify) {
+        private ApiClientFactory.StackRoxTlsValidationMode validationMode(boolean tlsVerify) {
             return tlsVerify ? VALIDATE : INSECURE_ACCEPT_ANY;
         }
     }
