@@ -53,11 +53,11 @@ class ImageServiceTest extends AbstractServiceTest {
     }
 
     @Test
-    public void shouldNotThrowWhenNoDataFor200() throws IOException {
+    public void shouldThrowWhenNoDataFor200() throws IOException {
         MOCK_SERVER.stubFor(postImagesScan().willReturn(
                 ok().withBody("{}")));
-        List<CVE> imageScanResults = imageService.getImageScanResults("nginx:latest");
-        assertEquals(0, imageScanResults.size());
+        Exception exception = assertThrows(NullPointerException.class, () -> imageService.getImageScanResults("nginx:latest"));
+        assertEquals("Did not get scan results from StackRox", exception.getMessage());
     }
 
     @Test

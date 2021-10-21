@@ -5,6 +5,7 @@ import static com.stackrox.jenkins.plugins.data.ListUtil.emptyIfNull;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import com.google.common.collect.Lists;
 
@@ -35,9 +36,7 @@ public class ImageService {
             throw ServiceException.fromApiException("Failed image scan request", e);
         }
 
-        if (scan == null) {
-            return Collections.emptyList();
-        }
+        Objects.requireNonNull(scan, "Did not get scan results from StackRox");
 
         List<CVE> cves = Lists.newArrayList();
         for (StorageEmbeddedImageScanComponent component : emptyIfNull(scan.getComponents())) {
