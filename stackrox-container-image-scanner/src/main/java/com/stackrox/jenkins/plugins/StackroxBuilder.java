@@ -51,6 +51,9 @@ import com.stackrox.model.V1AuthStatus;
 
 @SuppressWarnings("unused")
 public class StackroxBuilder extends Builder implements SimpleBuildStep {
+
+    private static int created = 0;
+
     private String portalAddress;
     private Secret apiToken = Secret.fromString("");
     private boolean failOnPolicyEvalFailure;
@@ -62,6 +65,7 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
 
     @DataBoundConstructor
     public StackroxBuilder() {
+        created++;
     }
 
     //region Getters
@@ -176,6 +180,9 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
                 getPortalAddress(), getApiToken().getPlainText(), getCaCertPEM(), getTLSValidationMode());
         ImageService imageService = new ImageService(apiClient);
         DetectionService detectionService = new DetectionService(apiClient);
+
+        runConfig.getLog().printf("StackRoxBuilder Created: %d\n", created);
+        runConfig.getLog().printf("ApiClient Created: %d\n", ApiClientFactory.created);
 
         for (String name : runConfig.getImageNames()) {
             runConfig.getLog().printf("Checking image %s...%n", name);

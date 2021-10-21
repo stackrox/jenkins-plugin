@@ -26,6 +26,8 @@ import static com.stackrox.jenkins.plugins.services.ApiClientFactory.StackRoxTls
 
 public class ApiClientFactory {
 
+    public static int created = 0;
+
     public enum StackRoxTlsValidationMode {
         VALIDATE,
         INSECURE_ACCEPT_ANY
@@ -34,6 +36,7 @@ public class ApiClientFactory {
     private static final Duration TIMEOUT = Duration.ofSeconds(30);
 
     public static ApiClient newApiClient(String basePath, String apiKey, @Nullable String caCert, StackRoxTlsValidationMode tlsValidationMode) throws IOException {
+        created++;
         OkHttpClient client = newHttpClient(tlsValidationMode, caCert);
         ApiClient apiClient = new ApiClient(client);
         apiClient.setBearerToken(apiKey);
