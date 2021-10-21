@@ -25,16 +25,21 @@ public class DetectionService {
 
     public List<StoragePolicy> getPolicyViolations(String imageName) throws IOException {
 
-        List<StorageAlert> alerts;
-        try {
-            alerts = api.detectionServiceDetectBuildTime(new V1BuildDetectionRequest().imageName(imageName)).getAlerts();
-        } catch (ApiException e) {
-            throw ServiceException.fromApiException("Failed build time detection request", e);
-        }
+        List<StorageAlert> alerts = getAlertsForImage(imageName);
 
         return emptyIfNull(alerts).stream()
                 .map(StorageAlert::getPolicy)
                 .filter(p -> p != null && emptyIfNull(p.getEnforcementActions()).contains(FAIL_BUILD_ENFORCEMENT))
                 .collect(Collectors.toList());
+    }
+
+    private List<StorageAlert> getAlertsForImage(String imageName) throws ServiceException {
+        try {
+            return api.detectionServiceDetectBuildTime(new V1BuildDetectionRequest()
+                            .imageName(imageName))
+                    .getAlerts();
+        } catch (ApiException e) {
+            throw ServiceException.fromApiException("Failed build time detection request", e);
+        }
     }
 }
