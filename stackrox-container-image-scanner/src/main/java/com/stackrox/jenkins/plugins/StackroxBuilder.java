@@ -106,7 +106,7 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
         return enableTLSVerification;
     }
 
-    ApiClientFactory.StackRoxTlsValidationMode getTLSValidationMode() {
+    private ApiClientFactory.StackRoxTlsValidationMode getTLSValidationMode() {
         return enableTLSVerification ? VALIDATE : INSECURE_ACCEPT_ANY;
     }
 
