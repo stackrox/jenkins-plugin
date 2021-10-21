@@ -82,7 +82,6 @@ public class ApiClientFactory {
 
     @Nonnull
     static OkHttpClient getClient(StackRoxTlsValidationMode tlsValidationMode, @Nullable String caCert) throws IOException {
-        System.out.printf("Caches: %d", clientCache.size());
         try {
             return clientCache.get(new CacheKey(caCert, tlsValidationMode));
         } catch (ExecutionException e) {
