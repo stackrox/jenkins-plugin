@@ -136,9 +136,9 @@ public class ApiClientFactory {
         };
 
         // Install the all-trusting trust manager
-        final SSLContext sslContext = getSslContext(trustAllCerts);
+        SSLContext sslContext = getSslContext(trustAllCerts);
         // Create an ssl socket factory with our all-trusting manager
-        final SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
+        SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
 
         OkHttpClient.Builder builder = new OkHttpClient.Builder();
         builder.sslSocketFactory(sslSocketFactory, (X509TrustManager) trustAllCerts[0]);
@@ -166,7 +166,7 @@ public class ApiClientFactory {
 
     @Nonnull
     private static SSLContext getSslContext(TrustManager[] trustAllCerts) throws NoSuchAlgorithmException, KeyManagementException {
-        final SSLContext sslContext = SSLContext.getInstance("TLS");
+        SSLContext sslContext = SSLContext.getInstance("TLS");
         sslContext.init(null, trustAllCerts, null);
         return sslContext;
     }
