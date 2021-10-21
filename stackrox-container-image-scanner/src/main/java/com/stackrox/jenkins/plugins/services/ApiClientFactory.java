@@ -41,10 +41,6 @@ public class ApiClientFactory {
         return apiClient;
     }
 
-    static ApiClient newInsecureApiClient(String basePath, String apiKey) throws IOException {
-        return newApiClient(basePath, apiKey, "", INSECURE_ACCEPT_ANY);
-    }
-
     @Nonnull
     static OkHttpClient newHttpClient(StackRoxTlsValidationMode tlsValidationMode, @Nullable String caCert) throws IOException {
         OkHttpClient.Builder builder;

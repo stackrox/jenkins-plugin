@@ -1,6 +1,7 @@
 package com.stackrox.jenkins.plugins.services;
 
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
+import static com.stackrox.jenkins.plugins.services.ApiClientFactory.StackRoxTlsValidationMode.INSECURE_ACCEPT_ANY;
 
 import java.io.IOException;
 
@@ -23,7 +24,7 @@ public abstract class AbstractServiceTest {
     @BeforeAll
     static void setup() throws IOException {
         MOCK_SERVER.start();
-        client = ApiClientFactory.newInsecureApiClient(MOCK_SERVER.baseUrl(), MOCK_TOKEN.getPlainText());
+        client = ApiClientFactory.newApiClient(MOCK_SERVER.baseUrl(), MOCK_TOKEN.getPlainText(), "", INSECURE_ACCEPT_ANY);
     }
 
     @AfterAll
