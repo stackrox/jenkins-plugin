@@ -298,7 +298,7 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
             }
         }
 
-        private ApiClientFactory.StackRoxTlsValidationMode validationMode(boolean tlsVerify) {
+        private ApiClientFactory.StackRoxTlsValidationMode validationMode(final boolean tlsVerify) {
             return tlsVerify ? VALIDATE : INSECURE_ACCEPT_ANY;
         }
     }

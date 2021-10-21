@@ -37,6 +37,7 @@ public class ApiClientFactory {
     }
 
     private static final Duration TIMEOUT = Duration.ofSeconds(30);
+    private static final int MAXIMUM_CACHE_SIZE = 5; // arbitrary chosen as there are no data to support this decision
 
     static private class CacheKey {
         final private String caCert;
@@ -62,7 +63,7 @@ public class ApiClientFactory {
     }
 
     private static final LoadingCache<CacheKey, OkHttpClient> clientCache =
-            CacheBuilder.newBuilder().maximumSize(5).build(
+            CacheBuilder.newBuilder().maximumSize(MAXIMUM_CACHE_SIZE).build(
                     new CacheLoader<CacheKey, OkHttpClient>() {
                         @Override
                         public OkHttpClient load(@Nonnull CacheKey key) throws IOException {
