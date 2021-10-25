@@ -62,7 +62,11 @@ public class ApiClientFactory {
         }
     }
 
-    private static final LoadingCache<CacheKey, OkHttpClient> clientCache =
+    // It is good practice to avoid creating OkHttpClient on each request.
+    // In our case it is parameterized by tlsValidationMode and caCert settings
+    // that are configured externally, therefore we can't just store one OkHttpClient
+    // in a static variable and have to use a cache.
+    private static final LoadingCache<CacheKey, OkHttpClient> CLIENT_CACHE =
             CacheBuilder.newBuilder().maximumSize(MAXIMUM_CACHE_SIZE).build(
                     new CacheLoader<CacheKey, OkHttpClient>() {
                         @Override
