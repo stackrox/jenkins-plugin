@@ -40,8 +40,8 @@ public class ApiClientFactory {
     private static final int MAXIMUM_CACHE_SIZE = 5; // arbitrary chosen as there are no data to support this decision
 
     private static class CacheKey {
-        final private String caCert;
-        final private StackRoxTlsValidationMode tlsValidationMode;
+        private final String caCert;
+        private final StackRoxTlsValidationMode tlsValidationMode;
 
         private CacheKey(@Nullable String caCert, StackRoxTlsValidationMode tlsValidationMode) {
             this.caCert = caCert;
