@@ -48,9 +48,9 @@ class ApiClientFactoryTest {
     @DisplayName("TLS should work when")
     @ParameterizedTest(name = "TLS: {0} and custom PEM: {1}")
     @CsvSource({"VALIDATE,true", "INSECURE_ACCEPT_ANY,true", "INSECURE_ACCEPT_ANY,false"})
-    void shouldBeAbleT(ApiClientFactory.StackRoxTlsValidationMode tlsVerify, boolean caCert) throws IOException {
-        File clientPem = Paths.get("src", "test", "resources", "cert", "localhost.pem").toFile();
-        String pem = caCert ? FileUtils.readFileToString(clientPem, StandardCharsets.UTF_8) : null;
+    void shouldBeAbleT(ApiClientFactory.StackRoxTlsValidationMode tlsVerify, boolean useCaCert) throws IOException {
+        File caPemFile = Paths.get("src", "test", "resources", "cert", "localhost.pem").toFile();
+        String pem = useCaCert ? FileUtils.readFileToString(caPemFile, StandardCharsets.UTF_8) : null;
 
 
         OkHttpClient client = ApiClientFactory.getClient(tlsVerify, pem);
@@ -62,7 +62,7 @@ class ApiClientFactoryTest {
     }
 
     @Test
-    @DisplayName("TLS should FAIL when VALIDATE TLS and no PEM")
+    @DisplayName("TLS should FAIL when tlsVerify: true and custom PEM: false")
     void shouldThrowWhenTLSCouldNotBeVerified() throws IOException {
         OkHttpClient client = ApiClientFactory.getClient(VALIDATE, "");
 
@@ -74,7 +74,7 @@ class ApiClientFactoryTest {
     }
 
     @Test
-    @DisplayName("TLS should FAIL when VALIDATE TLS and custom PEM has wrong host")
+    @DisplayName("TLS should FAIL when tlsVerify: true and custom PEM: true but host does not match")
     void shouldThrowWhenHostIsInvalid() throws IOException {
         String keyStorePath = Paths.get("src", "test", "resources", "cert", "selfsigned.jks").toString();
         File clientPem = Paths.get("src", "test", "resources", "cert", "client.pem").toFile();
