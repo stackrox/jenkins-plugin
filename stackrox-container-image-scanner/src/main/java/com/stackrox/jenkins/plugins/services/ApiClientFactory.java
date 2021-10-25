@@ -164,9 +164,9 @@ public class ApiClientFactory {
     }
 
     @Nonnull
-    private static SSLContext getSslContext(TrustManager[] trustAllCerts) throws NoSuchAlgorithmException, KeyManagementException {
+    private static SSLContext getSslContext(TrustManager[] trustManagers) throws NoSuchAlgorithmException, KeyManagementException {
         SSLContext sslContext = SSLContext.getInstance("TLS");
-        sslContext.init(null, trustAllCerts, null);
+        sslContext.init(null, trustManagers, null);
         return sslContext;
     }
 }
