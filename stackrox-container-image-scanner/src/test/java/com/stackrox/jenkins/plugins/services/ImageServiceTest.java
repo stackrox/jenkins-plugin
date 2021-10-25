@@ -56,7 +56,7 @@ class ImageServiceTest extends AbstractServiceTest {
     public void shouldThrowWhenNoDataFor200() throws IOException {
         MOCK_SERVER.stubFor(postImagesScan().willReturn(
                 ok().withBody("{}")));
-        Exception exception = assertThrows(NullPointerException.class, () -> imageService.getImageScanResults("nginx:latest"));
+        Exception exception = assertThrows(NullPointerException.class, () -> imageService.getImageScanResults("jenkins:lts"));
         assertEquals("Did not get scan results from StackRox", exception.getMessage());
     }
 
