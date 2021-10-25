@@ -71,7 +71,7 @@ public class ApiClientFactory {
                     new CacheLoader<CacheKey, OkHttpClient>() {
                         @Override
                         public OkHttpClient load(@Nonnull CacheKey key) throws IOException {
-                            return newHttpClient(key.tlsValidationMode, key.caCert);
+                            return newHttpClient(key.caCert, key.tlsValidationMode);
                         }
                     });
 
@@ -87,7 +87,7 @@ public class ApiClientFactory {
     @Nonnull
     static OkHttpClient getClient(StackRoxTlsValidationMode tlsValidationMode, @Nullable String caCert) throws IOException {
         try {
-            return clientCache.get(new CacheKey(caCert, tlsValidationMode));
+            return CLIENT_CACHE.get(new CacheKey(caCert, tlsValidationMode));
         } catch (ExecutionException e) {
             throw new IOException("Could not get HTTP client from cache", e);
         }
