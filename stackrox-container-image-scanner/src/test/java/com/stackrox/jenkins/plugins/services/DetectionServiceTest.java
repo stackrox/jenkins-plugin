@@ -83,8 +83,7 @@ class DetectionServiceTest extends AbstractServiceTest {
                 ok().withBodyFile("v1/detect/build/minimal.json")));
         List<StoragePolicy> actual = detectionService.getPolicyViolations("nginx:latest");
 
-        List<StoragePolicy> expected = ImmutableList.of(new StoragePolicy().enforcementActions(FAIL_BUILD_ENFORCEMENTS)
-        );
+        List<StoragePolicy> expected = ImmutableList.of(new StoragePolicy().enforcementActions(FAIL_BUILD_ENFORCEMENTS));
 
         assertEquals(expected, actual);
     }
