@@ -21,8 +21,8 @@ class ServiceExceptionTest {
             "{\"message\":\"some error\"},,Status code: 500. Error: some error",
             "not a json,,Status code: 500. Failed to parse error response as JSON document java.lang.IllegalStateException: Expected BEGIN_OBJECT but was STRING at line 1 column 1 path $. Response body: not a json"
     })
-    void fromApiException(String body, String apiExceptionMessage, String message) {
-        Exception e = ServiceException.fromApiException("Own message", new ApiException(apiExceptionMessage, 500, null, body));
-        assertEquals("Own message. " + message, e.getMessage());
+    void fromApiException(String responseBody, String apiExceptionMessage, String expectedMessage) {
+        Exception e = ServiceException.fromApiException("Own message", new ApiException(apiExceptionMessage, 500, null, responseBody));
+        assertEquals("Own message. " + expectedMessage, e.getMessage());
     }
 }
