@@ -47,7 +47,7 @@ class DetectionServiceTest extends AbstractServiceTest {
     }
 
     @Test
-    public void shouldThrowWhenNoDataFor200() throws IOException {
+    public void shouldNotThrowWhenNoDataFor200() throws IOException {
         MOCK_SERVER.stubFor(postDetectBuild().willReturn(
                 ok().withBody("{}")));
         List<StoragePolicy> violations = detectionService.getPolicyViolations("nginx:latest");
