@@ -39,7 +39,7 @@ class ImageServiceTest extends AbstractServiceTest {
         MOCK_SERVER.stubFor(post(anyUrl()).willReturn(serverError()
                 .withBodyFile("v1/images/scan/error.json")));
 
-        Exception exception = assertThrows(IOException.class, () -> imageService.getImageScanResults("nginx:latest"));
+        Exception exception = assertThrows(IOException.class, () -> imageService.getImageScanResults("jenkins:lts"));
         String expected = "Failed image scan request. Status code: 500. Error" +
                 ": image enrichment error" +
                 ": error getting metadata for image: docker.io/library/jenkins:lts errors" +
@@ -56,7 +56,7 @@ class ImageServiceTest extends AbstractServiceTest {
     public void shouldThrowWhenNoDataFor200() throws IOException {
         MOCK_SERVER.stubFor(postImagesScan().willReturn(
                 ok().withBody("{}")));
-        Exception exception = assertThrows(NullPointerException.class, () -> imageService.getImageScanResults("jenkins:lts"));
+        Exception exception = assertThrows(NullPointerException.class, () -> imageService.getImageScanResults("nginx:latest"));
         assertEquals("Did not get scan results from StackRox", exception.getMessage());
     }
 
