@@ -94,7 +94,7 @@ public class ApiClientFactory {
     }
 
     @Nonnull
-    private static OkHttpClient newHttpClient(StackRoxTlsValidationMode tlsValidationMode, @Nullable String caCert) throws IOException {
+    private static OkHttpClient newHttpClient(@Nullable String caCert, StackRoxTlsValidationMode tlsValidationMode) throws IOException {
         OkHttpClient.Builder builder;
         try {
             if (tlsValidationMode == INSECURE_ACCEPT_ANY) {
