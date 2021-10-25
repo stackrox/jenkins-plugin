@@ -26,7 +26,7 @@ import org.junit.jupiter.api.Test;
 
 class DetectionServiceTest extends AbstractServiceTest {
 
-    final private static List<StorageEnforcementAction> FAIL_BUILD_ENFORCEMENTS = ImmutableList.of(FAIL_BUILD_ENFORCEMENT);
+    private static final List<StorageEnforcementAction> FAIL_BUILD_ENFORCEMENTS = ImmutableList.of(FAIL_BUILD_ENFORCEMENT);
 
 
     DetectionService detectionService;
