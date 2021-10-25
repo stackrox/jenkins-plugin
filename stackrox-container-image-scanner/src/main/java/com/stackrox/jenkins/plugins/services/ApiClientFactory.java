@@ -53,7 +53,7 @@ public class ApiClientFactory {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
             CacheKey cacheKey = (CacheKey) o;
-            return Objects.equal(caCert, cacheKey.caCert) && tlsValidationMode == cacheKey.tlsValidationMode;
+            return Objects.equal(caCert, cacheKey.caCert) && Objects.equal(tlsValidationMode, cacheKey.tlsValidationMode);
         }
 
         @Override
