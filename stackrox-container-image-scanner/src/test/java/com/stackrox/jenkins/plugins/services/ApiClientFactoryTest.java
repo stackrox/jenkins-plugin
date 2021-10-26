@@ -48,10 +48,9 @@ class ApiClientFactoryTest {
     @DisplayName("TLS should work when")
     @ParameterizedTest(name = "TLS: {0} and custom PEM: {1}")
     @CsvSource({"VALIDATE,true", "INSECURE_ACCEPT_ANY,true", "INSECURE_ACCEPT_ANY,false"})
-    void shouldBeAbleT(ApiClientFactory.StackRoxTlsValidationMode tlsVerify, boolean useCaCert) throws IOException {
+    void shouldHandleTLSOptions(ApiClientFactory.StackRoxTlsValidationMode tlsVerify, boolean useCaCert) throws IOException {
         File caPemFile = Paths.get("src", "test", "resources", "cert", "localhost.pem").toFile();
         String pem = useCaCert ? FileUtils.readFileToString(caPemFile, StandardCharsets.UTF_8) : null;
-
 
         OkHttpClient client = ApiClientFactory.getClient(tlsVerify, pem);
 
@@ -95,5 +94,7 @@ class ApiClientFactoryTest {
                 "    DN: CN=test, OU=Unknown, O=Unknown, L=Unknown, ST=Unknown, C=Unknown\n" +
                 "    subjectAltNames: []";
         assertEquals(expected, exception.getMessage());
+
+        server.stop();
     }
 }
