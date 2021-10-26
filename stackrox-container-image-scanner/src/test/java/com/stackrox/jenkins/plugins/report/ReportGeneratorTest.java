@@ -5,7 +5,6 @@ import static com.stackrox.model.StorageEmbeddedVulnerabilityScoreVersion.V3;
 import static com.stackrox.model.StorageSeverity.HIGH_SEVERITY;
 import static com.stackrox.model.StorageSeverity.MEDIUM_SEVERITY;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.time.OffsetDateTime.parse;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -18,6 +17,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -86,19 +86,19 @@ class ReportGeneratorTest {
                         .cve("CVE-2015-5224")
                         .cvss(9.8F)
                         .scoreVersion(V3)
-                        .publishedOn(parse("2017-08-23T15:29:00Z"))
+                        .publishedOn(OffsetDateTime.parse("2017-08-23T15:29:00Z"))
                         .link("https://security-tracker.debian.org/tracker/CVE-2015-5224")),
                 new CVE("gcc-4.8", "4.8.4-1", new StorageEmbeddedVulnerability()
                         .cve("CVE-2017-11671")
                         .cvss(4.0F)
                         .scoreVersion(V3)
-                        .publishedOn(parse("2017-07-26T21:29:00Z"))
+                        .publishedOn(OffsetDateTime.parse("2017-07-26T21:29:00Z"))
                         .link("https://security-tracker.debian.org/tracker/CVE-2017-11671")),
                 new CVE("bzip2", "1.0.6-7", new StorageEmbeddedVulnerability()
                         .cve("CVE-2016-3189")
                         .cvss(6.5F)
                         .scoreVersion(V3)
-                        .publishedOn(parse("2016-06-30T17:59:00Z"))
+                        .publishedOn(OffsetDateTime.parse("2016-06-30T17:59:00Z"))
                         .link("https://security-tracker.debian.org/tracker/CVE-2016-3189")
                         .fixedBy("1.0.6-8"))
         ), ImmutableList.of(
@@ -113,7 +113,7 @@ class ReportGeneratorTest {
                                 .cve("CVE-2007-6755")
                                 .cvss(5.8F)
                                 .scoreVersion(V2)
-                                .publishedOn(parse("2013-10-11T22:55:00Z"))
+                                .publishedOn(OffsetDateTime.parse("2013-10-11T22:55:00Z"))
                                 .link("https://security-tracker.debian.org/tracker/CVE-2007-6755")),
                         new CVE(null, null, new StorageEmbeddedVulnerability()
                                 .cve("CVE-MISSING-DATA")
