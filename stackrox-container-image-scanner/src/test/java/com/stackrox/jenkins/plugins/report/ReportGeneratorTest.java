@@ -84,19 +84,19 @@ class ReportGeneratorTest {
         List<ImageCheckResults> results = ImmutableList.of(new ImageCheckResults("jenkins:lts", ImmutableList.of(
                 new CVE("util-linux", "2.25.2-6", new StorageEmbeddedVulnerability()
                         .cve("CVE-2015-5224")
-                        .cvss((float) 9.8)
+                        .cvss(9.8F)
                         .scoreVersion(V3)
                         .publishedOn(parse("2017-08-23T15:29:00Z"))
                         .link("https://security-tracker.debian.org/tracker/CVE-2015-5224")),
                 new CVE("gcc-4.8", "4.8.4-1", new StorageEmbeddedVulnerability()
                         .cve("CVE-2017-11671")
-                        .cvss((float) 4.0)
+                        .cvss(4.0F)
                         .scoreVersion(V3)
                         .publishedOn(parse("2017-07-26T21:29:00Z"))
                         .link("https://security-tracker.debian.org/tracker/CVE-2017-11671")),
                 new CVE("bzip2", "1.0.6-7", new StorageEmbeddedVulnerability()
                         .cve("CVE-2016-3189")
-                        .cvss((float) 6.5)
+                        .cvss(6.5F)
                         .scoreVersion(V3)
                         .publishedOn(parse("2016-06-30T17:59:00Z"))
                         .link("https://security-tracker.debian.org/tracker/CVE-2016-3189")
@@ -111,7 +111,7 @@ class ReportGeneratorTest {
                 ImmutableList.of(
                         new CVE("openssl", "1.1.1d-0+deb10u7", new StorageEmbeddedVulnerability()
                                 .cve("CVE-2007-6755")
-                                .cvss((float) 5.8)
+                                .cvss(5.8F)
                                 .scoreVersion(V2)
                                 .publishedOn(parse("2013-10-11T22:55:00Z"))
                                 .link("https://security-tracker.debian.org/tracker/CVE-2007-6755")),
