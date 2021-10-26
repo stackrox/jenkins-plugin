@@ -79,22 +79,25 @@ class ApiClientFactoryTest {
         File clientPem = Paths.get("src", "test", "resources", "cert", "client.pem").toFile();
         String pem = FileUtils.readFileToString(clientPem, StandardCharsets.UTF_8);
 
+        OkHttpClient client = ApiClientFactory.getClient(VALIDATE, pem);
+
         WireMockServer server = new WireMockServer(wireMockConfig().httpDisabled(true)
                 .dynamicHttpsPort().keystorePath(keyStorePath).keystorePassword(KEY_STORE_PASSWORD));
         server.stubFor(get(anyUrl()).willReturn(ok().withBody("{}")));
-        server.start();
 
-        OkHttpClient client = ApiClientFactory.getClient(VALIDATE, pem);
+        try {
+            server.start();
 
-        Request request = new Request.Builder().url(server.baseUrl()).build();
-        Exception exception = assertThrows(IOException.class, () -> client.newCall(request).execute());
+            Request request = new Request.Builder().url(server.baseUrl()).build();
+            Exception exception = assertThrows(IOException.class, () -> client.newCall(request).execute());
 
-        String expected = "Hostname localhost not verified:\n" +
-                "    certificate: sha256/k5KiOTIJ3InAOqA6c35wu9YcIUC5TrMry7hvl/6Jn+E=\n" +
-                "    DN: CN=test, OU=Unknown, O=Unknown, L=Unknown, ST=Unknown, C=Unknown\n" +
-                "    subjectAltNames: []";
-        assertEquals(expected, exception.getMessage());
-
-        server.stop();
+            String expected = "Hostname localhost not verified:\n" +
+                    "    certificate: sha256/k5KiOTIJ3InAOqA6c35wu9YcIUC5TrMry7hvl/6Jn+E=\n" +
+                    "    DN: CN=test, OU=Unknown, O=Unknown, L=Unknown, ST=Unknown, C=Unknown\n" +
+                    "    subjectAltNames: []";
+            assertEquals(expected, exception.getMessage());
+        } finally {
+            server.stop();
+        }
     }
 }
