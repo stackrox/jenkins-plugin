@@ -8,7 +8,6 @@ import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.serverError;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.stackrox.model.StorageEnforcementAction.FAIL_BUILD_ENFORCEMENT;
-import static com.stackrox.model.StorageSeverity.MEDIUM_SEVERITY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -52,29 +51,6 @@ class DetectionServiceTest extends AbstractServiceTest {
                 ok().withBody("{}")));
         List<StoragePolicy> violations = detectionService.getPolicyViolations("nginx:latest");
         assertEquals(0, violations.size());
-    }
-
-    @Test
-    public void shouldParseDataFromServer() throws IOException {
-        MOCK_SERVER.stubFor(postDetectBuild().willReturn(
-                ok().withBodyFile("v1/detect/build/nginx.latest.json")));
-        List<StoragePolicy> actual = detectionService.getPolicyViolations("nginx:latest");
-
-        List<StoragePolicy> expected = ImmutableList.of(
-                new StoragePolicy()
-                        .name("Docker CIS 4.4: Ensure images are scanned and rebuilt to include security patches")
-                        .description("Images should be scanned frequently for any vulnerabilities...")
-                        .severity(MEDIUM_SEVERITY)
-                        .enforcementActions(FAIL_BUILD_ENFORCEMENTS)
-                        .remediation("Images should be re-built ensuring that the latest version of the base images are used..."),
-                new StoragePolicy()
-                        .name("Latest tag")
-                        .description("")
-                        .severity(MEDIUM_SEVERITY)
-                        .enforcementActions(FAIL_BUILD_ENFORCEMENTS)
-                        .remediation(""));
-
-        assertEquals(expected, actual);
     }
 
     @Test

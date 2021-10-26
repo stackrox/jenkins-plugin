@@ -61,37 +61,6 @@ class ImageServiceTest extends AbstractServiceTest {
     }
 
     @Test
-    public void shouldParseDataFromServer() throws IOException {
-        MOCK_SERVER.stubFor(postImagesScan().willReturn(
-                ok().withBodyFile("v1/images/scan/nginx.latest.json")));
-        List<CVE> actual = imageService.getImageScanResults("nginx:latest");
-        ImmutableList<CVE> expected = ImmutableList.of(
-                new CVE("openssl", "1.1.1d-0+deb10u7", new StorageEmbeddedVulnerability()
-                        .cve("CVE-2007-6755")
-                        .cvss(5.8F)
-                        .scoreVersion(V2)
-                        .fixedBy("")
-                        .publishedOn(OffsetDateTime.parse("2013-10-11T22:55:00Z"))
-                        .link("https://security-tracker.debian.org/tracker/CVE-2007-6755")),
-                new CVE("openssl", "1.1.1d-0+deb10u7", new StorageEmbeddedVulnerability()
-                        .cve("CVE-2010-0928")
-                        .cvss(4.0F)
-                        .scoreVersion(V2)
-                        .fixedBy("")
-                        .publishedOn(OffsetDateTime.parse("2010-03-05T19:30:00Z"))
-                        .link("https://security-tracker.debian.org/tracker/CVE-2010-0928")),
-                new CVE("libseccomp", "2.3.3-4", new StorageEmbeddedVulnerability()
-                        .cve("CVE-2019-9893")
-                        .cvss(9.8F)
-                        .scoreVersion(V3)
-                        .publishedOn(OffsetDateTime.parse("2019-03-21T16:01:00Z"))
-                        .fixedBy("2.3.3-5")
-                        .link("https://security-tracker.debian.org/tracker/CVE-2019-9893"))
-        );
-        assertEquals(expected, actual);
-    }
-
-    @Test
     public void shouldNotFailOnMissingData() throws IOException {
         MOCK_SERVER.stubFor(postImagesScan().willReturn(
                 ok().withBodyFile("v1/images/scan/minimal.json")));
