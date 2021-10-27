@@ -28,7 +28,7 @@ public class ServiceException extends IOException {
                     messageBuilder.append(String.format(" Error: %s", error.getMessage()));
                 }
             } catch (JsonSyntaxException jsonException) {
-                messageBuilder.append(String.format(" Failed to parse error response as JSON document %s. Response body: %s", jsonException.getMessage(), responseBody));
+                messageBuilder.append(String.format(" Response body: %s", responseBody));
             }
         } else if (!Strings.isNullOrEmpty(apiException.getMessage())) {
             messageBuilder.append(String.format(" Error: %s", apiException.getMessage()));
