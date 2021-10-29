@@ -1,15 +1,26 @@
 package com.stackrox.jenkins.plugins;
 
-import static com.stackrox.jenkins.plugins.services.ApiClientFactory.StackRoxTlsValidationMode.INSECURE_ACCEPT_ANY;
-import static com.stackrox.jenkins.plugins.services.ApiClientFactory.StackRoxTlsValidationMode.VALIDATE;
-
-import java.io.IOException;
-import java.util.List;
-import javax.annotation.Nonnull;
-
 import com.google.common.base.CharMatcher;
+import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
+
+import com.stackrox.api.AuthServiceApi;
+import com.stackrox.invoker.ApiClient;
+import com.stackrox.invoker.ApiException;
+import com.stackrox.jenkins.plugins.data.CVE;
+import com.stackrox.jenkins.plugins.data.ImageCheckResults;
+import com.stackrox.jenkins.plugins.data.ListUtil;
+import com.stackrox.jenkins.plugins.jenkins.RunConfig;
+import com.stackrox.jenkins.plugins.jenkins.ViewStackroxResultsAction;
+import com.stackrox.jenkins.plugins.report.ReportGenerator;
+import com.stackrox.jenkins.plugins.services.ApiClientFactory;
+import com.stackrox.jenkins.plugins.services.DetectionService;
+import com.stackrox.jenkins.plugins.services.ImageService;
+import com.stackrox.jenkins.plugins.services.ServiceException;
+import com.stackrox.model.StoragePolicy;
+import com.stackrox.model.V1AuthStatus;
+
 import hudson.AbortException;
 import hudson.Extension;
 import hudson.FilePath;
@@ -34,24 +45,17 @@ import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.verb.POST;
 
-import com.stackrox.api.AuthServiceApi;
-import com.stackrox.invoker.ApiClient;
-import com.stackrox.invoker.ApiException;
-import com.stackrox.jenkins.plugins.data.CVE;
-import com.stackrox.jenkins.plugins.data.ImageCheckResults;
-import com.stackrox.jenkins.plugins.jenkins.RunConfig;
-import com.stackrox.jenkins.plugins.jenkins.ViewStackroxResultsAction;
-import com.stackrox.jenkins.plugins.report.ReportGenerator;
-import com.stackrox.jenkins.plugins.services.ApiClientFactory;
-import com.stackrox.jenkins.plugins.services.DetectionService;
-import com.stackrox.jenkins.plugins.services.ImageService;
-import com.stackrox.jenkins.plugins.services.ServiceException;
-import com.stackrox.model.StoragePolicy;
-import com.stackrox.model.V1AuthStatus;
+import javax.annotation.Nonnull;
+import java.io.IOException;
+import java.util.List;
+
+import static com.stackrox.jenkins.plugins.services.ApiClientFactory.StackRoxTlsValidationMode.INSECURE_ACCEPT_ANY;
+import static com.stackrox.jenkins.plugins.services.ApiClientFactory.StackRoxTlsValidationMode.VALIDATE;
 
 @SuppressWarnings("unused")
 public class StackroxBuilder extends Builder implements SimpleBuildStep {
     private String portalAddress;
+    private String imageNames;
     private Secret apiToken = Secret.fromString("");
     private boolean failOnPolicyEvalFailure;
     private boolean failOnCriticalPluginError;
@@ -124,6 +128,18 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
         this.caCertPEM = caCertPEM;
     }
 
+    private List<String> getImageNames() {
+        return Splitter.on(",")
+                .omitEmptyStrings()
+                .trimResults()
+                .splitToList(Strings.nullToEmpty(imageNames));
+    }
+
+    @DataBoundSetter
+    public void setImageNames(String imageNames) {
+        this.imageNames = imageNames;
+    }
+
     //endregion
 
     //TODO: Add console log for the plugin
@@ -134,7 +150,7 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
             @Nonnull Launcher launcher,
             @Nonnull TaskListener listener) throws IOException, InterruptedException {
 
-        runConfig = new RunConfig(run, workspace, listener);
+        runConfig = RunConfig.create (listener.getLogger(), run.getCharacteristicEnvVars().get("BUILD_TAG"), workspace, getImageNames());
 
         try {
             List<ImageCheckResults> results = checkImages();
@@ -207,8 +223,6 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
         runConfig.getLog().println("Cleaning up the workspace ...");
 
         try {
-            runConfig.getImagesToScanFilePath().delete();
-
             runConfig.getBaseWorkDir().deleteRecursive();
         } catch (IOException | InterruptedException e) {
             runConfig.getLog().println("WARN: Failed to cleanup.");

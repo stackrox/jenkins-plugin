@@ -1,18 +1,16 @@
 package com.stackrox.jenkins.plugins.jenkins;
 
-import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PrintStream;
-import java.nio.charset.StandardCharsets;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.util.List;
 
-import com.google.common.collect.Lists;
 import hudson.AbortException;
-import hudson.EnvVars;
 import hudson.FilePath;
-import hudson.model.Run;
-import hudson.model.TaskListener;
+
+import com.stackrox.jenkins.plugins.data.ListUtil;
 
 public class RunConfig {
     private static final String IMAGE_LIST_FILENAME = "rox_images_to_scan";
@@ -21,32 +19,43 @@ public class RunConfig {
     private final PrintStream log;
     private final FilePath baseWorkDir;
     private final FilePath reportsDir;
-    private final FilePath imagesToScanFilePath;
     private final List<String> imageNames;
     private final String artifacts;
 
-    public RunConfig(Run<?, ?> run, FilePath workspace, TaskListener listener) throws AbortException {
+    private RunConfig(PrintStream log, FilePath baseWorkDir, FilePath reportsDir, List<String> imageNames, String artifacts) {
+        this.log = log;
+        this.baseWorkDir = baseWorkDir;
+        this.reportsDir = reportsDir;
+        this.imageNames = imageNames;
+        this.artifacts = artifacts;
+    }
+
+    public static RunConfig create(PrintStream log, String buildTag, FilePath workspace, List<String> images) throws AbortException {
         try {
-            EnvVars envVars = run.getEnvironment(listener);
-            log = listener.getLogger();
-            baseWorkDir = new FilePath(workspace, envVars.get("BUILD_TAG"));
+            FilePath baseWorkDir = new FilePath(workspace, buildTag);
+            String artifacts = String.format("%s/%s/", buildTag, REPORTS_DIR_NAME);
+            FilePath reportsDir = new FilePath(baseWorkDir, REPORTS_DIR_NAME);
 
-            imagesToScanFilePath = new FilePath(baseWorkDir, IMAGE_LIST_FILENAME);
-            if (!imagesToScanFilePath.exists()) {
-                throw new AbortException(String.format("%s not found at %s, no images to scan.", IMAGE_LIST_FILENAME, imagesToScanFilePath));
-            }
-
-            reportsDir = new FilePath(baseWorkDir, REPORTS_DIR_NAME);
             reportsDir.mkdirs();
-            artifacts = String.format("%s/%s/", envVars.get("BUILD_TAG"), REPORTS_DIR_NAME);
 
-            try (BufferedReader br = new BufferedReader(new InputStreamReader(imagesToScanFilePath.read(), StandardCharsets.UTF_8))) {
-                imageNames = Lists.newArrayList();
-                String name;
-                while ((name = br.readLine()) != null) {
-                    imageNames.add(name);
+            List<String> imageNames = ListUtil.emptyIfNull(images);
+            if (imageNames.isEmpty()) {
+                FilePath imagesToScanFilePath = new FilePath(baseWorkDir, IMAGE_LIST_FILENAME);
+                if (!imagesToScanFilePath.exists()) {
+                    throw new AbortException(String.format("%s not found at %s, no images to scan.", IMAGE_LIST_FILENAME, imagesToScanFilePath));
                 }
+                imageNames = Files.readAllLines(new File(imagesToScanFilePath.toURI()).toPath(), Charset.defaultCharset());
             }
+            if (imageNames.isEmpty()) {
+                throw new AbortException("no images to scan");
+            }
+            return new RunConfig(
+                    log,
+                    baseWorkDir,
+                    reportsDir,
+                    imageNames,
+                    artifacts
+            );
         } catch (IOException | InterruptedException e) {
             throw new AbortException(String.format("Error in creating a run configuration: %s", e.getMessage()));
         }
@@ -70,10 +79,6 @@ public class RunConfig {
 
     public PrintStream getLog() {
         return log;
-    }
-
-    public FilePath getImagesToScanFilePath() {
-        return imagesToScanFilePath;
     }
 }
 
