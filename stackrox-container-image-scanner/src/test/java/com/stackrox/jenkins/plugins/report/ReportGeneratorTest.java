@@ -1,5 +1,9 @@
 package com.stackrox.jenkins.plugins.report;
 
+import static com.stackrox.model.StorageEmbeddedVulnerabilityScoreVersion.V2;
+import static com.stackrox.model.StorageEmbeddedVulnerabilityScoreVersion.V3;
+import static com.stackrox.model.StorageSeverity.HIGH_SEVERITY;
+import static com.stackrox.model.StorageSeverity.MEDIUM_SEVERITY;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -13,6 +17,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -27,7 +32,8 @@ import org.apache.commons.io.FileUtils;
 
 import com.stackrox.jenkins.plugins.data.CVE;
 import com.stackrox.jenkins.plugins.data.ImageCheckResults;
-import com.stackrox.jenkins.plugins.data.ViolatedPolicy;
+import com.stackrox.model.StorageEmbeddedVulnerability;
+import com.stackrox.model.StoragePolicy;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -76,67 +82,52 @@ class ReportGeneratorTest {
     void testGenerateReportForResultsWritesReportsForEveryImageInSeparatedDirectory() throws IOException {
         FilePath reportsDir = new FilePath(folder.toFile());
         List<ImageCheckResults> results = ImmutableList.of(new ImageCheckResults("jenkins:lts", ImmutableList.of(
-                CVE.Builder.newInstance()
-                        .withId("CVE-2015-5224")
-                        .withCvssScore((float) 9.8)
-                        .withScoreType("V3")
-                        .withPublishDate("2017-08-23T15:29:00Z")
-                        .withLink("https://security-tracker.debian.org/tracker/CVE-2015-5224")
-                        .inPackage("util-linux")
-                        .inVersion("2.25.2-6")
-                        .isFixable(false)
-                        .build(),
-                CVE.Builder.newInstance()
-                        .withId("CVE-2017-11671")
-                        .withCvssScore((float) 4.0)
-                        .withScoreType("V3")
-                        .withPublishDate("2017-07-26T21:29:00Z")
-                        .withLink("https://security-tracker.debian.org/tracker/CVE-2017-11671")
-                        .inPackage("gcc-4.8")
-                        .inVersion("4.8.4-1")
-                        .isFixable(false)
-                        .build(),
-                CVE.Builder.newInstance()
-                        .withId("CVE-2016-3189")
-                        .withCvssScore((float) 6.5)
-                        .withScoreType("V3")
-                        .withPublishDate("2016-06-30T17:59:00Z")
-                        .withLink("https://security-tracker.debian.org/tracker/CVE-2016-3189")
-                        .inPackage("bzip2")
-                        .inVersion("1.0.6-7")
-                        .isFixable(true)
-                        .build()
+                new CVE("util-linux", "2.25.2-6", new StorageEmbeddedVulnerability()
+                        .cve("CVE-2015-5224")
+                        .cvss(9.8F)
+                        .scoreVersion(V3)
+                        .publishedOn(OffsetDateTime.parse("2017-08-23T15:29:00Z"))
+                        .link("https://security-tracker.debian.org/tracker/CVE-2015-5224")),
+                new CVE("gcc-4.8", "4.8.4-1", new StorageEmbeddedVulnerability()
+                        .cve("CVE-2017-11671")
+                        .cvss(4.0F)
+                        .scoreVersion(V3)
+                        .publishedOn(OffsetDateTime.parse("2017-07-26T21:29:00Z"))
+                        .link("https://security-tracker.debian.org/tracker/CVE-2017-11671")),
+                new CVE("bzip2", "1.0.6-7", new StorageEmbeddedVulnerability()
+                        .cve("CVE-2016-3189")
+                        .cvss(6.5F)
+                        .scoreVersion(V3)
+                        .publishedOn(OffsetDateTime.parse("2016-06-30T17:59:00Z"))
+                        .link("https://security-tracker.debian.org/tracker/CVE-2016-3189")
+                        .fixedBy("1.0.6-8"))
         ), ImmutableList.of(
-                new ViolatedPolicy("Fixable Severity at least Important",
-                        "Alert on deployments with fixable vulnerabilities with a Severity Rating at least Important",
-                        "HIGH",
-                        "Use your package manager to update to a fixed version in future builds or speak with your security team to mitigate the vulnerabilities.")
+                new StoragePolicy()
+                        .name("Fixable Severity at least Important")
+                        .description("Alert on deployments with fixable vulnerabilities with a Severity Rating at least Important")
+                        .severity(HIGH_SEVERITY)
+                        .remediation("Use your package manager to update to a fixed version in future builds or speak with your security team to mitigate the vulnerabilities.")
         )), new ImageCheckResults("nginx:latest",
                 ImmutableList.of(
-                        CVE.Builder.newInstance()
-                                .withId("CVE-2007-6755")
-                                .withCvssScore((float) 5.8)
-                                .withScoreType("V2")
-                                .withPublishDate("2013-10-11T22:55:00Z")
-                                .withLink("https://security-tracker.debian.org/tracker/CVE-2007-6755")
-                                .inPackage("openssl")
-                                .inVersion("1.1.1d-0+deb10u7")
-                                .isFixable(false)
-                                .build(),
-                        CVE.Builder.newInstance()
-                                .withId("CVE-MISSING-DATA")
-                                .withCvssScore(0F)
-                                .isFixable(false)
-                                .build()),
+                        new CVE("openssl", "1.1.1d-0+deb10u7", new StorageEmbeddedVulnerability()
+                                .cve("CVE-2007-6755")
+                                .cvss(5.8F)
+                                .scoreVersion(V2)
+                                .publishedOn(OffsetDateTime.parse("2013-10-11T22:55:00Z"))
+                                .link("https://security-tracker.debian.org/tracker/CVE-2007-6755")),
+                        new CVE(null, null, new StorageEmbeddedVulnerability()
+                                .cve("CVE-MISSING-DATA")
+                                .scoreVersion(null)
+                                .cvss(0F))),
                 ImmutableList.of(
-                        new ViolatedPolicy("Latest Tag",
-                                "",
-                                "MEDIUM",
-                                "No remediation actions documented."),
-                        new ViolatedPolicy("Fixable Severity at least Important",
-                                "Alert on deployments with fixable vulnerabilities with a Severity Rating at least Important",
-                                "HIGH",
-                                "Use your package manager to update to a fixed version in future builds or speak with your security team to mitigate the vulnerabilities.")
+                        new StoragePolicy().name("Latest Tag")
+                                .description("")
+                                .severity(MEDIUM_SEVERITY),
+                        new StoragePolicy()
+                                .name("Fixable Severity at least Important")
+                                .description("Alert on deployments with fixable vulnerabilities with a Severity Rating at least Important")
+                                .severity(HIGH_SEVERITY)
+                                .remediation("Use your package manager to update to a fixed version in future builds or speak with your security team to mitigate the vulnerabilities.")
                 )));
         ReportGenerator.generateBuildReport(results, reportsDir);
 
@@ -176,5 +167,4 @@ class ReportGeneratorTest {
             }
         });
     }
-
 }

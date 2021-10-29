@@ -1,21 +1,25 @@
 package com.stackrox.jenkins.plugins.report;
 
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.nio.charset.StandardCharsets;
-import java.util.List;
+import com.google.common.base.Strings;
+
+import com.stackrox.jenkins.plugins.data.CVE;
+import com.stackrox.jenkins.plugins.data.ImageCheckResults;
+import com.stackrox.model.StoragePolicy;
+import com.stackrox.model.StorageSeverity;
 
 import hudson.AbortException;
 import hudson.FilePath;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.QuoteMode;
+import org.apache.commons.lang.StringUtils;
 
-import com.stackrox.jenkins.plugins.data.CVE;
-import com.stackrox.jenkins.plugins.data.ImageCheckResults;
-import com.stackrox.jenkins.plugins.data.ViolatedPolicy;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 public class ReportGenerator {
 
@@ -24,6 +28,7 @@ public class ReportGenerator {
     private static final String CVES_FILENAME = "cves.csv";
     private static final String POLICY_VIOLATIONS_FILENAME = "policyViolations.csv";
     private static final String NOT_AVAILABLE = "\"-\"";
+    private static final String NO_REMEDIATION_ACTIONS = "No remediation actions documented.";
 
     public static void generateBuildReport(List<ImageCheckResults> results, FilePath reportsDir) throws AbortException {
         try {
@@ -60,16 +65,27 @@ public class ReportGenerator {
         if (!result.getViolatedPolicies().isEmpty()) {
             try (OutputStream outputStream = new FilePath(imageResultDir, POLICY_VIOLATIONS_FILENAME).write();
                  CSVPrinter printer = openCsv(outputStream, VIOLATED_POLICIES_HEADER)) {
-                for (ViolatedPolicy policy : result.getViolatedPolicies()) {
+                for (StoragePolicy policy : result.getViolatedPolicies()) {
                     printer.printRecord(
                             policy.getName(),
                             policy.getDescription(),
-                            policy.getSeverity(),
-                            policy.getRemediation()
+                            prettySeverity(policy.getSeverity()),
+                            prettyRemediation(policy.getRemediation())
                     );
                 }
             }
         }
+    }
+
+    private static String prettySeverity(StorageSeverity severity) {
+        if (severity == null) {
+            return null;
+        }
+        return StringUtils.substringBefore(severity.toString(), "_");
+    }
+
+    private static String prettyRemediation(String remediation) {
+        return Strings.isNullOrEmpty(remediation) ? NO_REMEDIATION_ACTIONS : remediation;
     }
 
     private static CSVPrinter openCsv(OutputStream outputStream, String[] header) throws IOException {

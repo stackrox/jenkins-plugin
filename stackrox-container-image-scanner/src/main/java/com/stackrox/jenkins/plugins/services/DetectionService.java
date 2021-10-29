@@ -1,90 +1,45 @@
 package com.stackrox.jenkins.plugins.services;
 
+import static com.stackrox.jenkins.plugins.data.ListUtil.emptyIfNull;
+import static com.stackrox.model.StorageEnforcementAction.FAIL_BUILD_ENFORCEMENT;
+
 import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-import javax.json.JsonString;
+import java.util.stream.Collectors;
 
-import com.google.common.base.Joiner;
-import com.google.common.collect.Lists;
-import hudson.util.Secret;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpHeaders;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
-
-import com.stackrox.jenkins.plugins.data.ViolatedPolicy;
+import com.stackrox.api.DetectionServiceApi;
+import com.stackrox.invoker.ApiClient;
+import com.stackrox.invoker.ApiException;
+import com.stackrox.model.StorageAlert;
+import com.stackrox.model.StoragePolicy;
+import com.stackrox.model.V1BuildDetectionRequest;
 
 public class DetectionService {
 
-    private static final String FAIL_BUILD_ENFORCEMENT = "FAIL_BUILD_ENFORCEMENT";
 
-    private final String portalAddress;
-    private final Secret apiToken;
-    private final CloseableHttpClient httpClient;
+    private final DetectionServiceApi api;
 
-    public DetectionService(String portalAddress, Secret apiToken, CloseableHttpClient httpClient) {
-        this.portalAddress = portalAddress;
-        this.apiToken = apiToken;
-        this.httpClient = httpClient;
+    public DetectionService(ApiClient client) {
+        api = new DetectionServiceApi(client);
     }
 
-    public List<ViolatedPolicy> getPolicyViolations(String imageName) throws IOException {
-        List<ViolatedPolicy> violatedPolicies = Lists.newArrayList();
+    public List<StoragePolicy> getPolicyViolations(String imageName) throws IOException {
 
-        JsonObject detectionResult = runBuildTimeDetection(imageName);
-        JsonArray alerts = detectionResult.getJsonArray("alerts");
+        List<StorageAlert> alerts = getAlertsForImage(imageName);
 
-        for (JsonObject alert : alerts.getValuesAs(JsonObject.class)) {
-            JsonObject policy = alert.getJsonObject("policy");
-
-            boolean isEnforced = false;
-            JsonArray actions = policy.getJsonArray("enforcementActions");
-            for (JsonString action : actions.getValuesAs(JsonString.class)) {
-                if (FAIL_BUILD_ENFORCEMENT.equals(action.getString())) {
-                    isEnforced = true;
-                    break;
-                }
-            }
-
-            if (isEnforced) {
-                violatedPolicies.add(new ViolatedPolicy(
-                        policy.getString("name", null),
-                        policy.getString("description", null),
-                        policy.getString("severity", null),
-                        policy.getString("remediation", null)));
-            }
-        }
-        return violatedPolicies;
+        return emptyIfNull(alerts).stream()
+                .map(StorageAlert::getPolicy)
+                .filter(p -> p != null && emptyIfNull(p.getEnforcementActions()).contains(FAIL_BUILD_ENFORCEMENT))
+                .collect(Collectors.toList());
     }
 
-    private JsonObject runBuildTimeDetection(String imageName) throws IOException {
-        HttpPost detectionRequest = new HttpPost(Joiner.on("/").join(portalAddress, "v1/detect/build"));
-        detectionRequest.setHeader(HttpHeaders.ACCEPT, ContentType.APPLICATION_JSON.toString());
-        detectionRequest.setHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.toString());
-        detectionRequest.addHeader(HttpHeaders.AUTHORIZATION, Joiner.on(" ").join("Bearer", apiToken.getPlainText()));
-        detectionRequest.setEntity(new StringEntity(
-                Json.createObjectBuilder().add("imageName", imageName).build().toString(),
-                StandardCharsets.UTF_8));
-
-        try (CloseableHttpResponse response = httpClient.execute(detectionRequest)) {
-            int statusCode = response.getStatusLine().getStatusCode();
-
-            HttpEntity entity = response.getEntity();
-
-            if (statusCode != HttpURLConnection.HTTP_OK || entity == null) {
-                throw new IOException(String.format("Failed build time detection request. Status code: %d. Error: %s",
-                        statusCode, entity == null ? "" : entity.toString()));
-            }
-            return HttpClientUtils.getJsonObject(entity);
+    private List<StorageAlert> getAlertsForImage(String imageName) throws ServiceException {
+        try {
+            return api.detectionServiceDetectBuildTime(new V1BuildDetectionRequest()
+                            .imageName(imageName))
+                    .getAlerts();
+        } catch (ApiException e) {
+            throw ServiceException.fromApiException("Failed build time detection request", e);
         }
     }
-
 }

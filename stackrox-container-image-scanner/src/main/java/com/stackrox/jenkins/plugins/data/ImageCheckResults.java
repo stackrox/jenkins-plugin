@@ -1,14 +1,16 @@
 package com.stackrox.jenkins.plugins.data;
 
+import com.stackrox.model.StoragePolicy;
+
 import java.util.List;
 
 public class ImageCheckResults {
 
     private final String imageName;
     private final List<CVE> cves;
-    private final List<ViolatedPolicy> violatedPolicies;
+    private final List<StoragePolicy> violatedPolicies;
 
-    public ImageCheckResults(String imageName, List<CVE> cves, List<ViolatedPolicy> violatedPolicies) {
+    public ImageCheckResults(String imageName, List<CVE> cves, List<StoragePolicy> violatedPolicies) {
         this.imageName = imageName;
         this.cves = cves;
         this.violatedPolicies = violatedPolicies;
@@ -22,7 +24,7 @@ public class ImageCheckResults {
         return imageName;
     }
 
-    public List<ViolatedPolicy> getViolatedPolicies() {
+    public List<StoragePolicy> getViolatedPolicies() {
         return violatedPolicies;
     }
 

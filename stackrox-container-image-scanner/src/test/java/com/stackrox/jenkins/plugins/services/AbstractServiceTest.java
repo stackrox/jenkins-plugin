@@ -1,21 +1,30 @@
 package com.stackrox.jenkins.plugins.services;
 
+import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
+import static com.stackrox.jenkins.plugins.services.ApiClientFactory.StackRoxTlsValidationMode.INSECURE_ACCEPT_ANY;
+
+import java.io.IOException;
+
 import com.github.tomakehurst.wiremock.WireMockServer;
 import hudson.util.Secret;
+
+import com.stackrox.invoker.ApiClient;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 
-import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
-
 public abstract class AbstractServiceTest {
     protected static final Secret MOCK_TOKEN = Secret.fromString("{some token}");
     protected static final WireMockServer MOCK_SERVER = new WireMockServer(wireMockConfig().httpDisabled(true).dynamicHttpsPort());
 
+    protected static ApiClient client;
+
+
     @BeforeAll
-    static void setup() {
+    static void setup() throws IOException {
         MOCK_SERVER.start();
+        client = ApiClientFactory.newApiClient(MOCK_SERVER.baseUrl(), MOCK_TOKEN.getPlainText(), "", INSECURE_ACCEPT_ANY);
     }
 
     @AfterAll

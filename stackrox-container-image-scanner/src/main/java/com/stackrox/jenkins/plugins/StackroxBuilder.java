@@ -1,13 +1,13 @@
 package com.stackrox.jenkins.plugins;
 
+import static com.stackrox.jenkins.plugins.services.ApiClientFactory.StackRoxTlsValidationMode.INSECURE_ACCEPT_ANY;
+import static com.stackrox.jenkins.plugins.services.ApiClientFactory.StackRoxTlsValidationMode.VALIDATE;
+
 import java.io.IOException;
-import java.net.HttpURLConnection;
 import java.util.List;
 import javax.annotation.Nonnull;
-import javax.json.JsonObject;
 
 import com.google.common.base.CharMatcher;
-import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import hudson.AbortException;
@@ -27,10 +27,6 @@ import jenkins.tasks.SimpleBuildStep;
 import net.sf.json.JSONObject;
 import org.apache.commons.validator.routines.RegexValidator;
 import org.apache.commons.validator.routines.UrlValidator;
-import org.apache.http.HttpEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
@@ -38,15 +34,20 @@ import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.verb.POST;
 
+import com.stackrox.api.AuthServiceApi;
+import com.stackrox.invoker.ApiClient;
+import com.stackrox.invoker.ApiException;
 import com.stackrox.jenkins.plugins.data.CVE;
 import com.stackrox.jenkins.plugins.data.ImageCheckResults;
-import com.stackrox.jenkins.plugins.data.ViolatedPolicy;
 import com.stackrox.jenkins.plugins.jenkins.RunConfig;
 import com.stackrox.jenkins.plugins.jenkins.ViewStackroxResultsAction;
 import com.stackrox.jenkins.plugins.report.ReportGenerator;
+import com.stackrox.jenkins.plugins.services.ApiClientFactory;
 import com.stackrox.jenkins.plugins.services.DetectionService;
-import com.stackrox.jenkins.plugins.services.HttpClientUtils;
 import com.stackrox.jenkins.plugins.services.ImageService;
+import com.stackrox.jenkins.plugins.services.ServiceException;
+import com.stackrox.model.StoragePolicy;
+import com.stackrox.model.V1AuthStatus;
 
 @SuppressWarnings("unused")
 public class StackroxBuilder extends Builder implements SimpleBuildStep {
@@ -103,6 +104,10 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
 
     public boolean isEnableTLSVerification() {
         return enableTLSVerification;
+    }
+
+    private ApiClientFactory.StackRoxTlsValidationMode getTLSValidationMode() {
+        return enableTLSVerification ? VALIDATE : INSECURE_ACCEPT_ANY;
     }
 
     @DataBoundSetter
@@ -167,17 +172,17 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
     private List<ImageCheckResults> checkImages() throws IOException {
         List<ImageCheckResults> results = Lists.newArrayList();
 
-        try (CloseableHttpClient httpClient = HttpClientUtils.get(this.enableTLSVerification, this.caCertPEM)) {
-            ImageService imageService = new ImageService(getPortalAddress(), getApiToken(), httpClient);
-            DetectionService detectionService = new DetectionService(getPortalAddress(), getApiToken(), httpClient);
+        ApiClient apiClient = ApiClientFactory.newApiClient(
+                getPortalAddress(), getApiToken().getPlainText(), getCaCertPEM(), getTLSValidationMode());
+        ImageService imageService = new ImageService(apiClient);
+        DetectionService detectionService = new DetectionService(apiClient);
 
-            for (String name : runConfig.getImageNames()) {
-                runConfig.getLog().printf("Checking image %s...%n", name);
+        for (String name : runConfig.getImageNames()) {
+            runConfig.getLog().printf("Checking image %s...%n", name);
 
-                List<CVE> cves = imageService.getImageScanResults(name);
-                List<ViolatedPolicy> violatedPolicies = detectionService.getPolicyViolations(name);
-                results.add(new ImageCheckResults(name, cves, violatedPolicies));
-            }
+            List<CVE> cves = imageService.getImageScanResults(name);
+            List<StoragePolicy> violatedPolicies = detectionService.getPolicyViolations(name);
+            results.add(new ImageCheckResults(name, cves, violatedPolicies));
         }
 
         results.sort((result1, result2) -> {
@@ -278,30 +283,23 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
                     return FormValidation.ok("Success");
                 }
                 return FormValidation.error(Messages.StackroxBuilder_TestConnectionError());
-
             } catch (Exception e) {
-                return FormValidation.error(Messages.StackroxBuilder_TestConnectionError());
-
+                return FormValidation.error(e, Messages.StackroxBuilder_TestConnectionError());
             }
         }
 
-        private boolean checkRoxAuthStatus(final String portalAddress, final String apiToken, final boolean tlsVerify, final String caCertPEM) throws Exception {
-            HttpGet authStatusRequest = new HttpGet(Joiner.on("/").join(portalAddress, "v1/auth/status"));
-            authStatusRequest.addHeader("Accept", "application/json");
-            authStatusRequest.addHeader("Authorization", Joiner.on(" ").join("Bearer", apiToken));
-
-            try (CloseableHttpClient httpClient = HttpClientUtils.get(tlsVerify, caCertPEM);
-                 CloseableHttpResponse response = httpClient.execute(authStatusRequest)) {
-
-                int statusCode = response.getStatusLine().getStatusCode();
-                HttpEntity entity = response.getEntity();
-                if (statusCode != HttpURLConnection.HTTP_OK || entity == null) {
-                    return false;
-                }
-
-                JsonObject object = HttpClientUtils.getJsonObject(entity);
-                return !Strings.isNullOrEmpty(object.getString("userId"));
+        private boolean checkRoxAuthStatus(final String portalAddress, final String apiToken, final boolean tlsVerify, final String caCertPEM) throws IOException {
+            ApiClient apiClient = ApiClientFactory.newApiClient(portalAddress, apiToken, caCertPEM, validationMode(tlsVerify));
+            try {
+                V1AuthStatus status = new AuthServiceApi(apiClient).authServiceGetAuthStatus();
+                return !Strings.isNullOrEmpty(status.getUserId());
+            } catch (ApiException e) {
+                throw ServiceException.fromApiException("Could not get auth status.", e);
             }
+        }
+
+        private ApiClientFactory.StackRoxTlsValidationMode validationMode(final boolean tlsVerify) {
+            return tlsVerify ? VALIDATE : INSECURE_ACCEPT_ANY;
         }
     }
 }
