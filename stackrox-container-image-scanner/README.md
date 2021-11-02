@@ -183,22 +183,23 @@ To use the StackRox Container Image Scanner plugin in your pipeline:
 1.  Go to the pipeline configuration screen.
 
 2.  In the **Script** text area, enter the following script:
-
-        node {
-            stage('Stackrox Image Security') {
-                steps {
-                    step ([
-                        $class: 'StackroxBuilder', 
-                        portalAddress: <portal-address>,
-                        apiToken: <api-token>,
-                        enableTLSVerification: <true-or-false>,
-                        caCertPEM: <ca-cert-pem-format>,
-                        failOnCriticalPluginError: <true-or-false>,
-                        failOnPolicyEvalFailure: <true-or-false>
-                        ])
-                }
+    ```groovy
+    node {
+        stage('Stackrox Image Security') {
+            steps {
+                sh 'mkdir $BUILD_TAG && cd $BUILD_TAG && echo "<images to scan>" >> rox_images_to_scan'
+                stackrox (
+                    portalAddress: <portal-address>,
+                    apiToken: <api-token>,
+                    enableTLSVerification: <true-or-false>,
+                    caCertPEM: <ca-cert-pem-format>,
+                    failOnCriticalPluginError: <true-or-false>,
+                    failOnPolicyEvalFailure: <true-or-false>,
+                )
             }
         }
+    }
+    ```
 
     -   For more information about the variables, see the [plugin
         configuration variables](#plugin-configuration-variables)
