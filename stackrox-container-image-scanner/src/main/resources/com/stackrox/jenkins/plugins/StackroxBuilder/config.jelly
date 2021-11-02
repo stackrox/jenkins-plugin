@@ -8,6 +8,10 @@
     <f:entry title="${%APITokenTitle}" help="/plugin/stackrox-container-image-scanner/help/help-apiToken.html">
         <f:password field="apiToken"/>
     </f:entry>
+    <f:entry title="${%ImageNames}"
+             help="/plugin/stackrox-container-image-scanner/help/help-imageNames.html">
+        <f:expandableTextbox field="imageNames"/>
+    </f:entry>
     <f:entry>
         <j:if test="${instance != null}">
             <f:optionalBlock title="${%EnableTLSVerification}" name="enableTLSVerification"
