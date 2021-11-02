@@ -25,9 +25,7 @@ class JenkinsClient {
         return jenkins.version.toString()
     }
 
-    BuildResult createAndRunJob(String imageName, String portalAddress, String token, Boolean policyEvalCheck,
-                                Boolean failOnCriticalPluginError) {
-        String config = createJobConfig(imageName, portalAddress, token, policyEvalCheck, failOnCriticalPluginError)
+    BuildResult createAndRunJob(String config) {
         String job = createJob(config)
         return startBuild(job)
     }
@@ -48,11 +46,30 @@ class JenkinsClient {
         return result.result
     }
 
-    @CompileStatic(TypeCheckingMode.SKIP)
     static String createJobConfig(String imageName, String portalAddress, String token, Boolean policyEvalCheck,
                                   Boolean failOnCriticalPluginError) {
+        Map<String, Serializable> param = createConfigMap(
+                imageName, portalAddress, token, policyEvalCheck, failOnCriticalPluginError)
+        // parse the xml
         String path = "resources/template.xml"
-        def param = [
+        return createJobConfigFromPath(path, param)
+    }
+
+    static String createJobConfigNoFile(String imageName, String portalAddress, String token, Boolean policyEvalCheck,
+                                        Boolean failOnCriticalPluginError) {
+        Map<String, Serializable> param = createConfigMap(
+                imageName, portalAddress, token, policyEvalCheck, failOnCriticalPluginError)
+        // parse the xml
+        String path = "resources/templateNoFile.xml"
+        return createJobConfigFromPath(path, param)
+    }
+
+    //TODO(ROX-8458): add tests for pipeline
+
+    private static Map<String, Serializable> createConfigMap(String imageName, String portalAddress, String token,
+                                                             boolean policyEvalCheck,
+                                                             boolean failOnCriticalPluginError) {
+        return [
                 command                  : """mkdir \$BUILD_TAG
                                cd \$BUILD_TAG
                                echo '${imageName}' >> rox_images_to_scan""",
@@ -61,8 +78,12 @@ class JenkinsClient {
                 failOnPolicyEvalFailure  : policyEvalCheck,
                 failOnCriticalPluginError: failOnCriticalPluginError,
                 enableTLSVerification    : false,
-        ]
-        // parse the xml
+                imageNames               : imageName,
+        ] as Map<String, Serializable> // codenarc-disable UnnecessaryCast
+    }
+
+    @CompileStatic(TypeCheckingMode.SKIP)
+    private static String createJobConfigFromPath(String path, Map<String, Serializable> param) {
         def parsexml = new XmlSlurper().parse(new File(path))
         param.each { key, value ->
             parsexml.breadthFirst().findAll { NodeChild it ->

@@ -1,3 +1,4 @@
+import static JenkinsClient.createJobConfig
 import static com.offbytwo.jenkins.model.BuildResult.FAILURE
 import static com.offbytwo.jenkins.model.BuildResult.SUCCESS
 import static com.stackrox.model.StorageEnforcementAction.FAIL_BUILD_ENFORCEMENT
@@ -16,11 +17,12 @@ import spock.lang.Unroll
 
 class ImageScanningTest extends BaseSpecification {
 
-    private static final String CENTRAL_URI = "https://central.stackrox:443"
+    protected static final String CENTRAL_URI = "https://central.stackrox:443"
 
     @Unroll
     def "image scanning test with toggle enforcement(#imageName, #policyName,  #enforcements, #endStatus)"() {
         when:
+        updatePolicy("Latest tag", "latest", [])
         StoragePolicy enforcementPolicy = updatePolicy(policyName, "latest", enforcements)
 
         then:
@@ -28,7 +30,8 @@ class ImageScanningTest extends BaseSpecification {
         assert enforcementPolicy.lifecycleStages == [BUILD]
 
         when:
-        BuildResult status = jenkins.createAndRunJob(imageName, CENTRAL_URI, token, true, true)
+        BuildResult status = jenkins.createAndRunJob(
+                getJobConfig(imageName, true, true))
 
         then:
         assert status == endStatus
@@ -51,7 +54,8 @@ class ImageScanningTest extends BaseSpecification {
         assert enforcementPolicy.lifecycleStages == [BUILD]
 
         when:
-        BuildResult status = jenkins.createAndRunJob(imageName, CENTRAL_URI, token, true, true)
+        BuildResult status = jenkins.createAndRunJob(
+                getJobConfig(imageName, true, true))
 
         then:
         assert status == FAILURE
@@ -66,7 +70,8 @@ class ImageScanningTest extends BaseSpecification {
     @Unroll
     def "Negative image scanning tests (#imageName, #failOnCriticalPluginError,#endStatus)"() {
         when:
-        BuildResult status = jenkins.createAndRunJob(imageName, CENTRAL_URI, token, false, failOnCriticalPluginError)
+        BuildResult status = jenkins.createAndRunJob(
+                getJobConfig(imageName, false, failOnCriticalPluginError))
 
         then:
         assert status == endStatus
@@ -77,6 +82,10 @@ class ImageScanningTest extends BaseSpecification {
         "postgres:latest" | true                      | SUCCESS
         "mis-spelled:lts" | true                      | FAILURE
         "mis-spelled:lts" | false                     | SUCCESS
+    }
+
+    String getJobConfig(String imageName, Boolean policyEvalCheck, Boolean failOnCriticalPluginError) {
+        return createJobConfig(imageName, CENTRAL_URI, token, policyEvalCheck, failOnCriticalPluginError)
     }
 
     StoragePolicy updatePolicy(String policyName, String tag, List<StorageEnforcementAction> enforcements) {
