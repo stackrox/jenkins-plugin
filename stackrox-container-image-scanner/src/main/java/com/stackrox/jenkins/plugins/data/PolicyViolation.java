@@ -7,13 +7,12 @@ import lombok.Data;
 
 import com.stackrox.model.StorageEnforcementAction;
 import com.stackrox.model.StoragePolicy;
-import com.stackrox.model.StorageSeverity;
 
 @Data
 @AllArgsConstructor
 public class PolicyViolation {
     private final String name;
-    private final StorageSeverity severity;
+    private final String severity;
     private final String description;
     private final String remediation;
     private final String violations;
@@ -22,7 +21,7 @@ public class PolicyViolation {
     public PolicyViolation(@Nonnull StoragePolicy policy, String violations) {
         this(
                 policy.getName(),
-                policy.getSeverity(),
+                SeverityUtil.prettySeverity(policy.getSeverity()),
                 policy.getDescription(),
                 policy.getRemediation(),
                 violations,

@@ -45,7 +45,6 @@ import com.stackrox.jenkins.plugins.data.CVE;
 import com.stackrox.jenkins.plugins.data.ImageCheckResults;
 import com.stackrox.jenkins.plugins.data.PolicyViolation;
 import com.stackrox.jenkins.plugins.jenkins.RunConfig;
-import com.stackrox.jenkins.plugins.jenkins.ViewStackroxResultsAction;
 import com.stackrox.jenkins.plugins.report.ReportGenerator;
 import com.stackrox.jenkins.plugins.services.ApiClientFactory;
 import com.stackrox.jenkins.plugins.services.DetectionService;
