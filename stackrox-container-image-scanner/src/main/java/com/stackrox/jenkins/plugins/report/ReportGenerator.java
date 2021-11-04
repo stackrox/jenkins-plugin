@@ -23,7 +23,7 @@ import java.util.List;
 
 public class ReportGenerator {
 
-    private static final String[] CVES_HEADER = {"CVE ID", "CVSS Score", "Score Type", "Package Name", "Package Version", "Fixable", "Publish Date", "Link"};
+    private static final String[] CVES_HEADER = {"COMPONENT", "VERSION", "CVE", "SEVERITY", "LINK"};
     private static final String[] VIOLATED_POLICIES_HEADER = {"Policy Name", "Policy Description", "Severity", "Remediation"};
     private static final String CVES_FILENAME = "cves.csv";
     private static final String POLICY_VIOLATIONS_FILENAME = "policyViolations.csv";
@@ -49,13 +49,10 @@ public class ReportGenerator {
                  CSVPrinter printer = openCsv(outputStream, CVES_HEADER)) {
                 for (CVE cve : result.getCves()) {
                     printer.printRecord(
-                            cve.getId(),
-                            cve.getCvssScore(),
-                            cve.getScoreType(),
                             cve.getPackageName(),
                             cve.getPackageVersion(),
-                            cve.isFixable(),
-                            cve.getPublishDate(),
+                            cve.getId(),
+                            prettySeverity(cve.getSeverity()),
                             cve.getLink()
                     );
                 }
@@ -77,7 +74,7 @@ public class ReportGenerator {
         }
     }
 
-    private static String prettySeverity(StorageSeverity severity) {
+    private static String prettySeverity(Enum<?> severity) {
         if (severity == null) {
             return null;
         }
@@ -93,6 +90,7 @@ public class ReportGenerator {
                 CSVFormat.EXCEL
                         .withQuoteMode(QuoteMode.NON_NUMERIC)
                         .withNullString(NOT_AVAILABLE)
+                        .withSystemRecordSeparator()
                         .withHeader(header));
     }
 }
