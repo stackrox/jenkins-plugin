@@ -1,3 +1,3 @@
-POLICY,SEVERITY,DESCRIPTION,VIOLATION,REMEDIATION
-Latest Tag,MEDIUM,-,Image has tag 'latest',No remediation actions documented.
-Fixable Severity at least Important,HIGH,Alert on deployments with fixable vulnerabilities with a Severity Rating at least Important,-,Use your package manager to update to a fixed version in future builds or speak with your security team to mitigate the vulnerabilities.
+POLICY,SEVERITY,DESCRIPTION,VIOLATION,REMEDIATION,ENFORCED
+Latest Tag,MEDIUM,-,Image has tag 'latest',No remediation actions documented.,false
+Fixable Severity at least Important,HIGH,Alert on deployments with fixable vulnerabilities with a Severity Rating at least Important,-,Use your package manager to update to a fixed version in future builds or speak with your security team to mitigate the vulnerabilities.,false

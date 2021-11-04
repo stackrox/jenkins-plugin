@@ -23,7 +23,7 @@ import com.stackrox.jenkins.plugins.data.PolicyViolation;
 public class ReportGenerator {
 
     private static final String[] CVES_HEADER = {"COMPONENT", "VERSION", "CVE", "SEVERITY", "LINK"};
-    private static final String[] VIOLATED_POLICIES_HEADER = {"POLICY", "SEVERITY", "DESCRIPTION", "VIOLATION", "REMEDIATION"};
+    private static final String[] VIOLATED_POLICIES_HEADER = {"POLICY", "SEVERITY", "DESCRIPTION", "VIOLATION", "REMEDIATION", "ENFORCED"};
     private static final String CVES_FILENAME = "cves.csv";
     private static final String POLICY_VIOLATIONS_FILENAME = "policyViolations.csv";
     private static final String NOT_AVAILABLE = "-";
@@ -67,7 +67,8 @@ public class ReportGenerator {
                             prettySeverity(policy.getSeverity()),
                             policy.getDescription(),
                             policy.getViolations(),
-                            prettyRemediation(policy.getRemediation())
+                            prettyRemediation(policy.getRemediation()),
+                            policy.isBuildEnforced()
                     ));
                 }
             }

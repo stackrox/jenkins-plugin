@@ -1,5 +1,6 @@
 package com.stackrox.jenkins.plugins.report;
 
+import static com.stackrox.model.StorageEnforcementAction.FAIL_BUILD_ENFORCEMENT;
 import static com.stackrox.model.StorageSeverity.HIGH_SEVERITY;
 import static com.stackrox.model.StorageSeverity.MEDIUM_SEVERITY;
 import static com.stackrox.model.StorageVulnerabilitySeverity.IMPORTANT_VULNERABILITY_SEVERITY;
@@ -101,6 +102,7 @@ class ReportGeneratorTest {
                         .name("Fixable Severity at least Important")
                         .description("Alert on deployments with fixable vulnerabilities with a Severity Rating at least Important")
                         .severity(HIGH_SEVERITY)
+                        .enforcementActions(ImmutableList.of(FAIL_BUILD_ENFORCEMENT))
                         .remediation("Use your package manager to update to a fixed version in future builds or speak with your security team to mitigate the vulnerabilities.")
                         , ""))),
                 new ImageCheckResults("nginx:latest",
