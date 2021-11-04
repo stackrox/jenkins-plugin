@@ -27,7 +27,7 @@ public class ReportGenerator {
     private static final String[] VIOLATED_POLICIES_HEADER = {"Policy Name", "Policy Description", "Severity", "Remediation"};
     private static final String CVES_FILENAME = "cves.csv";
     private static final String POLICY_VIOLATIONS_FILENAME = "policyViolations.csv";
-    private static final String NOT_AVAILABLE = "\"-\"";
+    private static final String NOT_AVAILABLE = "-";
     private static final String NO_REMEDIATION_ACTIONS = "No remediation actions documented.";
 
     public static void generateBuildReport(List<ImageCheckResults> results, FilePath reportsDir) throws AbortException {
@@ -88,7 +88,7 @@ public class ReportGenerator {
     private static CSVPrinter openCsv(OutputStream outputStream, String[] header) throws IOException {
         return new CSVPrinter(new BufferedWriter(new OutputStreamWriter(outputStream, StandardCharsets.UTF_8)),
                 CSVFormat.EXCEL
-                        .withQuoteMode(QuoteMode.NON_NUMERIC)
+                        .withQuoteMode(QuoteMode.MINIMAL)
                         .withNullString(NOT_AVAILABLE)
                         .withSystemRecordSeparator()
                         .withHeader(header));

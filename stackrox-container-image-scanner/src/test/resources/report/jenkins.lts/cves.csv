@@ -1,4 +1,4 @@
-"COMPONENT","VERSION","CVE","SEVERITY","LINK"
-"util-linux","2.25.2-6","CVE-2015-5224","IMPORTANT","https://security-tracker.debian.org/tracker/CVE-2015-5224"
-"gcc-4.8","4.8.4-1","CVE-2017-11671","MODERATE","https://security-tracker.debian.org/tracker/CVE-2017-11671"
-"bzip2","1.0.6-7","CVE-2016-3189","LOW","https://security-tracker.debian.org/tracker/CVE-2016-3189"
+COMPONENT,VERSION,CVE,SEVERITY,LINK
+util-linux,2.25.2-6,CVE-2015-5224,IMPORTANT,https://security-tracker.debian.org/tracker/CVE-2015-5224
+gcc-4.8,4.8.4-1,CVE-2017-11671,MODERATE,https://security-tracker.debian.org/tracker/CVE-2017-11671
+bzip2,1.0.6-7,CVE-2016-3189,LOW,https://security-tracker.debian.org/tracker/CVE-2016-3189

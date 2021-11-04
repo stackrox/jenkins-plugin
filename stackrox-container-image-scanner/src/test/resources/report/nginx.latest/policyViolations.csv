@@ -1,3 +1,3 @@
-"Policy Name","Policy Description","Severity","Remediation"
-"Latest Tag","","MEDIUM","No remediation actions documented."
-"Fixable Severity at least Important","Alert on deployments with fixable vulnerabilities with a Severity Rating at least Important","HIGH","Use your package manager to update to a fixed version in future builds or speak with your security team to mitigate the vulnerabilities."
+Policy Name,Policy Description,Severity,Remediation
+Latest Tag,,MEDIUM,No remediation actions documented.
+Fixable Severity at least Important,Alert on deployments with fixable vulnerabilities with a Severity Rating at least Important,HIGH,Use your package manager to update to a fixed version in future builds or speak with your security team to mitigate the vulnerabilities.
