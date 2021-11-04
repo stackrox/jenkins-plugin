@@ -9,6 +9,7 @@ import java.util.List;
 
 import hudson.AbortException;
 import hudson.FilePath;
+import org.jetbrains.annotations.NotNull;
 
 import com.stackrox.jenkins.plugins.data.ListUtil;
 
@@ -37,18 +38,7 @@ public class RunConfig {
             FilePath reportsDir = new FilePath(baseWorkDir, REPORTS_DIR_NAME);
 
             reportsDir.mkdirs();
-
-            List<String> imageNames = ListUtil.emptyIfNull(images);
-            if (imageNames.isEmpty()) {
-                FilePath imagesToScanFilePath = new FilePath(baseWorkDir, IMAGE_LIST_FILENAME);
-                if (!imagesToScanFilePath.exists()) {
-                    throw new AbortException(String.format("%s not found at %s, no images to scan.", IMAGE_LIST_FILENAME, imagesToScanFilePath));
-                }
-                imageNames = Files.readAllLines(new File(imagesToScanFilePath.toURI()).toPath(), Charset.defaultCharset());
-            }
-            if (imageNames.isEmpty()) {
-                throw new AbortException("no images to scan");
-            }
+            List<String> imageNames = images == null || images.isEmpty() ? extractImagesFromFile(baseWorkDir) : images;
             return new RunConfig(
                     log,
                     baseWorkDir,
@@ -59,6 +49,19 @@ public class RunConfig {
         } catch (IOException | InterruptedException e) {
             throw new AbortException(String.format("Error in creating a run configuration: %s", e.getMessage()));
         }
+    }
+
+    @NotNull
+    private static List<String> extractImagesFromFile(FilePath baseWorkDir) throws IOException, InterruptedException {
+        FilePath imagesToScanFilePath = new FilePath(baseWorkDir, IMAGE_LIST_FILENAME);
+        if (!imagesToScanFilePath.exists()) {
+            throw new AbortException(String.format("%s not found at %s, no images to scan.", IMAGE_LIST_FILENAME, imagesToScanFilePath));
+        }
+        List<String> imageNames = Files.readAllLines(new File(imagesToScanFilePath.toURI()).toPath(), Charset.defaultCharset());
+        if (imageNames.isEmpty()) {
+            throw new AbortException("no images to scan");
+        }
+        return imageNames;
     }
 
     public String getArtifacts() {

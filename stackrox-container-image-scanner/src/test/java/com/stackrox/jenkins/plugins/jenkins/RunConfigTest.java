@@ -23,24 +23,24 @@ class RunConfigTest {
     @TempDir
     Path folder;
 
-    PrintStream log = new PrintStream(NULL_OUTPUT_STREAM);
+    private static final PrintStream LOG = new PrintStream(NULL_OUTPUT_STREAM);
 
     @Test
     void createShouldFailWhenNoImagesSpecifiedAndFileDoesNotExist() {
-        Exception exception = assertThrows(AbortException.class, () -> RunConfig.create(log, "", new FilePath(folder.toFile()), null));
+        Exception exception = assertThrows(AbortException.class, () -> RunConfig.create(LOG, "", new FilePath(folder.toFile()), null));
         assertTrue(exception.getMessage().contains("Error in creating a run configuration: rox_images_to_scan not found at"));
     }
 
     @Test
     void createShouldFailWhenNoImagesToScan() throws IOException {
         assertTrue(new File(folder.toFile(), "rox_images_to_scan").createNewFile());
-        Exception exception = assertThrows(AbortException.class, () -> RunConfig.create(log, "", new FilePath(folder.toFile()), null));
+        Exception exception = assertThrows(AbortException.class, () -> RunConfig.create(LOG, "", new FilePath(folder.toFile()), null));
         assertEquals("Error in creating a run configuration: no images to scan", exception.getMessage());
     }
 
     @Test
     void createShouldReturnListOfProvidedImagesAndCreateRequiredDirs() throws IOException, InterruptedException {
-        RunConfig runConfig = RunConfig.create(log, "", new FilePath(folder.toFile()), ImmutableList.of("A", "B", "C"));
+        RunConfig runConfig = RunConfig.create(LOG, "", new FilePath(folder.toFile()), ImmutableList.of("A", "B", "C"));
         assertEquals(ImmutableList.of("A", "B", "C"), runConfig.getImageNames());
         assertTrue(runConfig.getReportsDir().exists());
         assertTrue(runConfig.getBaseWorkDir().exists());
@@ -52,7 +52,7 @@ class RunConfigTest {
         FileWriter writer = new FileWriter(imagesToScan);
         writer.write("A\nB\nC\n");
         writer.close();
-        RunConfig runConfig = RunConfig.create(log, "", new FilePath(folder.toFile()), null);
+        RunConfig runConfig = RunConfig.create(LOG, "", new FilePath(folder.toFile()), null);
         assertEquals(ImmutableList.of("A", "B", "C"), runConfig.getImageNames());
         assertTrue(runConfig.getReportsDir().exists());
         assertTrue(runConfig.getBaseWorkDir().exists());

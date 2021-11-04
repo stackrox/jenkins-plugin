@@ -13,6 +13,8 @@ class JenkinsClient {
     private final static JENKINSPORT = "8080"
     private final static JENKINSPROTOCOL = "http"
     private final static boolean USE_CRUMB_AUTHENTICATION = true
+    public static final String JOB_TEMPLATE_WITH_IMAGE_NAMES = "resources/templateNoFile.xml"
+    public static final String TEMPLATE_WITHOUT_IMAGE_NAMES = "resources/template.xml"
     private final JenkinsServer jenkins
 
     JenkinsClient() {
@@ -51,7 +53,7 @@ class JenkinsClient {
         Map<String, Serializable> param = createConfigMap(
                 imageName, portalAddress, token, policyEvalCheck, failOnCriticalPluginError)
         // parse the xml
-        String path = "resources/template.xml"
+        String path = TEMPLATE_WITHOUT_IMAGE_NAMES
         return createJobConfigFromPath(path, param)
     }
 
@@ -60,12 +62,11 @@ class JenkinsClient {
         Map<String, Serializable> param = createConfigMap(
                 imageName, portalAddress, token, policyEvalCheck, failOnCriticalPluginError)
         // parse the xml
-        String path = "resources/templateNoFile.xml"
+        String path = JOB_TEMPLATE_WITH_IMAGE_NAMES
         return createJobConfigFromPath(path, param)
     }
 
     //TODO(ROX-8458): add tests for pipeline
-
     private static Map<String, Serializable> createConfigMap(String imageName, String portalAddress, String token,
                                                              boolean policyEvalCheck,
                                                              boolean failOnCriticalPluginError) {
