@@ -1,19 +1,5 @@
 package com.stackrox.jenkins.plugins.report;
 
-import com.google.common.base.Strings;
-
-import com.stackrox.jenkins.plugins.data.CVE;
-import com.stackrox.jenkins.plugins.data.ImageCheckResults;
-import com.stackrox.model.StoragePolicy;
-import com.stackrox.model.StorageSeverity;
-
-import hudson.AbortException;
-import hudson.FilePath;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVPrinter;
-import org.apache.commons.csv.QuoteMode;
-import org.apache.commons.lang.StringUtils;
-
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -21,12 +7,23 @@ import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
+
+import com.google.common.base.Strings;
+import hudson.AbortException;
+import hudson.FilePath;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
+import org.apache.commons.csv.QuoteMode;
+import org.apache.commons.lang.StringUtils;
+
+import com.stackrox.jenkins.plugins.data.CVE;
+import com.stackrox.jenkins.plugins.data.ImageCheckResults;
+import com.stackrox.jenkins.plugins.data.PolicyViolation;
 
 public class ReportGenerator {
 
     private static final String[] CVES_HEADER = {"COMPONENT", "VERSION", "CVE", "SEVERITY", "LINK"};
-    private static final String[] VIOLATED_POLICIES_HEADER = {"Policy Name", "Policy Description", "Severity", "Remediation"};
+    private static final String[] VIOLATED_POLICIES_HEADER = {"POLICY", "SEVERITY", "DESCRIPTION", "VIOLATION", "REMEDIATION"};
     private static final String CVES_FILENAME = "cves.csv";
     private static final String POLICY_VIOLATIONS_FILENAME = "policyViolations.csv";
     private static final String NOT_AVAILABLE = "-";
@@ -64,11 +61,12 @@ public class ReportGenerator {
         if (!result.getViolatedPolicies().isEmpty()) {
             try (OutputStream outputStream = new FilePath(imageResultDir, POLICY_VIOLATIONS_FILENAME).write();
                  CSVPrinter printer = openCsv(outputStream, VIOLATED_POLICIES_HEADER)) {
-                for (StoragePolicy policy : result.getViolatedPolicies()) {
+                for (PolicyViolation policy : result.getViolatedPolicies()) {
                     printer.printRecord(nullIfEmpty(
                             policy.getName(),
-                            policy.getDescription(),
                             prettySeverity(policy.getSeverity()),
+                            policy.getDescription(),
+                            policy.getViolations(),
                             prettyRemediation(policy.getRemediation())
                     ));
                 }

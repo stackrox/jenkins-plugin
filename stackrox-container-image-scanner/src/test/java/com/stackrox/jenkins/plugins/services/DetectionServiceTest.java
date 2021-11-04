@@ -17,6 +17,7 @@ import java.util.List;
 import com.github.tomakehurst.wiremock.client.MappingBuilder;
 import com.google.common.collect.ImmutableList;
 
+import com.stackrox.jenkins.plugins.data.PolicyViolation;
 import com.stackrox.model.StorageEnforcementAction;
 import com.stackrox.model.StoragePolicy;
 
@@ -49,7 +50,7 @@ class DetectionServiceTest extends AbstractServiceTest {
     public void shouldNotThrowWhenNoDataFor200() throws IOException {
         MOCK_SERVER.stubFor(postDetectBuild().willReturn(
                 ok().withBody("{}")));
-        List<StoragePolicy> violations = detectionService.getPolicyViolations("nginx:latest");
+        List<PolicyViolation> violations = detectionService.getPolicyViolations("nginx:latest");
         assertEquals(0, violations.size());
     }
 
@@ -57,9 +58,20 @@ class DetectionServiceTest extends AbstractServiceTest {
     public void shouldNotFailOnMissingData() throws IOException {
         MOCK_SERVER.stubFor(postDetectBuild().willReturn(
                 ok().withBodyFile("v1/detect/build/minimal.json")));
-        List<StoragePolicy> actual = detectionService.getPolicyViolations("nginx:latest");
+        List<PolicyViolation> actual = detectionService.getPolicyViolations("nginx:latest");
 
-        List<StoragePolicy> expected = ImmutableList.of(new StoragePolicy().enforcementActions(FAIL_BUILD_ENFORCEMENTS));
+        List<PolicyViolation> expected = ImmutableList.of(new PolicyViolation(new StoragePolicy().enforcementActions(FAIL_BUILD_ENFORCEMENTS), ""));
+
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void shouldJoinViolations() throws IOException {
+        MOCK_SERVER.stubFor(postDetectBuild().willReturn(
+                ok().withBodyFile("v1/detect/build/violations.json")));
+        List<PolicyViolation> actual = detectionService.getPolicyViolations("nginx:latest");
+
+        List<PolicyViolation> expected = ImmutableList.of(new PolicyViolation(new StoragePolicy().enforcementActions(FAIL_BUILD_ENFORCEMENTS), "A - B - C"));
 
         assertEquals(expected, actual);
     }

@@ -1,0 +1,26 @@
+{
+  "alerts": [
+    {
+      "policy": {
+        "enforcementActions": [
+          "FAIL_BUILD_ENFORCEMENT"
+        ]
+      },
+      "violations": [
+        {
+          "message": "A"
+        },
+        {
+          "message": "B"
+        },
+        {},
+        {
+          "message": "C"
+        },
+        {
+          "message": ""
+        }
+      ]
+    }
+  ]
+}
