@@ -215,7 +215,7 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
 
     private boolean enforcedPolicyViolationExists(List<ImageCheckResults> results) {
         for (ImageCheckResults result : results) {
-            if (!result.getViolatedPolicies().isEmpty()) {
+            if (!result.isImageCheckStatusPass()) {
                 return true;
             }
         }

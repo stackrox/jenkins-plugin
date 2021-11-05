@@ -27,6 +27,6 @@ public class ImageCheckResults {
     }
 
     public boolean isImageCheckStatusPass() {
-        return violatedPolicies.isEmpty();
+        return violatedPolicies.stream().noneMatch(PolicyViolation::isBuildEnforced);
     }
 }
