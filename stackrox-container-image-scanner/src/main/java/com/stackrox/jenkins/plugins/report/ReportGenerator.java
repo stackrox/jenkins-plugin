@@ -19,7 +19,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ReportGenerator {
 
@@ -48,13 +50,13 @@ public class ReportGenerator {
             try (OutputStream outputStream = new FilePath(imageResultDir, CVES_FILENAME).write();
                  CSVPrinter printer = openCsv(outputStream, CVES_HEADER)) {
                 for (CVE cve : result.getCves()) {
-                    printer.printRecord(
+                    printer.printRecord(nullIfEmpty(
                             cve.getPackageName(),
                             cve.getPackageVersion(),
                             cve.getId(),
                             prettySeverity(cve.getSeverity()),
                             cve.getLink()
-                    );
+                    ));
                 }
             }
         }
@@ -63,15 +65,29 @@ public class ReportGenerator {
             try (OutputStream outputStream = new FilePath(imageResultDir, POLICY_VIOLATIONS_FILENAME).write();
                  CSVPrinter printer = openCsv(outputStream, VIOLATED_POLICIES_HEADER)) {
                 for (StoragePolicy policy : result.getViolatedPolicies()) {
-                    printer.printRecord(
+                    printer.printRecord(nullIfEmpty(
                             policy.getName(),
                             policy.getDescription(),
                             prettySeverity(policy.getSeverity()),
                             prettyRemediation(policy.getRemediation())
-                    );
+                    ));
                 }
             }
         }
+    }
+
+    private static Object[] nullIfEmpty(Object... values) {
+        return Arrays.stream(values).sequential().map(ReportGenerator::nullIfEmpty).toArray();
+    }
+
+    private static Object nullIfEmpty(Object s) {
+        if (s == null) {
+            return null;
+        }
+        if (s.getClass() != String.class) {
+            return s;
+        }
+        return Strings.isNullOrEmpty(s.toString()) ? null : s;
     }
 
     private static String prettySeverity(Enum<?> severity) {
