@@ -11,8 +11,6 @@ import hudson.AbortException;
 import hudson.FilePath;
 import org.jetbrains.annotations.NotNull;
 
-import com.stackrox.jenkins.plugins.data.ListUtil;
-
 public class RunConfig {
     private static final String IMAGE_LIST_FILENAME = "rox_images_to_scan";
     private static final String REPORTS_DIR_NAME = "rox_image_security_reports";
@@ -38,7 +36,7 @@ public class RunConfig {
             FilePath reportsDir = new FilePath(baseWorkDir, REPORTS_DIR_NAME);
 
             reportsDir.mkdirs();
-            List<String> imageNames = images == null || images.isEmpty() ? extractImagesFromFile(baseWorkDir) : images;
+            List<String> imageNames = images.isEmpty() ? extractImagesFromFile(baseWorkDir) : images;
             return new RunConfig(
                     log,
                     baseWorkDir,
