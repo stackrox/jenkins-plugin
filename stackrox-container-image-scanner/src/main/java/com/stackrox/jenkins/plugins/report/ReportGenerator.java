@@ -68,7 +68,7 @@ public class ReportGenerator {
                             policy.getDescription(),
                             policy.getViolations(),
                             prettyRemediation(policy.getRemediation()),
-                            policy.isBuildEnforced()
+                            policy.isBuildEnforced() ? "X" : "-"
                     ));
                 }
             }
