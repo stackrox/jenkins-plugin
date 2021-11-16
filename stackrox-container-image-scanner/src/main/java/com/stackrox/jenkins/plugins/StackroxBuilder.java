@@ -8,7 +8,9 @@ import java.util.List;
 import javax.annotation.Nonnull;
 
 import com.google.common.base.CharMatcher;
+import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import hudson.AbortException;
 import hudson.Extension;
@@ -52,6 +54,7 @@ import com.stackrox.model.V1AuthStatus;
 @SuppressWarnings("unused")
 public class StackroxBuilder extends Builder implements SimpleBuildStep {
     private String portalAddress;
+    private String imageNames;
     private Secret apiToken = Secret.fromString("");
     private boolean failOnPolicyEvalFailure;
     private boolean failOnCriticalPluginError;
@@ -124,6 +127,22 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
         this.caCertPEM = caCertPEM;
     }
 
+    private List<String> getImages() {
+        return ImmutableList.copyOf(Splitter.on(",")
+                .omitEmptyStrings()
+                .trimResults()
+                .split(Strings.nullToEmpty(imageNames)));
+    }
+
+    public String getImageNames() {
+        return this.imageNames;
+    }
+
+    @DataBoundSetter
+    public void setImageNames(String imageNames) {
+        this.imageNames = imageNames;
+    }
+
     //endregion
 
     //TODO: Add console log for the plugin
@@ -134,7 +153,7 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
             @Nonnull Launcher launcher,
             @Nonnull TaskListener listener) throws IOException, InterruptedException {
 
-        runConfig = new RunConfig(run, workspace, listener);
+        runConfig = RunConfig.create(listener.getLogger(), run.getCharacteristicEnvVars().get("BUILD_TAG"), workspace, getImages());
 
         try {
             List<ImageCheckResults> results = checkImages();
@@ -207,8 +226,6 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
         runConfig.getLog().println("Cleaning up the workspace ...");
 
         try {
-            runConfig.getImagesToScanFilePath().delete();
-
             runConfig.getBaseWorkDir().deleteRecursive();
         } catch (IOException | InterruptedException e) {
             runConfig.getLog().println("WARN: Failed to cleanup.");
