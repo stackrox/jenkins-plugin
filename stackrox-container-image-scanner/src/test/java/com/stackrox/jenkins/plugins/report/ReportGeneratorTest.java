@@ -32,6 +32,7 @@ import org.apache.commons.io.FileUtils;
 
 import com.stackrox.jenkins.plugins.data.CVE;
 import com.stackrox.jenkins.plugins.data.ImageCheckResults;
+import com.stackrox.jenkins.plugins.data.PolicyViolation;
 import com.stackrox.model.StorageEmbeddedVulnerability;
 import com.stackrox.model.StoragePolicy;
 
@@ -81,43 +82,43 @@ class ReportGeneratorTest {
     @Test
     void testGenerateReportForResultsWritesReportsForEveryImageInSeparatedDirectory() throws IOException {
         FilePath reportsDir = new FilePath(folder.toFile());
-        List<ImageCheckResults> results = ImmutableList.of(new ImageCheckResults("jenkins:lts", ImmutableList.of(
-                new CVE("util-linux", "2.25.2-6", new StorageEmbeddedVulnerability()
-                        .cve("CVE-2015-5224")
-                        .severity(IMPORTANT_VULNERABILITY_SEVERITY)
-                        .link("https://security-tracker.debian.org/tracker/CVE-2015-5224")),
-                new CVE("gcc-4.8", "4.8.4-1", new StorageEmbeddedVulnerability()
-                        .cve("CVE-2017-11671")
-                        .severity(MODERATE_VULNERABILITY_SEVERITY)
-                        .link("https://security-tracker.debian.org/tracker/CVE-2017-11671")),
-                new CVE("bzip2", "1.0.6-7", new StorageEmbeddedVulnerability()
-                        .cve("CVE-2016-3189")
-                        .severity(LOW_VULNERABILITY_SEVERITY)
-                        .link("https://security-tracker.debian.org/tracker/CVE-2016-3189")
-                        .fixedBy("1.0.6-8"))
-        ), ImmutableList.of(
-                new StoragePolicy()
+        List<ImageCheckResults> results = ImmutableList.of(
+                new ImageCheckResults("jenkins:lts", ImmutableList.of(
+                        new CVE("util-linux", "2.25.2-6", new StorageEmbeddedVulnerability()
+                                .cve("CVE-2015-5224")
+                                .severity(IMPORTANT_VULNERABILITY_SEVERITY)
+                                .link("https://security-tracker.debian.org/tracker/CVE-2015-5224")),
+                        new CVE("gcc-4.8", "4.8.4-1", new StorageEmbeddedVulnerability()
+                                .cve("CVE-2017-11671")
+                                .severity(MODERATE_VULNERABILITY_SEVERITY)
+                                .link("https://security-tracker.debian.org/tracker/CVE-2017-11671")),
+                        new CVE("bzip2", "1.0.6-7", new StorageEmbeddedVulnerability()
+                                .cve("CVE-2016-3189")
+                                .severity(LOW_VULNERABILITY_SEVERITY)
+                                .link("https://security-tracker.debian.org/tracker/CVE-2016-3189")
+                                .fixedBy("1.0.6-8"))
+                ), ImmutableList.of(new PolicyViolation(new StoragePolicy()
                         .name("Fixable Severity at least Important")
                         .description("Alert on deployments with fixable vulnerabilities with a Severity Rating at least Important")
                         .severity(HIGH_SEVERITY)
                         .remediation("Use your package manager to update to a fixed version in future builds or speak with your security team to mitigate the vulnerabilities.")
-        )), new ImageCheckResults("nginx:latest",
-                ImmutableList.of(
-                        new CVE("openssl", "1.1.1d-0+deb10u7", new StorageEmbeddedVulnerability()
-                                .cve("CVE-2007-6755")
-                                .severity(LOW_VULNERABILITY_SEVERITY)
-                                .link("https://security-tracker.debian.org/tracker/CVE-2007-6755")),
-                        new CVE(null, null, new StorageEmbeddedVulnerability())),
-                ImmutableList.of(
-                        new StoragePolicy().name("Latest Tag")
-                                .description("")
-                                .severity(MEDIUM_SEVERITY),
-                        new StoragePolicy()
-                                .name("Fixable Severity at least Important")
-                                .description("Alert on deployments with fixable vulnerabilities with a Severity Rating at least Important")
-                                .severity(HIGH_SEVERITY)
-                                .remediation("Use your package manager to update to a fixed version in future builds or speak with your security team to mitigate the vulnerabilities.")
-                )));
+                        , ""))),
+                new ImageCheckResults("nginx:latest",
+                        ImmutableList.of(
+                                new CVE("openssl", "1.1.1d-0+deb10u7", new StorageEmbeddedVulnerability()
+                                        .cve("CVE-2007-6755")
+                                        .severity(LOW_VULNERABILITY_SEVERITY)
+                                        .link("https://security-tracker.debian.org/tracker/CVE-2007-6755")),
+                                new CVE(null, null, new StorageEmbeddedVulnerability())),
+                        ImmutableList.of(new PolicyViolation(new StoragePolicy().name("Latest Tag")
+                                        .description("")
+                                        .severity(MEDIUM_SEVERITY), "Image has tag 'latest'"),
+                                new PolicyViolation(new StoragePolicy()
+                                        .name("Fixable Severity at least Important")
+                                        .description("Alert on deployments with fixable vulnerabilities with a Severity Rating at least Important")
+                                        .severity(HIGH_SEVERITY)
+                                        .remediation("Use your package manager to update to a fixed version in future builds or speak with your security team to mitigate the vulnerabilities.")
+                                        , null))));
         ReportGenerator.generateBuildReport(results, reportsDir);
 
         assertDirsAreEqual(Paths.get("src", "test", "resources", "report"), folder);
