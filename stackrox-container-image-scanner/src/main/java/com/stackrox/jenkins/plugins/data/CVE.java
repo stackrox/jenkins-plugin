@@ -4,6 +4,7 @@ import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 
 import com.stackrox.model.StorageEmbeddedVulnerability;
+import com.stackrox.model.StorageVulnerabilitySeverity;
 
 import static java.time.format.DateTimeFormatter.ISO_DATE_TIME;
 
@@ -18,21 +19,12 @@ public class CVE {
         this.vulnerability = vulnerability;
     }
 
+    public StorageVulnerabilitySeverity getSeverity() {
+        return vulnerability.getSeverity();
+    }
 
     public String getId() {
         return vulnerability.getCve();
-    }
-
-    public Float getCvssScore() {
-        return vulnerability.getCvss();
-    }
-
-    public String getScoreType() {
-        return vulnerability.getScoreVersion() != null ? vulnerability.getScoreVersion().toString() : null;
-    }
-
-    public String getPublishDate() {
-        return vulnerability.getPublishedOn() != null ? vulnerability.getPublishedOn().format(ISO_DATE_TIME) : null;
     }
 
     public String getPackageName() {
@@ -41,10 +33,6 @@ public class CVE {
 
     public String getPackageVersion() {
         return packageVersion;
-    }
-
-    public boolean isFixable() {
-        return !Strings.isNullOrEmpty(vulnerability.getFixedBy());
     }
 
     public String getLink() {

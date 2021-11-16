@@ -1,3 +1,3 @@
-"CVE ID","CVSS Score","Score Type","Package Name","Package Version","Fixable","Publish Date","Link"
-"CVE-2007-6755",5.8,"V2","openssl","1.1.1d-0+deb10u7","false","2013-10-11T22:55:00Z","https://security-tracker.debian.org/tracker/CVE-2007-6755"
-"CVE-MISSING-DATA",0.0,"-","-","-","false","-","-"
+COMPONENT,VERSION,CVE,SEVERITY,LINK
+openssl,1.1.1d-0+deb10u7,CVE-2007-6755,LOW,https://security-tracker.debian.org/tracker/CVE-2007-6755
+-,-,-,UNKNOWN,-

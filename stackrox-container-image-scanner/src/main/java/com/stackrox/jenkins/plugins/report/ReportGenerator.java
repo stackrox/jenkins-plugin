@@ -19,15 +19,17 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ReportGenerator {
 
-    private static final String[] CVES_HEADER = {"CVE ID", "CVSS Score", "Score Type", "Package Name", "Package Version", "Fixable", "Publish Date", "Link"};
+    private static final String[] CVES_HEADER = {"COMPONENT", "VERSION", "CVE", "SEVERITY", "LINK"};
     private static final String[] VIOLATED_POLICIES_HEADER = {"Policy Name", "Policy Description", "Severity", "Remediation"};
     private static final String CVES_FILENAME = "cves.csv";
     private static final String POLICY_VIOLATIONS_FILENAME = "policyViolations.csv";
-    private static final String NOT_AVAILABLE = "\"-\"";
+    private static final String NOT_AVAILABLE = "-";
     private static final String NO_REMEDIATION_ACTIONS = "No remediation actions documented.";
 
     public static void generateBuildReport(List<ImageCheckResults> results, FilePath reportsDir) throws AbortException {
@@ -48,16 +50,13 @@ public class ReportGenerator {
             try (OutputStream outputStream = new FilePath(imageResultDir, CVES_FILENAME).write();
                  CSVPrinter printer = openCsv(outputStream, CVES_HEADER)) {
                 for (CVE cve : result.getCves()) {
-                    printer.printRecord(
-                            cve.getId(),
-                            cve.getCvssScore(),
-                            cve.getScoreType(),
+                    printer.printRecord(nullIfEmpty(
                             cve.getPackageName(),
                             cve.getPackageVersion(),
-                            cve.isFixable(),
-                            cve.getPublishDate(),
+                            cve.getId(),
+                            prettySeverity(cve.getSeverity()),
                             cve.getLink()
-                    );
+                    ));
                 }
             }
         }
@@ -66,18 +65,32 @@ public class ReportGenerator {
             try (OutputStream outputStream = new FilePath(imageResultDir, POLICY_VIOLATIONS_FILENAME).write();
                  CSVPrinter printer = openCsv(outputStream, VIOLATED_POLICIES_HEADER)) {
                 for (StoragePolicy policy : result.getViolatedPolicies()) {
-                    printer.printRecord(
+                    printer.printRecord(nullIfEmpty(
                             policy.getName(),
                             policy.getDescription(),
                             prettySeverity(policy.getSeverity()),
                             prettyRemediation(policy.getRemediation())
-                    );
+                    ));
                 }
             }
         }
     }
 
-    private static String prettySeverity(StorageSeverity severity) {
+    private static Object[] nullIfEmpty(Object... values) {
+        return Arrays.stream(values).sequential().map(ReportGenerator::nullIfEmpty).toArray();
+    }
+
+    private static Object nullIfEmpty(Object s) {
+        if (s == null) {
+            return null;
+        }
+        if (s.getClass() != String.class) {
+            return s;
+        }
+        return Strings.isNullOrEmpty(s.toString()) ? null : s;
+    }
+
+    private static String prettySeverity(Enum<?> severity) {
         if (severity == null) {
             return null;
         }
@@ -91,8 +104,9 @@ public class ReportGenerator {
     private static CSVPrinter openCsv(OutputStream outputStream, String[] header) throws IOException {
         return new CSVPrinter(new BufferedWriter(new OutputStreamWriter(outputStream, StandardCharsets.UTF_8)),
                 CSVFormat.EXCEL
-                        .withQuoteMode(QuoteMode.NON_NUMERIC)
+                        .withQuoteMode(QuoteMode.MINIMAL)
                         .withNullString(NOT_AVAILABLE)
+                        .withSystemRecordSeparator()
                         .withHeader(header));
     }
 }
