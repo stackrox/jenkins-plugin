@@ -1,9 +1,10 @@
 package com.stackrox.jenkins.plugins.data;
 
-import static com.stackrox.model.StorageEnforcementAction.FAIL_BUILD_ENFORCEMENT;
+import javax.annotation.Nonnull;
 
 import com.google.common.base.Objects;
 
+import com.stackrox.model.StorageEnforcementAction;
 import com.stackrox.model.StoragePolicy;
 import com.stackrox.model.StorageSeverity;
 
@@ -11,7 +12,7 @@ public class PolicyViolation {
     private final StoragePolicy policy;
     private final String violations;
 
-    public PolicyViolation(StoragePolicy policy, String violations) {
+    public PolicyViolation(@Nonnull StoragePolicy policy, String violations) {
         this.policy = policy;
         this.violations = violations;
     }
@@ -37,7 +38,8 @@ public class PolicyViolation {
     }
 
     public boolean isBuildEnforced() {
-        return ListUtil.emptyIfNull(policy.getEnforcementActions()).contains(FAIL_BUILD_ENFORCEMENT);
+        return ListUtil.emptyIfNull(policy.getEnforcementActions())
+                .contains(StorageEnforcementAction.FAIL_BUILD_ENFORCEMENT);
     }
 
     @Override

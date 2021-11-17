@@ -206,7 +206,7 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
 
         results.sort((result1, result2) -> {
             //descending order
-            return Boolean.compare(result1.isImageCheckStatusPass(), result2.isImageCheckStatusPass());
+            return Boolean.compare(result1.isStatusPass(), result2.isStatusPass());
         });
         return results;
     }
@@ -215,7 +215,7 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
 
     private boolean enforcedPolicyViolationExists(List<ImageCheckResults> results) {
         for (ImageCheckResults result : results) {
-            if (!result.isImageCheckStatusPass()) {
+            if (!result.isStatusPass()) {
                 return true;
             }
         }
