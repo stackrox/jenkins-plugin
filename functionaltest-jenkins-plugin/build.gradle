@@ -58,7 +58,7 @@ dependencies {
     implementation group: 'org.spockframework', name: 'spock-core', version: '1.2-groovy-2.4'
     implementation group: 'com.offbytwo.jenkins', name: 'jenkins-client', version: '0.3.8'
     // JAX-B dependencies for JDK 9+
-    implementation "jakarta.xml.bind:jakarta.xml.bind-api:2.3.2"
+    implementation "jakarta.xml.bind:jakarta.xml.bind-api:3.0.1"
     implementation "org.glassfish.jaxb:jaxb-runtime:3.0.2"
 
     implementation 'io.swagger:swagger-annotations:1.5.24'
