@@ -66,7 +66,7 @@ dependencies {
     implementation 'com.squareup.okhttp3:okhttp:4.9.1'
     implementation 'com.squareup.okhttp3:logging-interceptor:4.9.2'
     implementation 'com.google.code.gson:gson:2.8.6'
-    implementation 'io.gsonfire:gson-fire:1.8.4'
+    implementation 'io.gsonfire:gson-fire:1.8.5'
     implementation 'org.openapitools:jackson-databind-nullable:0.2.1'
     implementation "jakarta.annotation:jakarta.annotation-api:2.0.0"
 }
