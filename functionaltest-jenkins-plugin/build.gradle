@@ -14,6 +14,7 @@ codenarc.reportFormat = 'text'
 sourceCompatibility = 1.8
 
 test {
+    useJUnitPlatform()
     testLogging.showStandardStreams = true
     testLogging.exceptionFormat = "full"
 }
@@ -54,8 +55,8 @@ sourceSets.main.java.srcDirs += "$buildDir/generated/src/main".toString()
 compileJava.dependsOn tasks.openApiGenerate
 
 dependencies {
-    implementation 'org.codehaus.groovy:groovy-all:2.4.19'
-    implementation group: 'org.spockframework', name: 'spock-core', version: '1.2-groovy-2.4'
+    implementation 'org.codehaus.groovy:groovy-all:3.0.8'
+    implementation group: 'org.spockframework', name: 'spock-core', version: '2.0-groovy-3.0'
     implementation group: 'com.offbytwo.jenkins', name: 'jenkins-client', version: '0.3.8'
     // JAX-B dependencies for JDK 9+
     implementation "jakarta.xml.bind:jakarta.xml.bind-api:3.0.1"
