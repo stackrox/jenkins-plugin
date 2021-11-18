@@ -167,6 +167,15 @@ freestyle projects and pipelines.
     </blockquote></td>
     </tr>
     <tr class="odd">
+    <td><p><code>imageNames</code></p></td>
+    <td><p>Comma separated list of images to scan</p></td>
+    <td><p>If you leave it blank then provide list in <code>$BUILD_TAG/rox_images_to_scan</code> file.</p>
+    <blockquote>
+    <p><strong>Note</strong></p>
+    <p>If you don’t enable <code>failOnPolicyEvalFailure</code>, the plugin will not fail the build even if the StackRox Kubernetes Security Platform reports system policy violations.</p>
+    </blockquote></td>
+    </tr>
+    <tr class="even">
     <td colspan="3"><p><em><sup>*</sup> Required</em></p></td>
     </tr>
     </tbody>
@@ -184,18 +193,22 @@ To use the StackRox Container Image Scanner plugin in your pipeline:
 
 2.  In the **Script** text area, enter the following script:
     ```groovy
-    node {
-        stage('Stackrox Image Security') {
-            steps {
-                sh 'mkdir $BUILD_TAG && cd $BUILD_TAG && echo "<images to scan>" >> rox_images_to_scan'
-                stackrox (
-                    portalAddress: <portal-address>,
-                    apiToken: <api-token>,
-                    enableTLSVerification: <true-or-false>,
-                    caCertPEM: <ca-cert-pem-format>,
-                    failOnCriticalPluginError: <true-or-false>,
-                    failOnPolicyEvalFailure: <true-or-false>,
-                )
+    pipeline {
+        agent any
+
+        stages {
+            stage('Test') {
+                steps {
+                    stackrox (
+                        apiToken: '...',
+                        caCertPEM: '',
+                        enableTLSVerification: false,
+                        failOnCriticalPluginError: true,
+                        failOnPolicyEvalFailure: true,
+                        portalAddress: 'https://central.stackrox:443',
+                        imageNames: "nginx:latest,ubuntu:bionic,busybox:stable"
+                    )
+                }
             }
         }
     }
