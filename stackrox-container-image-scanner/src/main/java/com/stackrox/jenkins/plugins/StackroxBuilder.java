@@ -27,6 +27,7 @@ import hudson.util.Secret;
 import jenkins.model.Jenkins;
 import jenkins.tasks.SimpleBuildStep;
 import lombok.Getter;
+import lombok.Setter;
 import net.sf.json.JSONObject;
 import org.apache.commons.validator.routines.RegexValidator;
 import org.apache.commons.validator.routines.UrlValidator;
@@ -54,13 +55,19 @@ import com.stackrox.model.V1AuthStatus;
 
 @SuppressWarnings("unused")
 @Getter
+@Setter
 public class StackroxBuilder extends Builder implements SimpleBuildStep {
     private String portalAddress;
+    @DataBoundSetter
     private String imageNames;
     private Secret apiToken = Secret.fromString("");
+    @DataBoundSetter
     private boolean failOnPolicyEvalFailure;
+    @DataBoundSetter
     private boolean failOnCriticalPluginError;
+    @DataBoundSetter
     private boolean enableTLSVerification;
+    @DataBoundSetter
     private String caCertPEM;
 
     private RunConfig runConfig;
@@ -80,8 +87,6 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
                 .split(Strings.nullToEmpty(getImageNames())));
     }
 
-    //region Setters
-
     @DataBoundSetter
     public void setPortalAddress(String portalAddress) {
         this.portalAddress = CharMatcher.is('/').trimTrailingFrom(portalAddress);
@@ -91,33 +96,6 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
     public void setApiToken(String apiToken) {
         this.apiToken = Secret.fromString(apiToken);
     }
-
-    @DataBoundSetter
-    public void setFailOnPolicyEvalFailure(boolean failOnPolicyEvalFailure) {
-        this.failOnPolicyEvalFailure = failOnPolicyEvalFailure;
-    }
-
-    @DataBoundSetter
-    public void setFailOnCriticalPluginError(boolean failOnCriticalPluginError) {
-        this.failOnCriticalPluginError = failOnCriticalPluginError;
-    }
-
-    @DataBoundSetter
-    public void setEnableTLSVerification(boolean enableTLSVerification) {
-        this.enableTLSVerification = enableTLSVerification;
-    }
-
-    @DataBoundSetter
-    public void setCaCertPEM(String caCertPEM) {
-        this.caCertPEM = caCertPEM;
-    }
-
-    @DataBoundSetter
-    public void setImageNames(String imageNames) {
-        this.imageNames = imageNames;
-    }
-
-    //endregion
 
     //TODO: Add console log for the plugin
     @Override
