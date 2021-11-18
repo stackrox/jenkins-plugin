@@ -1,10 +1,9 @@
 {
   "alerts": [
+    {},
     {
       "policy": {
-        "enforcementActions": [
-          "FAIL_BUILD_ENFORCEMENT"
-        ]
+        "enforcementActions": []
       },
       "violations": [
         {

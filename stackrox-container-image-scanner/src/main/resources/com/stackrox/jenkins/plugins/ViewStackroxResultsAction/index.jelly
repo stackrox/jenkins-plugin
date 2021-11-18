@@ -38,10 +38,10 @@
                         <h5 class="collapsible-header">
                             <span class="arrow-r"></span>
                             <span style="width:100%;">${result.imageName}</span>
-                            <j:if test="${result.imageCheckStatusPass == true}">
+                            <j:if test="${result.statusPass == true}">
                                 <div class="chipPassed">Pass</div>
                             </j:if>
-                            <j:if test="${result.imageCheckStatusPass == false}">
+                            <j:if test="${result.statusPass == false}">
                                 <div class="chipFailed">Fail</div>
                             </j:if>
                         </h5>

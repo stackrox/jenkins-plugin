@@ -12,6 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 
 import com.github.tomakehurst.wiremock.client.MappingBuilder;
@@ -71,7 +72,7 @@ class DetectionServiceTest extends AbstractServiceTest {
                 ok().withBodyFile("v1/detect/build/violations.json")));
         List<PolicyViolation> actual = detectionService.getPolicyViolations("nginx:latest");
 
-        List<PolicyViolation> expected = ImmutableList.of(new PolicyViolation(new StoragePolicy().enforcementActions(FAIL_BUILD_ENFORCEMENTS), "A - B - C"));
+        List<PolicyViolation> expected = ImmutableList.of(new PolicyViolation(new StoragePolicy().enforcementActions(Collections.emptyList()), "A - B - C"));
 
         assertEquals(expected, actual);
     }

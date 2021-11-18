@@ -34,7 +34,6 @@ public class DetectionService {
         return emptyIfNull(alerts).stream()
                 .filter(a -> a.getPolicy() != null)
                 .map(a -> new PolicyViolation(a.getPolicy(), getViolations(a)))
-                .filter(PolicyViolation::isBuildEnforced)
                 .collect(Collectors.toList());
     }
 
