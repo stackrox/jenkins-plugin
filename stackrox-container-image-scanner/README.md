@@ -89,30 +89,10 @@ freestyle projects and pipelines.
 
 ### Freestyle project
 
-1.  Add a build step in your project to save names of all the images you
-    want to scan in the
-    `<jenkins-workspace>/${BUILD_TAG}/rox_images_to_scan` file. Each
-    image name must be on a separate line.
-
-    ![build step](./src/main/resources/img/build-step.png)
-
-    For example, to do this:
-
-    -   Select **Add build step** &gt; **Execute shell**.
-
-    -   In the command box, enter:
-
-        ``` {.bash}
-        mkdir $BUILD_TAG
-        cd $BUILD_TAG
-        echo "nginx:latest" >> rox_images_to_scan
-        echo "stackrox/vuln-images:django-cve-2019-14235" >> rox_images_to_scan
-        ```
-
-2.  Add the StackRox Container Image Scanner plugin step. Select **Add
+1. Add the StackRox Container Image Scanner plugin step. Select **Add
     build step** &gt; **StackRox Image Security**.
 
-3.  Enter details for the following plugin configuration variables:
+2. Enter details for the following plugin configuration variables:
 
     <table>
     <colgroup>
@@ -183,7 +163,27 @@ freestyle projects and pipelines.
 
     ![plugin config](./src/main/resources/img/plugin-config.png)
 
-4.  Select **Save** and then select **Apply**.
+3. If you need to generate list of images to scan. Then leave `Images Names` field bank and
+add a build step in your project to save names of all the images you want to scan in the
+       `<jenkins-workspace>/${BUILD_TAG}/rox_images_to_scan` file. Each
+       image name must be on a separate line.
+
+![build step](./src/main/resources/img/build-step.png)
+
+For example, to do this:
+
+-   Select **Add build step** &gt; **Execute shell**.
+
+-   In the command box, enter:
+
+    ``` {.bash}
+    mkdir $BUILD_TAG
+    cd $BUILD_TAG
+    echo "nginx:latest" >> rox_images_to_scan
+    echo "stackrox/vuln-images:django-cve-2019-14235" >> rox_images_to_scan
+    ```
+
+4. Select **Save** and then select **Apply**.
 
 ### Pipeline
 
