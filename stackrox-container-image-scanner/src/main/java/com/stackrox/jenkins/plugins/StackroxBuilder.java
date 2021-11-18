@@ -26,6 +26,7 @@ import hudson.util.FormValidation;
 import hudson.util.Secret;
 import jenkins.model.Jenkins;
 import jenkins.tasks.SimpleBuildStep;
+import lombok.Getter;
 import net.sf.json.JSONObject;
 import org.apache.commons.validator.routines.RegexValidator;
 import org.apache.commons.validator.routines.UrlValidator;
@@ -52,6 +53,7 @@ import com.stackrox.jenkins.plugins.services.ServiceException;
 import com.stackrox.model.V1AuthStatus;
 
 @SuppressWarnings("unused")
+@Getter
 public class StackroxBuilder extends Builder implements SimpleBuildStep {
     private String portalAddress;
     private String imageNames;
@@ -67,19 +69,22 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
     public StackroxBuilder() {
     }
 
-    //region Getters
-
-    public String getPortalAddress() {
-        return this.portalAddress;
+    private ApiClientFactory.StackRoxTlsValidationMode getTLSValidationMode() {
+        return enableTLSVerification ? VALIDATE : INSECURE_ACCEPT_ANY;
     }
+
+    private List<String> getImages() {
+        return ImmutableList.copyOf(Splitter.on(",")
+                .omitEmptyStrings()
+                .trimResults()
+                .split(Strings.nullToEmpty(getImageNames())));
+    }
+
+    //region Setters
 
     @DataBoundSetter
     public void setPortalAddress(String portalAddress) {
         this.portalAddress = CharMatcher.is('/').trimTrailingFrom(portalAddress);
-    }
-
-    public Secret getApiToken() {
-        return this.apiToken;
     }
 
     @DataBoundSetter
@@ -87,17 +92,9 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
         this.apiToken = Secret.fromString(apiToken);
     }
 
-    public boolean isFailOnPolicyEvalFailure() {
-        return this.failOnPolicyEvalFailure;
-    }
-
     @DataBoundSetter
     public void setFailOnPolicyEvalFailure(boolean failOnPolicyEvalFailure) {
         this.failOnPolicyEvalFailure = failOnPolicyEvalFailure;
-    }
-
-    public boolean isFailOnCriticalPluginError() {
-        return this.failOnCriticalPluginError;
     }
 
     @DataBoundSetter
@@ -105,37 +102,14 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
         this.failOnCriticalPluginError = failOnCriticalPluginError;
     }
 
-    public boolean isEnableTLSVerification() {
-        return enableTLSVerification;
-    }
-
-    private ApiClientFactory.StackRoxTlsValidationMode getTLSValidationMode() {
-        return enableTLSVerification ? VALIDATE : INSECURE_ACCEPT_ANY;
-    }
-
     @DataBoundSetter
     public void setEnableTLSVerification(boolean enableTLSVerification) {
         this.enableTLSVerification = enableTLSVerification;
     }
 
-    public String getCaCertPEM() {
-        return caCertPEM;
-    }
-
     @DataBoundSetter
     public void setCaCertPEM(String caCertPEM) {
         this.caCertPEM = caCertPEM;
-    }
-
-    private List<String> getImages() {
-        return ImmutableList.copyOf(Splitter.on(",")
-                .omitEmptyStrings()
-                .trimResults()
-                .split(Strings.nullToEmpty(imageNames)));
-    }
-
-    public String getImageNames() {
-        return this.imageNames;
     }
 
     @DataBoundSetter

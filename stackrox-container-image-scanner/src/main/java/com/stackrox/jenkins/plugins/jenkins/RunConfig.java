@@ -9,8 +9,10 @@ import java.util.List;
 
 import hudson.AbortException;
 import hudson.FilePath;
+import lombok.Data;
 import org.jetbrains.annotations.NotNull;
 
+@Data
 public class RunConfig {
     private static final String IMAGE_LIST_FILENAME = "rox_images_to_scan";
     private static final String REPORTS_DIR_NAME = "rox_image_security_reports";
@@ -20,14 +22,6 @@ public class RunConfig {
     private final FilePath reportsDir;
     private final List<String> imageNames;
     private final String artifacts;
-
-    private RunConfig(PrintStream log, FilePath baseWorkDir, FilePath reportsDir, List<String> imageNames, String artifacts) {
-        this.log = log;
-        this.baseWorkDir = baseWorkDir;
-        this.reportsDir = reportsDir;
-        this.imageNames = imageNames;
-        this.artifacts = artifacts;
-    }
 
     public static RunConfig create(PrintStream log, String buildTag, FilePath workspace, List<String> images) throws AbortException {
         try {
@@ -60,26 +54,6 @@ public class RunConfig {
             throw new AbortException("no images to scan");
         }
         return imageNames;
-    }
-
-    public String getArtifacts() {
-        return artifacts;
-    }
-
-    public FilePath getBaseWorkDir() {
-        return baseWorkDir;
-    }
-
-    public FilePath getReportsDir() {
-        return reportsDir;
-    }
-
-    public List<String> getImageNames() {
-        return imageNames;
-    }
-
-    public PrintStream getLog() {
-        return log;
     }
 }
 

@@ -37,6 +37,7 @@ curl -b cookies.txt -i -F file=@stackrox-container-image-scanner/target/stackrox
 ```
 
 4. Create a new job with the plugin
+5. This project uses [Lombok](https://projectlombok.org/) so you may need to [enable Annotation Processing](https://stackoverflow.com/q/9424364/1387612)
 
 ## Updating API Schema
 

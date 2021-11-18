@@ -20,11 +20,11 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 
-import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import lombok.Data;
 import okhttp3.OkHttpClient;
 
 import com.stackrox.invoker.ApiClient;
@@ -39,27 +39,10 @@ public class ApiClientFactory {
     private static final Duration TIMEOUT = Duration.ofSeconds(30);
     private static final int MAXIMUM_CACHE_SIZE = 5; // arbitrary chosen as there are no data to support this decision
 
+    @Data
     private static class CacheKey {
         private final String caCert;
         private final StackRoxTlsValidationMode tlsValidationMode;
-
-        private CacheKey(@Nullable String caCert, StackRoxTlsValidationMode tlsValidationMode) {
-            this.caCert = caCert;
-            this.tlsValidationMode = tlsValidationMode;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            CacheKey cacheKey = (CacheKey) o;
-            return Objects.equal(caCert, cacheKey.caCert) && Objects.equal(tlsValidationMode, cacheKey.tlsValidationMode);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hashCode(caCert, tlsValidationMode);
-        }
     }
 
     // It is good practice to avoid creating OkHttpClient on each request.
