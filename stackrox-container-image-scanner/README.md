@@ -89,30 +89,10 @@ freestyle projects and pipelines.
 
 ### Freestyle project
 
-1.  Add a build step in your project to save names of all the images you
-    want to scan in the
-    `<jenkins-workspace>/${BUILD_TAG}/rox_images_to_scan` file. Each
-    image name must be on a separate line.
-
-    ![build step](./src/main/resources/img/build-step.png)
-
-    For example, to do this:
-
-    -   Select **Add build step** &gt; **Execute shell**.
-
-    -   In the command box, enter:
-
-        ``` {.bash}
-        mkdir $BUILD_TAG
-        cd $BUILD_TAG
-        echo "nginx:latest" >> rox_images_to_scan
-        echo "stackrox/vuln-images:django-cve-2019-14235" >> rox_images_to_scan
-        ```
-
-2.  Add the StackRox Container Image Scanner plugin step. Select **Add
+1. Add the StackRox Container Image Scanner plugin step. Select **Add
     build step** &gt; **StackRox Image Security**.
 
-3.  Enter details for the following plugin configuration variables:
+2. Enter details for the following plugin configuration variables:
 
     <table>
     <colgroup>
@@ -167,6 +147,15 @@ freestyle projects and pipelines.
     </blockquote></td>
     </tr>
     <tr class="odd">
+    <td><p><code>imageNames</code></p></td>
+    <td><p>Comma separated list of images to scan</p></td>
+    <td><p>If you leave it blank then provide list in <code>$BUILD_TAG/rox_images_to_scan</code> file.</p>
+    <blockquote>
+    <p><strong>Note</strong></p>
+    <p>If you don’t enable <code>failOnPolicyEvalFailure</code>, the plugin will not fail the build even if the StackRox Kubernetes Security Platform reports system policy violations.</p>
+    </blockquote></td>
+    </tr>
+    <tr class="even">
     <td colspan="3"><p><em><sup>*</sup> Required</em></p></td>
     </tr>
     </tbody>
@@ -174,7 +163,27 @@ freestyle projects and pipelines.
 
     ![plugin config](./src/main/resources/img/plugin-config.png)
 
-4.  Select **Save** and then select **Apply**.
+3. If you need to generate list of images to scan. Then leave `Images Names` field bank and
+add a build step in your project to save names of all the images you want to scan in the
+       `<jenkins-workspace>/${BUILD_TAG}/rox_images_to_scan` file. Each
+       image name must be on a separate line.
+
+![build step](./src/main/resources/img/build-step.png)
+
+For example, to do this:
+
+-   Select **Add build step** &gt; **Execute shell**.
+
+-   In the command box, enter:
+
+    ``` {.bash}
+    mkdir $BUILD_TAG
+    cd $BUILD_TAG
+    echo "nginx:latest" >> rox_images_to_scan
+    echo "stackrox/vuln-images:django-cve-2019-14235" >> rox_images_to_scan
+    ```
+
+4. Select **Save** and then select **Apply**.
 
 ### Pipeline
 
@@ -183,22 +192,27 @@ To use the StackRox Container Image Scanner plugin in your pipeline:
 1.  Go to the pipeline configuration screen.
 
 2.  In the **Script** text area, enter the following script:
+    ```groovy
+    pipeline {
+        agent any
 
-        node {
-            stage('Stackrox Image Security') {
+        stages {
+            stage('Test') {
                 steps {
-                    step ([
-                        $class: 'StackroxBuilder', 
-                        portalAddress: <portal-address>,
-                        apiToken: <api-token>,
-                        enableTLSVerification: <true-or-false>,
-                        caCertPEM: <ca-cert-pem-format>,
-                        failOnCriticalPluginError: <true-or-false>,
-                        failOnPolicyEvalFailure: <true-or-false>
-                        ])
+                    stackrox (
+                        apiToken: '...',
+                        caCertPEM: '',
+                        enableTLSVerification: false,
+                        failOnCriticalPluginError: true,
+                        failOnPolicyEvalFailure: true,
+                        portalAddress: 'https://central.stackrox:443',
+                        imageNames: "nginx:latest,ubuntu:bionic,busybox:stable"
+                    )
                 }
             }
         }
+    }
+    ```
 
     -   For more information about the variables, see the [plugin
         configuration variables](#plugin-configuration-variables)
