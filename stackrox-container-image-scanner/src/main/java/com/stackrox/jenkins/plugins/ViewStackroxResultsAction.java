@@ -1,4 +1,4 @@
-package com.stackrox.jenkins.plugins.jenkins;
+package com.stackrox.jenkins.plugins;
 
 import java.util.List;
 

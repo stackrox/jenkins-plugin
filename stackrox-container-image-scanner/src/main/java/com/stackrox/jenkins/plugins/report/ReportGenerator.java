@@ -14,7 +14,6 @@ import hudson.FilePath;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.QuoteMode;
-import org.apache.commons.lang.StringUtils;
 
 import com.stackrox.jenkins.plugins.data.CVE;
 import com.stackrox.jenkins.plugins.data.ImageCheckResults;
@@ -51,7 +50,7 @@ public class ReportGenerator {
                             cve.getPackageName(),
                             cve.getPackageVersion(),
                             cve.getId(),
-                            prettySeverity(cve.getSeverity()),
+                            cve.getSeverity(),
                             cve.getLink()
                     ));
                 }
@@ -64,7 +63,7 @@ public class ReportGenerator {
                 for (PolicyViolation policy : result.getViolatedPolicies()) {
                     printer.printRecord(nullIfEmpty(
                             policy.getName(),
-                            prettySeverity(policy.getSeverity()),
+                            policy.getSeverity(),
                             policy.getDescription(),
                             policy.getViolations(),
                             prettyRemediation(policy.getRemediation()),
@@ -87,13 +86,6 @@ public class ReportGenerator {
             return s;
         }
         return Strings.isNullOrEmpty(s.toString()) ? null : s;
-    }
-
-    private static String prettySeverity(Enum<?> severity) {
-        if (severity == null) {
-            return null;
-        }
-        return StringUtils.substringBefore(severity.toString(), "_");
     }
 
     private static String prettyRemediation(String remediation) {

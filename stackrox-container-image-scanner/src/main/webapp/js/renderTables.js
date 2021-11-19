@@ -7,33 +7,17 @@ function renderCVETable(tableId, cves) {
         order: [[2, 'desc']],
         data: cves,
         columns : [
-                    { title: 'CVE ID', mData : function (data, type, dataToSet) {
+                    { title: 'COMPONENT', data : 'packageName' },
+                    { title: 'VERSION', data : 'packageVersion'},
+                    { title: 'CVE', mData : function (data, type, dataToSet) {
                                                     return `<a target="_blank" href="${data.link}">${data.id}</a>`;
                                                }
                     },
-                    { title: 'CVSS Score', mData : function (data, type, dataToSet) {
-                                                    if (data.cvssScore == 0) {
-                                                        return `<span>-</span>`
-                                                    }
-                                                    return `<span>${data.cvssScore}</span><span style="font-size: 10px; font-family Arial"> (${data.scoreType})</span>`;
-                                               }
-                    },
-                    { title: 'Package Name', data : 'packageName' },
-                    { title: 'Package Version', data : 'packageVersion' },
-                    { title: 'Fixable', data : 'fixable' },
-                    { title: 'Publish Date', mData : function (data, type, dataToSet) {
-                                                 if (data.publishDate == "-") {
-                                                    return `<span>-</span>`
-                                                 } else {
-                                                    var d = new Date(data.publishDate);
-                                                    return `<span>${d.getMonth()+1}/${d.getDate()}/${d.getFullYear()}</span>`
-                                                 }
-                                               }
-                   },
+                    { title: 'SEVERITY', data : 'severity' },
                 ],
         columnDefs: [
                       {
-                        targets: [0, 2, 3, 5],
+                        targets: [0, 1, 2, 3],
                         render: function (source, type, val) {
                           return `<span style="word-break: break-word;">${source}</span>`;
                         }
@@ -52,10 +36,12 @@ function renderPolicyViolationTable(tableId, violatedPolicies) {
         order: [[0, 'asc']],
         data: violatedPolicies,
         columns : [
-                    { title: 'Policy', data : 'name' },
-                    { title: 'Description', data : 'description' },
-                    { title: 'Severity', data : 'severity' },
-                    { title: 'Remediation', data : 'remediation' },
+                    { title: 'POLICY', data : 'name' },
+                    { title: 'SEVERITY', data : 'severity' },
+                    { title: 'DESCRIPTION', data : 'description' },
+                    { title: 'VIOLATION', data : 'violations' },
+                    { title: 'REMEDIATION', data : 'remediation' },
+                    { title: 'ENFORCED', data : 'buildEnforced' },
 
                 ],
         columnDefs: [
@@ -66,7 +52,7 @@ function renderPolicyViolationTable(tableId, violatedPolicies) {
                     }
                   },
                   {
-                    targets: [1, 3],
+                    targets: [2, 3, 4],
                     render: function (source, type, val) {
                       return `<span style="word-break: break-word;">${source}</span>`;
                     }
