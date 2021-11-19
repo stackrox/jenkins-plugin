@@ -26,6 +26,8 @@ import hudson.util.FormValidation;
 import hudson.util.Secret;
 import jenkins.model.Jenkins;
 import jenkins.tasks.SimpleBuildStep;
+import lombok.Getter;
+import lombok.Setter;
 import net.sf.json.JSONObject;
 import org.apache.commons.validator.routines.RegexValidator;
 import org.apache.commons.validator.routines.UrlValidator;
@@ -52,13 +54,20 @@ import com.stackrox.jenkins.plugins.services.ServiceException;
 import com.stackrox.model.V1AuthStatus;
 
 @SuppressWarnings("unused")
+@Getter
+@Setter
 public class StackroxBuilder extends Builder implements SimpleBuildStep {
     private String portalAddress;
+    @DataBoundSetter
     private String imageNames;
     private Secret apiToken = Secret.fromString("");
+    @DataBoundSetter
     private boolean failOnPolicyEvalFailure;
+    @DataBoundSetter
     private boolean failOnCriticalPluginError;
+    @DataBoundSetter
     private boolean enableTLSVerification;
+    @DataBoundSetter
     private String caCertPEM;
 
     private RunConfig runConfig;
@@ -67,10 +76,15 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
     public StackroxBuilder() {
     }
 
-    //region Getters
+    private ApiClientFactory.StackRoxTlsValidationMode getTLSValidationMode() {
+        return enableTLSVerification ? VALIDATE : INSECURE_ACCEPT_ANY;
+    }
 
-    public String getPortalAddress() {
-        return this.portalAddress;
+    private List<String> getImages() {
+        return ImmutableList.copyOf(Splitter.on(",")
+                .omitEmptyStrings()
+                .trimResults()
+                .split(Strings.nullToEmpty(getImageNames())));
     }
 
     @DataBoundSetter
@@ -78,72 +92,10 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
         this.portalAddress = CharMatcher.is('/').trimTrailingFrom(portalAddress);
     }
 
-    public Secret getApiToken() {
-        return this.apiToken;
-    }
-
     @DataBoundSetter
     public void setApiToken(String apiToken) {
         this.apiToken = Secret.fromString(apiToken);
     }
-
-    public boolean isFailOnPolicyEvalFailure() {
-        return this.failOnPolicyEvalFailure;
-    }
-
-    @DataBoundSetter
-    public void setFailOnPolicyEvalFailure(boolean failOnPolicyEvalFailure) {
-        this.failOnPolicyEvalFailure = failOnPolicyEvalFailure;
-    }
-
-    public boolean isFailOnCriticalPluginError() {
-        return this.failOnCriticalPluginError;
-    }
-
-    @DataBoundSetter
-    public void setFailOnCriticalPluginError(boolean failOnCriticalPluginError) {
-        this.failOnCriticalPluginError = failOnCriticalPluginError;
-    }
-
-    public boolean isEnableTLSVerification() {
-        return enableTLSVerification;
-    }
-
-    private ApiClientFactory.StackRoxTlsValidationMode getTLSValidationMode() {
-        return enableTLSVerification ? VALIDATE : INSECURE_ACCEPT_ANY;
-    }
-
-    @DataBoundSetter
-    public void setEnableTLSVerification(boolean enableTLSVerification) {
-        this.enableTLSVerification = enableTLSVerification;
-    }
-
-    public String getCaCertPEM() {
-        return caCertPEM;
-    }
-
-    @DataBoundSetter
-    public void setCaCertPEM(String caCertPEM) {
-        this.caCertPEM = caCertPEM;
-    }
-
-    private List<String> getImages() {
-        return ImmutableList.copyOf(Splitter.on(",")
-                .omitEmptyStrings()
-                .trimResults()
-                .split(Strings.nullToEmpty(imageNames)));
-    }
-
-    public String getImageNames() {
-        return this.imageNames;
-    }
-
-    @DataBoundSetter
-    public void setImageNames(String imageNames) {
-        this.imageNames = imageNames;
-    }
-
-    //endregion
 
     //TODO: Add console log for the plugin
     @Override
