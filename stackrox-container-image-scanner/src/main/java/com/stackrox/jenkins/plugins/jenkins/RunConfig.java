@@ -1,16 +1,16 @@
 package com.stackrox.jenkins.plugins.jenkins;
 
+import hudson.AbortException;
+import hudson.FilePath;
+import lombok.Data;
+import org.jetbrains.annotations.NotNull;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.List;
-
-import hudson.AbortException;
-import hudson.FilePath;
-import lombok.Data;
-import org.jetbrains.annotations.NotNull;
 
 @Data
 public class RunConfig {
@@ -27,7 +27,7 @@ public class RunConfig {
         try {
             FilePath baseWorkDir = new FilePath(workspace, buildTag);
             String relativeArtifactsDir = String.format("%s/%s/", buildTag, REPORTS_DIR_NAME);
-            FilePath reportsDir = new FilePath(baseWorkDir, REPORTS_DIR_NAME);
+            FilePath reportsDir = new FilePath(workspace, relativeArtifactsDir);
 
             reportsDir.mkdirs();
             List<String> imageNames = images.isEmpty() ? extractImagesFromFile(baseWorkDir) : images;

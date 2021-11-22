@@ -1,29 +1,22 @@
 package com.stackrox.jenkins.plugins;
 
-import java.util.List;
+import com.google.common.net.UrlEscapers;
+
+import com.stackrox.jenkins.plugins.data.ImageCheckResults;
 
 import hudson.model.Action;
 import hudson.model.Run;
 import jenkins.model.Jenkins;
+import lombok.Data;
 
-import com.stackrox.jenkins.plugins.data.ImageCheckResults;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+@Data
 public class ViewStackroxResultsAction implements Action {
-    private final Run<?, ?> build;
     private final List<ImageCheckResults> results;
-
-    public ViewStackroxResultsAction(List<ImageCheckResults> results, Run<?, ?> build) {
-        this.build = build;
-        this.results = results;
-    }
-
-    public Run<?, ?> getBuild() {
-        return build;
-    }
-
-    public List<ImageCheckResults> getResults() {
-        return results;
-    }
+    private final Run<?, ?> build;
 
     @Override
     public String getIconFileName() {
@@ -32,11 +25,20 @@ public class ViewStackroxResultsAction implements Action {
 
     @Override
     public String getDisplayName() {
-        return "StackRox Image Security Report";
+        return "StackRox Report for " + getNames().collect(Collectors.joining(", "));
     }
 
     @Override
     public String getUrlName() {
-        return "stackrox-image-security-results";
+        String images = getNames()
+                .map(s -> s.replace(":", "_"))
+                .collect(Collectors.joining("-"));
+        return UrlEscapers.urlFragmentEscaper().escape("stackrox-image-security-results-" + images);
+    }
+
+    private Stream<String> getNames() {
+        return getResults()
+                .stream()
+                .map(ImageCheckResults::getImageName);
     }
 }
