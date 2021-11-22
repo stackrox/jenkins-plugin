@@ -134,7 +134,7 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
     }
 
     private void prepareArtifacts(Run<?, ?> run, FilePath workspace, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
-        ArtifactArchiver artifactArchiver = new ArtifactArchiver(runConfig.getRelativeArtifactsDir());
+        ArtifactArchiver artifactArchiver = new ArtifactArchiver(runConfig.getArtifactsRelativePath());
         artifactArchiver.setAllowEmptyArchive(true);
         artifactArchiver.perform(run, workspace, launcher, listener);
     }

@@ -21,13 +21,13 @@ public class RunConfig {
     private final FilePath baseWorkDir;
     private final FilePath reportsDir;
     private final List<String> imageNames;
-    private final String relativeArtifactsDir;
+    private final String artifactsRelativePath;
 
     public static RunConfig create(PrintStream log, String buildTag, FilePath workspace, List<String> images) throws AbortException {
         try {
             FilePath baseWorkDir = new FilePath(workspace, buildTag);
-            String relativeArtifactsDir = String.format("%s/%s/", buildTag, REPORTS_DIR_NAME);
-            FilePath reportsDir = new FilePath(workspace, relativeArtifactsDir);
+            String artifactsRelativePath = String.format("%s/%s/", buildTag, REPORTS_DIR_NAME);
+            FilePath reportsDir = new FilePath(workspace, artifactsRelativePath);
 
             reportsDir.mkdirs();
             List<String> imageNames = images.isEmpty() ? extractImagesFromFile(baseWorkDir) : images;
@@ -36,7 +36,7 @@ public class RunConfig {
                     baseWorkDir,
                     reportsDir,
                     imageNames,
-                    relativeArtifactsDir
+                    artifactsRelativePath
             );
         } catch (IOException | InterruptedException e) {
             throw new AbortException(String.format("Error in creating a run configuration: %s", e.getMessage()));
