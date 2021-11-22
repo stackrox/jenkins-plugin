@@ -60,7 +60,7 @@ class RunConfigTest {
         assertTrue(runConfig.getBaseWorkDir().exists());
     }
 
-    File imagesToScanFile() {
+    private File imagesToScanFile() {
         File workDir = new File(folder.toFile(), BUILD_TAG);
         workDir.mkdirs();
         return new File(workDir, "rox_images_to_scan");
