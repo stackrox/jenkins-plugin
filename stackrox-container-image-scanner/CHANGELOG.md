@@ -1,6 +1,15 @@
 # Changelog
 All notable changes to the StackRox Container Image Scanner Jenkins plugin will be documented in this file.
 
+## [1.3.0]
+* Fixed and issue with overriding reports for multiple plugin invocation
+* Display all violations
+* Make policy violations CSV look like in `roxctl`
+* Make CVEs CSV look like in `roxctl`
+* Allow passing image names directly in plugin configuration (not with file)
+* Use generated API clients
+* Update dependecies 
+
 ## [1.2.4]
 * Fixed an issue with the exception handling causing the input config params to not be honored correctly while marking 
 the build step as pass/fail
