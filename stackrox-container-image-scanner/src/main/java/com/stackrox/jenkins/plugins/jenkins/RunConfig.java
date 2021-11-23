@@ -3,7 +3,6 @@ package com.stackrox.jenkins.plugins.jenkins;
 import hudson.AbortException;
 import hudson.FilePath;
 import lombok.Data;
-import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -16,7 +15,7 @@ import java.util.List;
 @Data
 public class RunConfig {
     private static final String IMAGE_LIST_FILENAME = "rox_images_to_scan";
-    private static final String REPORTS_DIR_NAME = "rox_image_security_reports";
+    private static final String REPORTS_DIR_NAME = "rox_image_security_reports/";
 
     private final PrintStream log;
     private final FilePath baseWorkDir;
@@ -28,8 +27,6 @@ public class RunConfig {
         try {
             FilePath baseWorkDir = new FilePath(workspace, buildTag);
             FilePath reportsDir = new FilePath(workspace, REPORTS_DIR_NAME);
-            String reportsRelativePath = StringUtils.remove(
-                    StringUtils.removeStart(reportsDir.getRemote(), workspace.getRemote()), "/") + "/";
 
             reportsDir.mkdirs();
             List<String> imageNames = images.isEmpty() ? extractImagesFromFile(baseWorkDir) : images;
@@ -38,7 +35,7 @@ public class RunConfig {
                     baseWorkDir,
                     reportsDir,
                     imageNames,
-                    reportsRelativePath
+                    REPORTS_DIR_NAME
             );
         } catch (IOException | InterruptedException e) {
             throw new AbortException(String.format("Error in creating a run configuration: %s", e.getMessage()));
