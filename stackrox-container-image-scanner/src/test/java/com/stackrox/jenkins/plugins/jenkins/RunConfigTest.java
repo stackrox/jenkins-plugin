@@ -16,6 +16,7 @@ import java.util.Collections;
 
 import static org.apache.commons.io.output.NullOutputStream.NULL_OUTPUT_STREAM;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -45,7 +46,7 @@ class RunConfigTest {
         RunConfig runConfig = RunConfig.create(LOG, BUILD_TAG, new FilePath(folder.toFile()), ImmutableList.of("A", "B", "C"));
         assertEquals(ImmutableList.of("A", "B", "C"), runConfig.getImageNames());
         assertTrue(runConfig.getReportsDir().exists());
-        assertTrue(runConfig.getBaseWorkDir().exists());
+        assertFalse(runConfig.getBaseWorkDir().exists());
     }
 
     @Test
@@ -58,6 +59,7 @@ class RunConfigTest {
         assertEquals(ImmutableList.of("A", "B", "C"), runConfig.getImageNames());
         assertTrue(runConfig.getReportsDir().exists());
         assertTrue(runConfig.getBaseWorkDir().exists());
+        assertEquals("rox_image_security_reports/", runConfig.getArtifactsRelativePath());
     }
 
     private File imagesToScanFile() {

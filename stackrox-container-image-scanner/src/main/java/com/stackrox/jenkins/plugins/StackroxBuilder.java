@@ -1,17 +1,25 @@
 package com.stackrox.jenkins.plugins;
 
-import static com.stackrox.jenkins.plugins.services.ApiClientFactory.StackRoxTlsValidationMode.INSECURE_ACCEPT_ANY;
-import static com.stackrox.jenkins.plugins.services.ApiClientFactory.StackRoxTlsValidationMode.VALIDATE;
-
-import java.io.IOException;
-import java.util.List;
-import javax.annotation.Nonnull;
-
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+
+import com.stackrox.api.AuthServiceApi;
+import com.stackrox.invoker.ApiClient;
+import com.stackrox.invoker.ApiException;
+import com.stackrox.jenkins.plugins.data.CVE;
+import com.stackrox.jenkins.plugins.data.ImageCheckResults;
+import com.stackrox.jenkins.plugins.data.PolicyViolation;
+import com.stackrox.jenkins.plugins.jenkins.RunConfig;
+import com.stackrox.jenkins.plugins.report.ReportGenerator;
+import com.stackrox.jenkins.plugins.services.ApiClientFactory;
+import com.stackrox.jenkins.plugins.services.DetectionService;
+import com.stackrox.jenkins.plugins.services.ImageService;
+import com.stackrox.jenkins.plugins.services.ServiceException;
+import com.stackrox.model.V1AuthStatus;
+
 import hudson.AbortException;
 import hudson.Extension;
 import hudson.FilePath;
@@ -38,19 +46,12 @@ import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.verb.POST;
 
-import com.stackrox.api.AuthServiceApi;
-import com.stackrox.invoker.ApiClient;
-import com.stackrox.invoker.ApiException;
-import com.stackrox.jenkins.plugins.data.CVE;
-import com.stackrox.jenkins.plugins.data.ImageCheckResults;
-import com.stackrox.jenkins.plugins.data.PolicyViolation;
-import com.stackrox.jenkins.plugins.jenkins.RunConfig;
-import com.stackrox.jenkins.plugins.report.ReportGenerator;
-import com.stackrox.jenkins.plugins.services.ApiClientFactory;
-import com.stackrox.jenkins.plugins.services.DetectionService;
-import com.stackrox.jenkins.plugins.services.ImageService;
-import com.stackrox.jenkins.plugins.services.ServiceException;
-import com.stackrox.model.V1AuthStatus;
+import javax.annotation.Nonnull;
+import java.io.IOException;
+import java.util.List;
+
+import static com.stackrox.jenkins.plugins.services.ApiClientFactory.StackRoxTlsValidationMode.INSECURE_ACCEPT_ANY;
+import static com.stackrox.jenkins.plugins.services.ApiClientFactory.StackRoxTlsValidationMode.VALIDATE;
 
 @SuppressWarnings("unused")
 @Getter
@@ -178,6 +179,7 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
 
         try {
             runConfig.getBaseWorkDir().deleteRecursive();
+            runConfig.getReportsDir().deleteRecursive();
         } catch (IOException | InterruptedException e) {
             runConfig.getLog().println("WARN: Failed to cleanup.");
         }

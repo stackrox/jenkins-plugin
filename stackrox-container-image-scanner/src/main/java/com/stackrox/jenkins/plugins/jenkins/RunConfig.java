@@ -3,6 +3,7 @@ package com.stackrox.jenkins.plugins.jenkins;
 import hudson.AbortException;
 import hudson.FilePath;
 import lombok.Data;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -26,8 +27,9 @@ public class RunConfig {
     public static RunConfig create(PrintStream log, String buildTag, FilePath workspace, List<String> images) throws AbortException {
         try {
             FilePath baseWorkDir = new FilePath(workspace, buildTag);
-            String artifactsRelativePath = String.format("%s/%s/", buildTag, REPORTS_DIR_NAME);
-            FilePath reportsDir = new FilePath(workspace, artifactsRelativePath);
+            FilePath reportsDir = new FilePath(workspace, REPORTS_DIR_NAME);
+            String reportsRelativePath = StringUtils.remove(
+                    StringUtils.removeStart(reportsDir.getRemote(), workspace.getRemote()), "/") + "/";
 
             reportsDir.mkdirs();
             List<String> imageNames = images.isEmpty() ? extractImagesFromFile(baseWorkDir) : images;
@@ -36,7 +38,7 @@ public class RunConfig {
                     baseWorkDir,
                     reportsDir,
                     imageNames,
-                    artifactsRelativePath
+                    reportsRelativePath
             );
         } catch (IOException | InterruptedException e) {
             throw new AbortException(String.format("Error in creating a run configuration: %s", e.getMessage()));
