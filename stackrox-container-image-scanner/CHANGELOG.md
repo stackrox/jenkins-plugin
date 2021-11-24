@@ -8,7 +8,7 @@ All notable changes to the StackRox Container Image Scanner Jenkins plugin will 
 * Make CVEs CSV look like in `roxctl`
 * Allow passing image names directly in plugin configuration (not with file)
 * Use generated API clients
-* Update dependecies 
+* Update dependencies 
 
 ## [1.2.4]
 * Fixed an issue with the exception handling causing the input config params to not be honored correctly while marking 
