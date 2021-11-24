@@ -2,7 +2,7 @@
 All notable changes to the StackRox Container Image Scanner Jenkins plugin will be documented in this file.
 
 ## [1.3.0]
-* Fixed and issue with overriding reports for multiple plugin invocation
+* Fixed an issue with overriding reports for multiple plugin invocation
 * Display all violations
 * Make policy violations CSV look like in `roxctl`
 * Make CVEs CSV look like in `roxctl`
