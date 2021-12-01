@@ -42,13 +42,13 @@ class ViewStackroxResultsActionTest {
 
     private static Stream<TestCase> getNameShouldReturnJoinedAndEscapedNames() {
         return Stream.of(
-                new TestCase(Stream.of(), "da39a3ee5e6b4b0d3255bfef95601890afd80709", ""),
-                new TestCase(Stream.of(""), "da39a3ee5e6b4b0d3255bfef95601890afd80709", ""),
-                new TestCase(Stream.of(" "), "b858cb282617fb0956d960215c8e84d1ccf909c6", " "),
-                new TestCase(Stream.of("nginx:latest"), "e021805d28895ba97695d3db7563b11c2766f3b3", "nginx:latest"),
-                new TestCase(Stream.of("nginx:latest", "ubuntu:bionic"), "dfdfc828833c2b2e77f4bf9068cfa72d36ee65a4", "nginx:latest, ubuntu:bionic"),
-                new TestCase(Stream.of("ubuntu:bionic", "nginx:latest"), "e4358c9bd0ac3e446d4df99e4d49333cd595c280", "ubuntu:bionic, nginx:latest"),
-                new TestCase(Stream.of("<html>", "<alert>", ""), "f7b8ceff87bcbfe1ad536aae577d3266a50c47d9", "<html>, <alert>, ")
+                new TestCase(Stream.of(), "00000000", ""),
+                new TestCase(Stream.of(""), "00000000", ""),
+                new TestCase(Stream.of(" "), "00000020", " "),
+                new TestCase(Stream.of("nginx:latest"), "896f1767", "nginx:latest"),
+                new TestCase(Stream.of("nginx:latest", "ubuntu:bionic"), "b742880d", "nginx:latest, ubuntu:bionic"),
+                new TestCase(Stream.of("ubuntu:bionic", "nginx:latest"), "9da07f01", "ubuntu:bionic, nginx:latest"),
+                new TestCase(Stream.of("<html>", "<alert>", ""), "57e8ac25", "<html>, <alert>, ")
         );
     }
 }
