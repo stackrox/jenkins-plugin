@@ -1,17 +1,15 @@
 package com.stackrox.jenkins.plugins;
 
-import com.google.common.net.UrlEscapers;
-
-import com.stackrox.jenkins.plugins.data.ImageCheckResults;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import hudson.model.Action;
 import hudson.model.Run;
 import jenkins.model.Jenkins;
 import lombok.Data;
 
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import com.stackrox.jenkins.plugins.data.ImageCheckResults;
 
 @Data
 public class ViewStackroxResultsAction implements Action {
@@ -30,10 +28,8 @@ public class ViewStackroxResultsAction implements Action {
 
     @Override
     public String getUrlName() {
-        String images = getNames()
-                .map(s -> s.replace(":", "_"))
-                .collect(Collectors.joining("-"));
-        return UrlEscapers.urlFragmentEscaper().escape("stackrox-image-security-results-" + images);
+        String images = getNames().collect(Collectors.joining("-"));
+        return String.format("stackrox-image-security-results-%08x", images.hashCode());
     }
 
     private Stream<String> getNames() {

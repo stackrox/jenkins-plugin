@@ -42,12 +42,13 @@ class ViewStackroxResultsActionTest {
 
     private static Stream<TestCase> getNameShouldReturnJoinedAndEscapedNames() {
         return Stream.of(
-                new TestCase(Stream.of(), "", ""),
-                new TestCase(Stream.of(""), "", ""),
-                new TestCase(Stream.of(" "), "%20", " "),
-                new TestCase(Stream.of("nginx:latest"), "nginx_latest", "nginx:latest"),
-                new TestCase(Stream.of("nginx:latest", "ubuntu:bionic"), "nginx_latest-ubuntu_bionic", "nginx:latest, ubuntu:bionic"),
-                new TestCase(Stream.of("<html>", "<alert>", ""), "%3Chtml%3E-%3Calert%3E-", "<html>, <alert>, ")
+                new TestCase(Stream.of(), "00000000", ""),
+                new TestCase(Stream.of(""), "00000000", ""),
+                new TestCase(Stream.of(" "), "00000020", " "),
+                new TestCase(Stream.of("nginx:latest"), "896f1767", "nginx:latest"),
+                new TestCase(Stream.of("nginx:latest", "ubuntu:bionic"), "b742880d", "nginx:latest, ubuntu:bionic"),
+                new TestCase(Stream.of("ubuntu:bionic", "nginx:latest"), "9da07f01", "ubuntu:bionic, nginx:latest"),
+                new TestCase(Stream.of("<html>", "<alert>", ""), "57e8ac25", "<html>, <alert>, ")
         );
     }
 }
