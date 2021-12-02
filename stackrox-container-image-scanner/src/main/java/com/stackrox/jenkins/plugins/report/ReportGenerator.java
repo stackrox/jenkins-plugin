@@ -94,10 +94,11 @@ public class ReportGenerator {
 
     private static CSVPrinter openCsv(OutputStream outputStream, String[] header) throws IOException {
         return new CSVPrinter(new BufferedWriter(new OutputStreamWriter(outputStream, StandardCharsets.UTF_8)),
-                CSVFormat.EXCEL
-                        .withQuoteMode(QuoteMode.MINIMAL)
-                        .withNullString(NOT_AVAILABLE)
-                        .withSystemRecordSeparator()
-                        .withHeader(header));
+                CSVFormat.Builder.create()
+                        .setQuoteMode(QuoteMode.MINIMAL)
+                        .setNullString(NOT_AVAILABLE)
+                        .setRecordSeparator('\n')
+                        .setHeader(header)
+                        .build());
     }
 }
