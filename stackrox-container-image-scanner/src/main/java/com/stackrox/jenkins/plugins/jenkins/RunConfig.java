@@ -3,8 +3,8 @@ package com.stackrox.jenkins.plugins.jenkins;
 import hudson.AbortException;
 import hudson.FilePath;
 import lombok.Data;
-import org.jetbrains.annotations.NotNull;
 
+import javax.annotation.Nonnull;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -42,7 +42,7 @@ public class RunConfig {
         }
     }
 
-    @NotNull
+    @Nonnull
     private static List<String> extractImagesFromFile(FilePath baseWorkDir) throws IOException, InterruptedException {
         FilePath imagesToScanFilePath = new FilePath(baseWorkDir, IMAGE_LIST_FILENAME);
         if (!imagesToScanFilePath.exists()) {

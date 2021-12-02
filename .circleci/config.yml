@@ -97,7 +97,7 @@ jobs:
           name: Unit tests
           command: |
             cd stackrox-container-image-scanner
-            mvn test
+            mvn verify
       - run:
           name: Build and package the Jenkins plugin
           command: |
