@@ -1,0 +1,18 @@
+<FindBugsFilter>
+
+    <Match>
+        <Or>
+            <!-- Ignore checking for generated classes -->
+            <Package name="com.stackrox.api"/>
+            <Package name="com.stackrox.invoker"/>
+            <Package name="com.stackrox.model"/>
+        </Or>
+    </Match>
+
+    <Match>
+        <!-- https://github.com/spotbugs/spotbugs/issues/756 -->
+        <Bug pattern="RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE"/>
+        <Class name="com.stackrox.jenkins.plugins.report.ReportGenerator" />
+    </Match>
+
+</FindBugsFilter>
