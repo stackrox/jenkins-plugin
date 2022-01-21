@@ -14,8 +14,8 @@ runOnAllTags: &runOnAllTags
 runOnAllTagsWithPullCtx: &runOnAllTagsWithPullCtx
   <<: *runOnAllTags
   context:
-  - docker-io-pull
-  - quay-rhacs-eng-readonly
+    - docker-io-pull
+    - quay-rhacs-eng-readonly
 
 buildLivenessCheck: &buildLivenessCheck
   run:
@@ -88,7 +88,7 @@ deleteClusterk8s: &deleteClusterk8s
 jobs:
   build:
     docker:
-      - *defaultImage
+      - <<: *defaultImage
     working_directory: /home/circleci/jenkins-plugin
     steps:
       - checkout
@@ -124,7 +124,7 @@ jobs:
             key: maven-repo-v1-{{ .Branch }}-{{ checksum "stackrox-container-image-scanner/pom.xml" }}
   provision-cluster-qa-tests:
    docker:
-      - *defaultImage
+      - <<: *defaultImage
    environment:
      - GCP_IMAGE_TYPE: "COS"
    working_directory: /home/circleci/jenkins-plugin
@@ -137,7 +137,7 @@ jobs:
 
   deploy-stackrox-and-run-qa-tests:
     docker:
-      - *defaultImage
+      - <<: *defaultImage
     parameters:
       orchestrator-flavor:
         type: string
@@ -256,7 +256,7 @@ jobs:
       - *deleteClusterk8s
   mirror:
     docker:
-      - *defaultImage
+      - <<: *defaultImage
     working_directory: /home/circleci/jenkins-plugin
     steps:
       - checkout
