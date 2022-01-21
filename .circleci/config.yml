@@ -80,7 +80,7 @@ deleteClusterk8s: &deleteClusterk8s
 jobs:
   build:
     docker:
-      - image: docker.io/stackrox/apollo-ci:jenkins-plugin-0.2.8-1-ga776a448ee
+      - image: docker.io/stackrox/apollo-ci:snapshot-jenkins-plugin-0.3.26-7-g449a2ebd91 # TODO(do not merge): After upstream PR is merged, cut a tag and update this
         auth:
           username: $DOCKER_IO_PULL_USERNAME
           password: $DOCKER_IO_PULL_PASSWORD
@@ -119,7 +119,7 @@ jobs:
             key: maven-repo-v1-{{ .Branch }}-{{ checksum "stackrox-container-image-scanner/pom.xml" }}
   provision-cluster-qa-tests:
    docker:
-      - image: docker.io/stackrox/apollo-ci:0.2.8-2-g1e9382b6d6
+      - image: docker.io/stackrox/apollo-ci:snapshot-jenkins-plugin-0.3.26-7-g449a2ebd91 # TODO(do not merge): After upstream PR is merged, cut a tag and update this
         auth:
           username: $DOCKER_IO_PULL_USERNAME
           password: $DOCKER_IO_PULL_PASSWORD
@@ -135,7 +135,7 @@ jobs:
 
   deploy-stackrox-and-run-qa-tests:
     docker:
-      - image: docker.io/stackrox/apollo-ci:0.2.8-2-g1e9382b6d6
+      - image: docker.io/stackrox/apollo-ci:snapshot-jenkins-plugin-0.3.26-7-g449a2ebd91 # TODO(do not merge): After upstream PR is merged, cut a tag and update this
         auth:
           username: $DOCKER_IO_PULL_USERNAME
           password: $DOCKER_IO_PULL_PASSWORD
@@ -257,7 +257,7 @@ jobs:
       - *deleteClusterk8s
   mirror:
     docker:
-      - image: docker.io/stackrox/apollo-ci:jenkins-plugin-0.2.8-1-ga776a448ee
+      - image: docker.io/stackrox/apollo-ci:snapshot-jenkins-plugin-0.3.26-7-g449a2ebd91 # TODO(do not merge): After upstream PR is merged, cut a tag and update this
         auth:
           username: $DOCKER_IO_PULL_USERNAME
           password: $DOCKER_IO_PULL_PASSWORD
