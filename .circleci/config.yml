@@ -126,7 +126,7 @@ jobs:
    docker:
       - <<: *defaultImage
    environment:
-     - GCP_IMAGE_TYPE: "COS"
+     GCP_IMAGE_TYPE: "COS"
    working_directory: /home/circleci/jenkins-plugin
    steps:
     - checkout
@@ -161,11 +161,11 @@ jobs:
       - run:
           name: Get Roxctl binary and set the image name
           command: |
-            cci-export IMAGE_NAME "stackrox/main:3.0.55.x-4-gd2e48c0fd6"
+            cci-export IMAGE_NAME "quay.io/rhacs-eng/main:3.67.2"
             cci-export BASE_DIR "/home/circleci/jenkins-plugin"
-            docker login -u "$DOCKER_IO_PULL_USERNAME" -p "$DOCKER_IO_PULL_PASSWORD"
-            cci-export REGISTRY_USERNAME "$DOCKER_IO_PULL_USERNAME"
-            cci-export REGISTRY_PASSWORD "$DOCKER_IO_PULL_PASSWORD"
+            docker login -u  "${QUAY_RHACS_ENG_RO_USERNAME}" --password-stdin \<<<"${QUAY_RHACS_ENG_RO_PASSWORD}" quay.io
+            cci-export REGISTRY_USERNAME "$QUAY_RHACS_ENG_RO_USERNAME"
+            cci-export REGISTRY_PASSWORD "$QUAY_RHACS_ENG_RO_PASSWORD"
             containerId=$(docker create "${IMAGE_NAME}")
             docker cp $containerId:/assets/downloads/cli/roxctl-linux ./roxctl
             docker rm ${containerId}
@@ -186,8 +186,8 @@ jobs:
             ./roxctl central generate k8s pvc \
               --license /tmp/data.lic \
               --main-image "${IMAGE_NAME}" \
-              --scanner-image docker.io/stackrox/scanner:2.10.0 \
-              --scanner-db-image docker.io/stackrox/scanner-db:2.10.0
+              --scanner-image quay.io/rhacs-eng/scanner:2.21.3 \
+              --scanner-db-image quay.io/rhacs-eng/scanner-db:2.21.3
             export ROX_PASSWORD="$(cat central-bundle/password)"
             cci-export ROX_USERNAME "admin"
             cci-export ROX_PASSWORD "$ROX_PASSWORD"
@@ -272,7 +272,6 @@ workflows:
           <<: *runOnAllTagsWithPullCtx
       - mirror:
           context:
-            - docker-io-pull
             - quay-rhacs-eng-readonly
           filters:
             branches:
