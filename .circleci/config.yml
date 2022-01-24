@@ -13,9 +13,7 @@ runOnAllTags: &runOnAllTags
 
 runOnAllTagsWithPullCtx: &runOnAllTagsWithPullCtx
   <<: *runOnAllTags
-  context:
-    - docker-io-pull
-    - quay-rhacs-eng-readonly
+  context: quay-rhacs-eng-readonly
 
 buildLivenessCheck: &buildLivenessCheck
   run:
@@ -288,20 +286,10 @@ workflows:
             - build
 commands:
   setup-gcp:
-    parameters:
-      docker-login:
-        type: boolean
-        default: true
-
     steps:
       - run:
           name: Setup deployment env
           command: |
-            <<# parameters.docker-login >>
-            docker login -u "$DOCKER_IO_PULL_USERNAME" -p "$DOCKER_IO_PULL_PASSWORD"
-            <</ parameters.docker-login >>
-            cci-export REGISTRY_USERNAME "$DOCKER_IO_PULL_USERNAME"
-            cci-export REGISTRY_PASSWORD "$DOCKER_IO_PULL_PASSWORD"
             gcloud auth activate-service-account --key-file <(echo "$GCLOUD_SERVICE_ACCOUNT_CIRCLECI_ROX")
             gcloud auth list
             gcloud config set project stackrox-ci
