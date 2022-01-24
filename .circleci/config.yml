@@ -148,8 +148,7 @@ jobs:
         default: false
 
     steps:
-      - setup-gcp:
-            docker-login: false
+      - setup-gcp
       - attach_workspace:
           at: /home/circleci/jenkins-plugin/
       - setup_remote_docker
@@ -319,8 +318,7 @@ commands:
         type: integer
         default: 1
     steps:
-      - setup-gcp:
-          docker-login: false
+      - setup-gcp
       - run:
           name: Assign environment variables
           command: |
