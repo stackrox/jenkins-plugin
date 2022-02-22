@@ -1,7 +1,7 @@
 version: 2.1
 
 defaultImage: &defaultImage
-  image: "quay.io/rhacs-eng/apollo-ci:jenkins-plugin-0.3.27"
+  image: "quay.io/rhacs-eng/apollo-ci:snapshot-jenkins-plugin-0.3.28-58-gedbfed0046" # TODO(do not merge): After upstream PR is merged, cut a tag and update this
   auth:
     username: $QUAY_RHACS_ENG_RO_USERNAME
     password: $QUAY_RHACS_ENG_RO_PASSWORD
