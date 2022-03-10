@@ -21,11 +21,11 @@ import com.stackrox.jenkins.plugins.data.PolicyViolation;
 
 public class ReportGenerator {
 
-    private static final String[] CVES_HEADER = {"COMPONENT", "VERSION", "CVE", "SEVERITY", "LINK"};
-    private static final String[] VIOLATED_POLICIES_HEADER = {"POLICY", "SEVERITY", "DESCRIPTION", "VIOLATION", "REMEDIATION", "ENFORCED"};
+    private static final String[] CVES_HEADER = {"CVE ID", "CVSS Score", "Score Type", "Package Name", "Package Version", "Fixable", "Publish Date", "Link"};
+    private static final String[] VIOLATED_POLICIES_HEADER = {"Policy Name", "Policy Description", "Severity", "Remediation"};
     private static final String CVES_FILENAME = "cves.csv";
     private static final String POLICY_VIOLATIONS_FILENAME = "policyViolations.csv";
-    private static final String NOT_AVAILABLE = "-";
+    private static final String NOT_AVAILABLE = "\"-\"";
     private static final String NO_REMEDIATION_ACTIONS = "No remediation actions documented.";
 
     public static void generateBuildReport(List<ImageCheckResults> results, FilePath reportsDir) throws AbortException {
@@ -46,13 +46,16 @@ public class ReportGenerator {
             try (OutputStream outputStream = new FilePath(imageResultDir, CVES_FILENAME).write();
                  CSVPrinter printer = openCsv(outputStream, CVES_HEADER)) {
                 for (CVE cve : result.getCves()) {
-                    printer.printRecord(nullIfEmpty(
+                    printer.printRecord(
+                            cve.getId(),
+                            cve.getCvssScore(),
+                            cve.getScoreType(),
                             cve.getPackageName(),
                             cve.getPackageVersion(),
-                            cve.getId(),
-                            cve.getSeverity(),
+                            cve.isFixable(),
+                            cve.getPublishDate(),
                             cve.getLink()
-                    ));
+                    );
                 }
             }
         }
@@ -61,31 +64,15 @@ public class ReportGenerator {
             try (OutputStream outputStream = new FilePath(imageResultDir, POLICY_VIOLATIONS_FILENAME).write();
                  CSVPrinter printer = openCsv(outputStream, VIOLATED_POLICIES_HEADER)) {
                 for (PolicyViolation policy : result.getViolatedPolicies()) {
-                    printer.printRecord(nullIfEmpty(
+                    printer.printRecord(
                             policy.getName(),
-                            policy.getSeverity(),
                             policy.getDescription(),
-                            policy.getViolations(),
-                            prettyRemediation(policy.getRemediation()),
-                            policy.isBuildEnforced() ? "X" : "-"
-                    ));
+                            policy.getSeverity(),
+                            prettyRemediation(policy.getRemediation())
+                    );
                 }
             }
         }
-    }
-
-    private static Object[] nullIfEmpty(Object... values) {
-        return Arrays.stream(values).sequential().map(ReportGenerator::nullIfEmpty).toArray();
-    }
-
-    private static Object nullIfEmpty(Object s) {
-        if (s == null) {
-            return null;
-        }
-        if (s.getClass() != String.class) {
-            return s;
-        }
-        return Strings.isNullOrEmpty(s.toString()) ? null : s;
     }
 
     private static String prettyRemediation(String remediation) {
@@ -95,7 +82,7 @@ public class ReportGenerator {
     private static CSVPrinter openCsv(OutputStream outputStream, String[] header) throws IOException {
         return new CSVPrinter(new BufferedWriter(new OutputStreamWriter(outputStream, StandardCharsets.UTF_8)),
                 CSVFormat.Builder.create()
-                        .setQuoteMode(QuoteMode.MINIMAL)
+                        .setQuoteMode(QuoteMode.NON_NUMERIC)
                         .setNullString(NOT_AVAILABLE)
                         .setRecordSeparator('\n')
                         .setHeader(header)
