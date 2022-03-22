@@ -14,10 +14,18 @@ function renderCVETable(tableId, cves) {
                                                }
                     },
                     { title: 'SEVERITY', data : 'severity' },
+                    { title: 'CVSS SCORE', mData : function (data, type, dataToSet) {
+                                                    if (data.cvssScore == 0) {
+                                                        return `<span>-</span>`
+                                                    }
+                                                    return `<span>${data.cvssScore}</span><span style="font-size: 10px; font-family Arial"> (${data.scoreType})</span>`;
+                                               }
+                    },
+                    { title: 'FIXABLE', data : 'fixable' },
                 ],
         columnDefs: [
                       {
-                        targets: [0, 1, 2, 3],
+                        targets: [0, 1, 2, 3, 4],
                         render: function (source, type, val) {
                           return `<span style="word-break: break-word;">${source}</span>`;
                         }

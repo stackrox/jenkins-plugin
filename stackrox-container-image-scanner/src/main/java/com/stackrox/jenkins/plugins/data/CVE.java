@@ -9,15 +9,12 @@ import lombok.Data;
 
 import javax.annotation.Nonnull;
 
-import static java.time.format.DateTimeFormatter.ISO_DATE_TIME;
-
 @Data
 @AllArgsConstructor
 public class CVE {
     private final String id;
     private final Float cvssScore;
     private final String scoreType;
-    private final String publishDate;
     private final String packageName;
     private final String packageVersion;
     private final boolean fixable;
@@ -29,7 +26,6 @@ public class CVE {
                 vulnerability.getCve(),
                 vulnerability.getCvss(),
                 vulnerability.getScoreVersion() != null ? vulnerability.getScoreVersion().toString() : null,
-                vulnerability.getPublishedOn() != null ? vulnerability.getPublishedOn().format(ISO_DATE_TIME) : null,
                 packageName,
                 packageVersion,
                 !Strings.isNullOrEmpty(vulnerability.getFixedBy()),
