@@ -1,5 +1,17 @@
 package com.stackrox.jenkins.plugins.report;
 
+import com.google.common.base.Strings;
+
+import com.stackrox.jenkins.plugins.data.CVE;
+import com.stackrox.jenkins.plugins.data.ImageCheckResults;
+import com.stackrox.jenkins.plugins.data.PolicyViolation;
+
+import hudson.AbortException;
+import hudson.FilePath;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
+import org.apache.commons.csv.QuoteMode;
+
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -8,20 +20,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 
-import com.google.common.base.Strings;
-import hudson.AbortException;
-import hudson.FilePath;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVPrinter;
-import org.apache.commons.csv.QuoteMode;
-
-import com.stackrox.jenkins.plugins.data.CVE;
-import com.stackrox.jenkins.plugins.data.ImageCheckResults;
-import com.stackrox.jenkins.plugins.data.PolicyViolation;
-
 public class ReportGenerator {
 
-    private static final String[] CVES_HEADER = {"COMPONENT", "VERSION", "CVE", "SEVERITY", "LINK"};
+    private static final String[] CVES_HEADER = {"COMPONENT", "VERSION", "CVE", "FIXABLE", "SEVERITY", "CVSS SCORE", "SCORE TYPE", "LINK"};
     private static final String[] VIOLATED_POLICIES_HEADER = {"POLICY", "SEVERITY", "DESCRIPTION", "VIOLATION", "REMEDIATION", "ENFORCED"};
     private static final String CVES_FILENAME = "cves.csv";
     private static final String POLICY_VIOLATIONS_FILENAME = "policyViolations.csv";
@@ -51,6 +52,9 @@ public class ReportGenerator {
                             cve.getPackageVersion(),
                             cve.getId(),
                             cve.getSeverity(),
+                            cve.isFixable(),
+                            cve.getCvssScore(),
+                            cve.getScoreType(),
                             cve.getLink()
                     ));
                 }

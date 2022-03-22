@@ -1,5 +1,7 @@
 package com.stackrox.jenkins.plugins.report;
 
+import static com.stackrox.model.StorageEmbeddedVulnerabilityScoreVersion.V2;
+import static com.stackrox.model.StorageEmbeddedVulnerabilityScoreVersion.V3;
 import static com.stackrox.model.StorageEnforcementAction.FAIL_BUILD_ENFORCEMENT;
 import static com.stackrox.model.StorageSeverity.HIGH_SEVERITY;
 import static com.stackrox.model.StorageSeverity.MEDIUM_SEVERITY;
@@ -83,34 +85,49 @@ class ReportGeneratorTest {
     void testGenerateReportForResultsWritesReportsForEveryImageInSeparatedDirectory() throws IOException {
         FilePath reportsDir = new FilePath(folder.toFile());
         List<ImageCheckResults> results = ImmutableList.of(
-                new ImageCheckResults("jenkins:lts", ImmutableList.of(
-                        new CVE("util-linux", "2.25.2-6", new StorageEmbeddedVulnerability()
-                                .cve("CVE-2015-5224")
-                                .severity(IMPORTANT_VULNERABILITY_SEVERITY)
-                                .link("https://security-tracker.debian.org/tracker/CVE-2015-5224")),
-                        new CVE("gcc-4.8", "4.8.4-1", new StorageEmbeddedVulnerability()
-                                .cve("CVE-2017-11671")
-                                .severity(MODERATE_VULNERABILITY_SEVERITY)
-                                .link("https://security-tracker.debian.org/tracker/CVE-2017-11671")),
-                        new CVE("bzip2", "1.0.6-7", new StorageEmbeddedVulnerability()
-                                .cve("CVE-2016-3189")
-                                .severity(LOW_VULNERABILITY_SEVERITY)
-                                .link("https://security-tracker.debian.org/tracker/CVE-2016-3189")
-                                .fixedBy("1.0.6-8"))
-                ), ImmutableList.of(new PolicyViolation(new StoragePolicy()
-                        .name("Fixable Severity at least Important")
-                        .description("Alert on deployments with fixable vulnerabilities with a Severity Rating at least Important")
-                        .severity(HIGH_SEVERITY)
-                        .enforcementActions(ImmutableList.of(FAIL_BUILD_ENFORCEMENT))
-                        .remediation("Use your package manager to update to a fixed version in future builds or speak with your security team to mitigate the vulnerabilities.")
-                        , ""))),
+                new ImageCheckResults("jenkins:lts",
+                        ImmutableList.of(
+                                new CVE("util-linux", "2.25.2-6", new StorageEmbeddedVulnerability()
+                                        .cve("CVE-2015-5224")
+                                        .severity(IMPORTANT_VULNERABILITY_SEVERITY)
+                                        .cvss(9.8F)
+                                        .scoreVersion(V3)
+                                        .link("https://security-tracker.debian.org/tracker/CVE-2015-5224")),
+                                new CVE("gcc-4.8", "4.8.4-1", new StorageEmbeddedVulnerability()
+                                        .cve("CVE-2017-11671")
+                                        .severity(MODERATE_VULNERABILITY_SEVERITY)
+                                        .cvss(4.0F)
+                                        .scoreVersion(V3)
+                                        .link("https://security-tracker.debian.org/tracker/CVE-2017-11671")),
+                                new CVE("bzip2", "1.0.6-7", new StorageEmbeddedVulnerability()
+                                        .cve("CVE-2016-3189")
+                                        .severity(LOW_VULNERABILITY_SEVERITY)
+                                        .cvss(6.5F)
+                                        .scoreVersion(V3)
+                                        .link("https://security-tracker.debian.org/tracker/CVE-2016-3189")
+                                        .fixedBy("1.0.6-8"))
+                        ),
+                        ImmutableList.of(
+                                new PolicyViolation(new StoragePolicy()
+                                        .name("Fixable Severity at least Important")
+                                        .description("Alert on deployments with fixable vulnerabilities with a Severity Rating at least Important")
+                                        .severity(HIGH_SEVERITY)
+                                        .enforcementActions(ImmutableList.of(FAIL_BUILD_ENFORCEMENT))
+                                        .remediation("Use your package manager to update to a fixed version in future builds or speak with your security team to mitigate the vulnerabilities.")
+                                        , "")
+                        )),
                 new ImageCheckResults("nginx:latest",
                         ImmutableList.of(
                                 new CVE("openssl", "1.1.1d-0+deb10u7", new StorageEmbeddedVulnerability()
                                         .cve("CVE-2007-6755")
                                         .severity(LOW_VULNERABILITY_SEVERITY)
+                                        .cvss(5.8F)
+                                        .scoreVersion(V2)
                                         .link("https://security-tracker.debian.org/tracker/CVE-2007-6755")),
-                                new CVE(null, null, new StorageEmbeddedVulnerability())),
+                                new CVE(null, null, new StorageEmbeddedVulnerability()
+                                        .cve("CVE-MISSING-DATA")
+                                        .scoreVersion(null)
+                                        .cvss(0F))),
                         ImmutableList.of(new PolicyViolation(new StoragePolicy().name("Latest Tag")
                                         .description("")
                                         .severity(MEDIUM_SEVERITY), "Image has tag 'latest'"),
