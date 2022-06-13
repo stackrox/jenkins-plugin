@@ -22,7 +22,6 @@ class ImageScanningTest extends BaseSpecification {
     @Unroll
     def "image scanning test with toggle enforcement(#imageName, #policyName,  #enforcements, #endStatus)"() {
         when:
-        updatePolicy("Latest tag", "latest", [])
         StoragePolicy enforcementPolicy = updatePolicy(policyName, "latest", enforcements)
 
         then:
@@ -38,9 +37,9 @@ class ImageScanningTest extends BaseSpecification {
 
         where:
         "data inputs are: "
-        imageName      | policyName          | enforcements             | endStatus
-        "nginx:latest" | "Fixable CVSS >= 7" | []                       | SUCCESS
-        "nginx:latest" | "Fixable CVSS >= 7" | [FAIL_BUILD_ENFORCEMENT] | FAILURE
+        imageName      | policyName   | enforcements             | endStatus
+        "nginx:latest" | "Latest tag" | []                       | SUCCESS
+        "nginx:latest" | "Latest tag" | [FAIL_BUILD_ENFORCEMENT] | FAILURE
     }
 
     @Unroll
