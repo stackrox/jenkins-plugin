@@ -13,8 +13,14 @@ class ServiceExceptionTest {
     @DisplayName("ServiceException message")
     @ParameterizedTest(name = "should be \"{2}\" when response body \"{0}\"")
     @CsvSource({
-            ",,Status code: 500.",
-            ",API Message,Status code: 500. Error: API Message",
+            ",,'Status code: 500. Error: Message: null\n" +
+                    "HTTP response code: 500\n" +
+                    "HTTP response body: null\n" +
+                    "HTTP response headers: null'",
+            ",API Message,'Status code: 500. Error: Message: API Message\n" +
+                    "HTTP response code: 500\n" +
+                    "HTTP response body: null\n" +
+                    "HTTP response headers: null'",
             "{},,Status code: 500.",
             "{\"message\":\"some error\"},,Status code: 500. Error: some error",
             "not a json,,Status code: 500. Response body: not a json"
