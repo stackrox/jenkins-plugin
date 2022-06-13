@@ -689,6 +689,24 @@ paths:
         required: true
       tags:
         - AuthProviderService
+  /v1/availableAuthProviders:
+    get:
+      operationId: AuthProviderService_ListAvailableProviderTypes
+      responses:
+        '200':
+          description: A successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/v1AvailableProviderTypesResponse'
+        default:
+          description: An unexpected error response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/runtimeError'
+      tags:
+        - AuthProviderService
   /v1/login/authproviders:
     get:
       operationId: AuthProviderService_GetLoginAuthProviders
@@ -1038,6 +1056,24 @@ paths:
         required: true
       tags:
         - ClusterInitService
+  /v1/cluster-defaults:
+    get:
+      operationId: ClustersService_GetClusterDefaultValues
+      responses:
+        '200':
+          description: A successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/v1ClusterDefaultsResponse'
+        default:
+          description: An unexpected error response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/runtimeError'
+      tags:
+        - ClustersService
   /v1/clusters:
     get:
       operationId: ClustersService_GetClusters
@@ -1083,6 +1119,7 @@ paths:
         - ClustersService
   /v1/clusters-env/kernel-support-available:
     get:
+      summary: GetKernelSupportAvailable is deprecated in favor of GetClusterDefaultValues.
       operationId: ClustersService_GetKernelSupportAvailable
       responses:
         '200':
@@ -1709,6 +1746,31 @@ paths:
             type: string
       tags:
         - DBService
+  /v1/debug/authz/trace:
+    get:
+      summary: Stream authorization traces for all incoming requests.
+      operationId: DebugService_StreamAuthzTraces
+      responses:
+        '200':
+          description: A successful response.(streaming responses)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    $ref: '#/components/schemas/v1AuthorizationTraceResponse'
+                  error:
+                    $ref: '#/components/schemas/runtimeStreamError'
+                title: Stream result of v1AuthorizationTraceResponse
+        default:
+          description: An unexpected error response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/runtimeError'
+      tags:
+        - DebugService
   /v1/debug/loglevel:
     get:
       summary: Get the current logging level for StackRox services.
@@ -2587,6 +2649,11 @@ paths:
           schema:
             type: string
         - name: includeSnoozed
+          in: query
+          required: false
+          schema:
+            type: boolean
+        - name: stripDescription
           in: query
           required: false
           schema:
@@ -5200,6 +5267,225 @@ paths:
             type: boolean
       tags:
         - RbacService
+  /v1/report-configurations-count:
+    get:
+      summary: CountReportConfigurations returns the number of report configurations.
+      operationId: ReportConfigurationService_CountReportConfigurations
+      responses:
+        '200':
+          description: A successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/v1CountReportConfigurationsResponse'
+        default:
+          description: An unexpected error response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/runtimeError'
+      parameters:
+        - name: query
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: pagination.limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+        - name: pagination.offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+        - name: pagination.sortOption.field
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: pagination.sortOption.reversed
+          in: query
+          required: false
+          schema:
+            type: boolean
+      tags:
+        - ReportConfigurationService
+  /v1/report/configurations:
+    get:
+      operationId: ReportConfigurationService_GetReportConfigurations
+      responses:
+        '200':
+          description: A successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/v1GetReportConfigurationsResponse'
+        default:
+          description: An unexpected error response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/runtimeError'
+      parameters:
+        - name: query
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: pagination.limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+        - name: pagination.offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+        - name: pagination.sortOption.field
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: pagination.sortOption.reversed
+          in: query
+          required: false
+          schema:
+            type: boolean
+      tags:
+        - ReportConfigurationService
+    post:
+      summary: PostReportConfiguration creates a report configuration
+      operationId: ReportConfigurationService_PostReportConfiguration
+      responses:
+        '200':
+          description: A successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/v1PostReportConfigurationResponse'
+        default:
+          description: An unexpected error response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/runtimeError'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/v1PostReportConfigurationRequest'
+        required: true
+      tags:
+        - ReportConfigurationService
+  /v1/report/configurations/{id}:
+    get:
+      operationId: ReportConfigurationService_GetReportConfiguration
+      responses:
+        '200':
+          description: A successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/v1GetReportConfigurationResponse'
+        default:
+          description: An unexpected error response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/runtimeError'
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      tags:
+        - ReportConfigurationService
+    delete:
+      summary: DeleteReportConfiguration removes a report configuration given its id
+      operationId: ReportConfigurationService_DeleteReportConfiguration
+      responses:
+        '200':
+          description: A successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/v1Empty'
+        default:
+          description: An unexpected error response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/runtimeError'
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      tags:
+        - ReportConfigurationService
+    put:
+      summary: UpdateReportConfiguration updates a report configuration
+      operationId: ReportConfigurationService_UpdateReportConfiguration
+      responses:
+        '200':
+          description: A successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/v1Empty'
+        default:
+          description: An unexpected error response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/runtimeError'
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/v1UpdateReportConfigurationRequest'
+        required: true
+      tags:
+        - ReportConfigurationService
+  /v1/report/run/{id}:
+    post:
+      operationId: ReportService_RunReport
+      responses:
+        '200':
+          description: A successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/v1Empty'
+        default:
+          description: An unexpected error response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/runtimeError'
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      tags:
+        - ReportService
   /v1/computeeffectiveaccessscope:
     post:
       summary: ComputeEffectiveAccessScope
@@ -5875,13 +6161,18 @@ paths:
                 - SERVICE_ACCOUNTS
                 - ROLES
                 - ROLEBINDINGS
+                - REPORT_CONFIGURATIONS
                 - PROCESS_BASELINES
                 - SUBJECTS
                 - RISKS
                 - VULNERABILITIES
+                - CLUSTER_VULNERABILITIES
+                - IMAGE_VULNERABILITIES
+                - NODE_VULNERABILITIES
                 - COMPONENT_VULN_EDGE
                 - CLUSTER_VULN_EDGE
                 - NETWORK_ENTITY
+                - VULN_REQUEST
       tags:
         - SearchService
   /v1/search/autocomplete:
@@ -5939,13 +6230,18 @@ paths:
                 - SERVICE_ACCOUNTS
                 - ROLES
                 - ROLEBINDINGS
+                - REPORT_CONFIGURATIONS
                 - PROCESS_BASELINES
                 - SUBJECTS
                 - RISKS
                 - VULNERABILITIES
+                - CLUSTER_VULNERABILITIES
+                - IMAGE_VULNERABILITIES
+                - NODE_VULNERABILITIES
                 - COMPONENT_VULN_EDGE
                 - CLUSTER_VULN_EDGE
                 - NETWORK_ENTITY
+                - VULN_REQUEST
       tags:
         - SearchService
   /v1/search/metadata/options:
@@ -5998,13 +6294,18 @@ paths:
                 - SERVICE_ACCOUNTS
                 - ROLES
                 - ROLEBINDINGS
+                - REPORT_CONFIGURATIONS
                 - PROCESS_BASELINES
                 - SUBJECTS
                 - RISKS
                 - VULNERABILITIES
+                - CLUSTER_VULNERABILITIES
+                - IMAGE_VULNERABILITIES
+                - NODE_VULNERABILITIES
                 - COMPONENT_VULN_EDGE
                 - CLUSTER_VULN_EDGE
                 - NETWORK_ENTITY
+                - VULN_REQUEST
       tags:
         - SearchService
   /v1/secrets:
@@ -6348,6 +6649,118 @@ paths:
         required: true
       tags:
         - ServiceIdentityService
+  /v1/signatureintegrations:
+    get:
+      operationId: SignatureIntegrationService_ListSignatureIntegrations
+      responses:
+        '200':
+          description: A successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/v1ListSignatureIntegrationsResponse'
+        default:
+          description: An unexpected error response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/runtimeError'
+      tags:
+        - SignatureIntegrationService
+    post:
+      summary: |-
+        Integration id should not be set.
+        Returns signature integration with id filled.
+      operationId: SignatureIntegrationService_PostSignatureIntegration
+      responses:
+        '200':
+          description: A successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/storageSignatureIntegration'
+        default:
+          description: An unexpected error response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/runtimeError'
+      requestBody:
+        $ref: '#/components/requestBodies/storageSignatureIntegration'
+      tags:
+        - SignatureIntegrationService
+  /v1/signatureintegrations/{id}:
+    get:
+      operationId: SignatureIntegrationService_GetSignatureIntegration
+      responses:
+        '200':
+          description: A successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/storageSignatureIntegration'
+        default:
+          description: An unexpected error response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/runtimeError'
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      tags:
+        - SignatureIntegrationService
+    delete:
+      operationId: SignatureIntegrationService_DeleteSignatureIntegration
+      responses:
+        '200':
+          description: A successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/v1Empty'
+        default:
+          description: An unexpected error response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/runtimeError'
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      tags:
+        - SignatureIntegrationService
+    put:
+      operationId: SignatureIntegrationService_PutSignatureIntegration
+      responses:
+        '200':
+          description: A successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/v1Empty'
+        default:
+          description: An unexpected error response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/runtimeError'
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        $ref: '#/components/requestBodies/storageSignatureIntegration'
+      tags:
+        - SignatureIntegrationService
   /v1/summary/counts:
     get:
       operationId: SummaryService_GetSummaryCounts
@@ -6467,8 +6880,274 @@ paths:
                 $ref: '#/components/schemas/runtimeError'
       tags:
         - UserService
+  /v1/cve/requests:
+    get:
+      summary: ListVulnerabilityRequests returns the list of vulnerability requests.
+      operationId: VulnerabilityRequestService_ListVulnerabilityRequests
+      responses:
+        '200':
+          description: A successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/v1ListVulnerabilityRequestsResponse'
+        default:
+          description: An unexpected error response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/runtimeError'
+      parameters:
+        - name: query
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: pagination.limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+        - name: pagination.offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+        - name: pagination.sortOption.field
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: pagination.sortOption.reversed
+          in: query
+          required: false
+          schema:
+            type: boolean
+      tags:
+        - VulnerabilityRequestService
+  /v1/cve/requests/defer:
+    post:
+      summary: DeferVulnerability starts the deferral process for the specified vulnerability.
+      operationId: VulnerabilityRequestService_DeferVulnerability
+      responses:
+        '200':
+          description: A successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/v1DeferVulnResponse'
+        default:
+          description: An unexpected error response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/runtimeError'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/v1DeferVulnRequest'
+        required: true
+      tags:
+        - VulnerabilityRequestService
+  /v1/cve/requests/false-positive:
+    post:
+      summary: FalsePositiveVulnerability starts the process to mark the specified vulnerability as false-positive.
+      operationId: VulnerabilityRequestService_FalsePositiveVulnerability
+      responses:
+        '200':
+          description: A successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/v1FalsePositiveVulnResponse'
+        default:
+          description: An unexpected error response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/runtimeError'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/v1FalsePositiveVulnRequest'
+        required: true
+      tags:
+        - VulnerabilityRequestService
+  /v1/cve/requests/{id}:
+    get:
+      summary: GetVulnerabilityRequest returns the requested vulnerability request by ID.
+      operationId: VulnerabilityRequestService_GetVulnerabilityRequest
+      responses:
+        '200':
+          description: A successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/v1GetVulnerabilityRequestResponse'
+        default:
+          description: An unexpected error response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/runtimeError'
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      tags:
+        - VulnerabilityRequestService
+    delete:
+      summary: DeleteVulnerabilityRequest deletes a vulnerability request.
+      operationId: VulnerabilityRequestService_DeleteVulnerabilityRequest
+      responses:
+        '200':
+          description: A successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/v1Empty'
+        default:
+          description: An unexpected error response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/runtimeError'
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      tags:
+        - VulnerabilityRequestService
+  /v1/cve/requests/{id}/approve:
+    post:
+      summary: |-
+        ApproveVulnRequest approve a vulnerability request. If it is an unwatch vulnerability request then the
+        associated vulnerabilities are not watched in workflows such as policy detection, risk, etc.
+      operationId: VulnerabilityRequestService_ApproveVulnerabilityRequest
+      responses:
+        '200':
+          description: A successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/v1ApproveVulnRequestResponse'
+        default:
+          description: An unexpected error response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/runtimeError'
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/v1ApproveVulnRequest'
+        required: true
+      tags:
+        - VulnerabilityRequestService
+  /v1/cve/requests/{id}/deny:
+    post:
+      summary: DenyVulnRequest denies a vulnerability request.
+      operationId: VulnerabilityRequestService_DenyVulnerabilityRequest
+      responses:
+        '200':
+          description: A successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/v1DenyVulnRequestResponse'
+        default:
+          description: An unexpected error response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/runtimeError'
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/v1DenyVulnRequest'
+        required: true
+      tags:
+        - VulnerabilityRequestService
+  /v1/cve/requests/{id}/undo:
+    post:
+      summary: UndoVulnerabilityRequest undoes a vulnerability request.
+      operationId: VulnerabilityRequestService_UndoVulnerabilityRequest
+      responses:
+        '200':
+          description: A successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/v1UndoVulnRequestResponse'
+        default:
+          description: An unexpected error response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/runtimeError'
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      tags:
+        - VulnerabilityRequestService
+  /v1/cve/requests/{id}/update:
+    post:
+      summary: UpdateVulnerabilityRequest updates an existing vulnerability request. Currently only deferral expiration time can be updated.
+      operationId: VulnerabilityRequestService_UpdateVulnerabilityRequest
+      responses:
+        '200':
+          description: A successful response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/v1UpdateVulnRequestResponse'
+        default:
+          description: An unexpected error response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/runtimeError'
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/v1UpdateVulnRequest'
+        required: true
+      tags:
+        - VulnerabilityRequestService
 servers:
-  - url: https://k8s.demo.stackrox.com
+  - url: https://staging.demo.stackrox.com
 components:
   requestBodies:
     storageGroup:
@@ -6518,6 +7197,12 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/v1UpdateExternalBackupRequest'
+      required: true
+    storageSignatureIntegration:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/storageSignatureIntegration'
       required: true
     storageImageIntegration:
       content:
@@ -6652,6 +7337,7 @@ components:
         - GENERIC
         - K8S_EVENT
         - NETWORK_FLOW
+        - NETWORK_POLICY
       default: GENERIC
     ClusterAlertsAlertEvents:
       type: object
@@ -6720,6 +7406,11 @@ components:
         resourceType:
           $ref: '#/components/schemas/storageListAlertResourceType'
       description: Fields common to all entities that an alert might belong to.
+    ListAlertPolicyDevFields:
+      type: object
+      properties:
+        SORTName:
+          type: string
     ListAlertResourceEntity:
       type: object
       properties:
@@ -6756,6 +7447,7 @@ components:
         - NODE
         - INTERNAL
         - HOST
+        - ROUTE
       default: UNSET
     ProcessSignalLineageInfo:
       type: object
@@ -6788,7 +7480,8 @@ components:
           type: string
           description: |-
             A URL/resource name that uniquely identifies the type of the serialized
-            protocol buffer message. The last segment of the URL's path must represent
+            protocol buffer message. This string must contain at least
+            one "/" character. The last segment of the URL's path must represent
             the fully qualified name of the type (as in
             `path/google.protobuf.Duration`). The name should be in a canonical form
             (e.g., leading "." is not accepted).
@@ -6856,10 +7549,13 @@ components:
          Example 4: Pack and unpack a message in Go
 
              foo := &pb.Foo{...}
-             any, err := ptypes.MarshalAny(foo)
+             any, err := anypb.New(foo)
+             if err != nil {
+               ...
+             }
              ...
              foo := &pb.Foo{}
-             if err := ptypes.UnmarshalAny(any, foo); err != nil {
+             if err := any.UnmarshalTo(foo); err != nil {
                ...
              }
 
@@ -6920,6 +7616,14 @@ components:
           $ref: '#/components/schemas/storagePolicy'
         lifecycleStage:
           $ref: '#/components/schemas/storageLifecycleStage'
+        clusterId:
+          type: string
+        clusterName:
+          type: string
+        namespace:
+          type: string
+        namespaceId:
+          type: string
         deployment:
           $ref: '#/components/schemas/storageAlertDeployment'
         image:
@@ -7012,11 +7716,13 @@ components:
       properties:
         id:
           type: string
-          title: These tags maintain backwards compatibility with the previously embedded storage.Image
         name:
           $ref: '#/components/schemas/storageImageName'
         notPullable:
           type: boolean
+        isClusterLocal:
+          type: boolean
+      title: 'Next tag: 12'
     storageDockerfileLineRuleField:
       type: object
       properties:
@@ -7188,6 +7894,8 @@ components:
           type: array
           items:
             type: string
+        developerInternalFields:
+          $ref: '#/components/schemas/ListAlertPolicyDevFields'
     storageListAlertResourceType:
       type: string
       enum:
@@ -7304,11 +8012,9 @@ components:
           type: string
         policySections:
           type: array
-          nullable: true
           items:
             $ref: '#/components/schemas/storagePolicySection'
         mitreAttackVectors:
-          nullable: true
           type: array
           items:
             $ref: '#/components/schemas/PolicyMitreAttackVectors'
@@ -7318,6 +8024,9 @@ components:
         mitreVectorsLocked:
           type: boolean
           description: Read-only field. If true, the policy's MITRE ATT&CK fields are rendered read-only.
+        isDefault:
+          type: boolean
+          description: Read-only field. Indicates the policy is a default policy if true and a custom policy if false.
     storagePolicyFields:
       type: object
       properties:
@@ -7389,6 +8098,8 @@ components:
           $ref: '#/components/schemas/storageKeyValuePolicy'
         disallowedImageLabel:
           $ref: '#/components/schemas/storageKeyValuePolicy'
+        imageSignatureVerifiedBy:
+          type: string
       title: 'Next Available Tag: 29'
     storagePolicyGroup:
       type: object
@@ -7456,7 +8167,9 @@ components:
         containerStartTime:
           type: string
           format: date-time
-      title: 'Next available tag: 12'
+        imageId:
+          type: string
+      title: 'Next available tag: 13'
     storageProcessPolicy:
       type: object
       properties:
@@ -7751,6 +8464,15 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/storageTokenMetadata'
+    AvailableProviderTypesResponseAuthProviderType:
+      type: object
+      properties:
+        type:
+          type: string
+        suggestedAttributes:
+          type: array
+          items:
+            type: string
     GetLoginAuthProvidersResponseLoginAuthProvider:
       type: object
       properties:
@@ -7888,6 +8610,13 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/v1UserAttribute'
+    v1AvailableProviderTypesResponse:
+      type: object
+      properties:
+        authProviderTypes:
+          type: array
+          items:
+            $ref: '#/components/schemas/AvailableProviderTypesResponseAuthProviderType'
     v1ExchangeTokenRequest:
       type: object
       properties:
@@ -7941,12 +8670,31 @@ components:
           type: array
           items:
             type: string
+    ScheduleDaysOfMonth:
+      type: object
+      properties:
+        days:
+          type: array
+          items:
+            type: integer
+            format: int32
+      title: 1 for 1st, 2 for 2nd .... 31 for 31st
+    ScheduleDaysOfWeek:
+      type: object
+      properties:
+        days:
+          type: array
+          items:
+            type: integer
+            format: int32
+      title: Sunday = 0, Monday = 1, .... Saturday =  6
     ScheduleIntervalType:
       type: string
       enum:
         - UNSET
         - DAILY
         - WEEKLY
+        - MONTHLY
       default: UNSET
     ScheduleWeeklyInterval:
       type: object
@@ -8018,6 +8766,10 @@ components:
           format: int32
         weekly:
           $ref: '#/components/schemas/ScheduleWeeklyInterval'
+        daysOfWeek:
+          $ref: '#/components/schemas/ScheduleDaysOfWeek'
+        daysOfMonth:
+          $ref: '#/components/schemas/ScheduleDaysOfMonth'
     v1GetExternalBackupsResponse:
       type: object
       properties:
@@ -8350,15 +9102,22 @@ components:
           description: For internal use only.
         initBundleId:
           type: string
+        managedBy:
+          $ref: '#/components/schemas/storageManagerType'
     storageClusterCertExpiryStatus:
       type: object
       properties:
         sensorCertExpiry:
           type: string
           format: date-time
+        sensorCertNotBefore:
+          type: string
+          format: date-time
     storageClusterHealthStatus:
       type: object
       properties:
+        id:
+          type: string
         collectorHealthInfo:
           $ref: '#/components/schemas/storageCollectorHealthInfo'
         admissionControlHealthInfo:
@@ -8478,6 +9237,14 @@ components:
           type: string
         clusterName:
           type: string
+    storageManagerType:
+      type: string
+      enum:
+        - MANAGER_TYPE_UNKNOWN
+        - MANAGER_TYPE_MANUAL
+        - MANAGER_TYPE_HELM_CHART
+        - MANAGER_TYPE_KUBERNETES_OPERATOR
+      default: MANAGER_TYPE_UNKNOWN
     storageOrchestratorMetadata:
       type: object
       properties:
@@ -8519,6 +9286,8 @@ components:
         appNamespaceId:
           type: string
         appServiceaccountId:
+          type: string
+        k8sNodeName:
           type: string
       description: |-
         StackRoxDeploymentIdentification aims at uniquely identifying a StackRox Sensor deployment. It is used to determine
@@ -8562,6 +9331,15 @@ components:
         since:
           type: string
           format: date-time
+    v1ClusterDefaultsResponse:
+      type: object
+      properties:
+        mainImageRepository:
+          type: string
+        collectorImageRepository:
+          type: string
+        kernelSupportAvailable:
+          type: boolean
     v1ClusterResponse:
       type: object
       properties:
@@ -8785,7 +9563,7 @@ components:
         nodePort:
           type: integer
           format: int32
-          title: only set if level is HOST, NODE, or EXTERNAL
+          title: only set if level is HOST, NODE, EXTERNAL or ROUTE
         externalIps:
           type: array
           items:
@@ -8795,6 +9573,7 @@ components:
           type: array
           items:
             type: string
+          title: only set if level is EXTERNAL or ROUTE
     SeccompProfileProfileType:
       type: string
       enum:
@@ -9110,12 +9889,12 @@ components:
             $ref: '#/components/schemas/storageEmbeddedSecret'
         resources:
           $ref: '#/components/schemas/storageResources'
-        instances:
-          type: array
-          items:
-            $ref: '#/components/schemas/storageContainerInstance'
         name:
           type: string
+        livenessProbe:
+          $ref: '#/components/schemas/storageLivenessProbe'
+        readinessProbe:
+          $ref: '#/components/schemas/storageReadinessProbe'
     storageContainerConfig:
       type: object
       properties:
@@ -9140,52 +9919,6 @@ components:
           format: int64
         appArmorProfile:
           type: string
-    storageContainerInstance:
-      type: object
-      properties:
-        instanceId:
-          $ref: '#/components/schemas/storageContainerInstanceID'
-        containingPodId:
-          type: string
-          description: The pod containing this container instance (kubernetes only).
-        containerName:
-          type: string
-          description: Container name.
-        containerIps:
-          type: array
-          items:
-            type: string
-          description: The IP addresses of this container.
-        started:
-          type: string
-          format: date-time
-          title: The start time of the container
-        imageDigest:
-          type: string
-          title: Image ID
-        finished:
-          type: string
-          format: date-time
-          description: The finish time of the container, if it finished.
-        exitCode:
-          type: integer
-          format: int32
-          description: The exit code of the container. Only valid when finished is populated.
-        terminationReason:
-          type: string
-          description: The reason for the container's termination, if it finished.
-      description: ContainerInstanceID allows to uniquely identify a container within a cluster.
-    storageContainerInstanceID:
-      type: object
-      properties:
-        containerRuntime:
-          $ref: '#/components/schemas/storageContainerRuntime'
-        id:
-          type: string
-          description: The ID of the container, specific to the given runtime.
-        node:
-          type: string
-          description: The node on which this container runs.
     storageContainerRuntime:
       type: string
       enum:
@@ -9268,6 +10001,8 @@ components:
           type: boolean
         hostIpc:
           type: boolean
+        runtimeClass:
+          type: string
         tolerations:
           type: array
           items:
@@ -9286,7 +10021,7 @@ components:
           type: array
           items:
             type: string
-      title: 'Next available tag: 34'
+      title: 'Next available tag: 35'
     storageEmbeddedNodeScanComponent:
       type: object
       properties:
@@ -9368,9 +10103,9 @@ components:
           description: Time when the CVE was first seen in the node.
         severity:
           $ref: '#/components/schemas/storageVulnerabilitySeverity'
-      title: |-
-        TODO: Remove when migration is in place
-        Next Tag: 20
+        state:
+          $ref: '#/components/schemas/storageVulnerabilityState'
+      title: 'Next Tag: 21'
     storageEmbeddedVulnerabilityScoreVersion:
       type: string
       enum:
@@ -9416,6 +10151,11 @@ components:
           items:
             type: string
       title: 'Next available tag: 4'
+    storageLivenessProbe:
+      type: object
+      properties:
+        defined:
+          type: boolean
     storageNode:
       type: object
       properties:
@@ -9536,6 +10276,11 @@ components:
           items:
             $ref: '#/components/schemas/PortConfigExposureInfo'
       title: 'Next Available Tag: 6'
+    storageReadinessProbe:
+      type: object
+      properties:
+        defined:
+          type: boolean
     storageResources:
       type: object
       properties:
@@ -9570,6 +10315,8 @@ components:
           type: boolean
         seccompProfile:
           $ref: '#/components/schemas/SecurityContextSeccompProfile'
+        allowPrivilegeEscalation:
+          type: boolean
     storageTaint:
       type: object
       properties:
@@ -9629,6 +10376,14 @@ components:
         - IMPORTANT_VULNERABILITY_SEVERITY
         - CRITICAL_VULNERABILITY_SEVERITY
       default: UNKNOWN_VULNERABILITY_SEVERITY
+    storageVulnerabilityState:
+      type: string
+      enum:
+        - OBSERVED
+        - DEFERRED
+        - FALSE_POSITIVE
+      default: OBSERVED
+      description: VulnerabilityState indicates if vulnerability is being observed or deferred(/suppressed). By default, it vulnerabilities are observed.
     v1ComplianceControl:
       type: object
       properties:
@@ -9798,7 +10553,10 @@ components:
         imageRetentionDurationDays:
           type: integer
           format: int32
-      title: 'next available tag: 4'
+        expiredVulnReqRetentionDurationDays:
+          type: integer
+          format: int32
+      title: 'next available tag: 5'
     storagePublicConfig:
       type: object
       properties:
@@ -9995,6 +10753,182 @@ components:
       properties:
         resumeInfo:
           $ref: '#/components/schemas/DBRestoreProcessStatusResumeInfo'
+    AuthorizationTraceResponseResponseStatus:
+      type: string
+      enum:
+        - UNKNOWN_STATUS
+        - SUCCESS
+        - FAILURE
+      default: UNKNOWN_STATUS
+    AuthorizationTraceResponseTrace:
+      type: object
+      properties:
+        scopeCheckerType:
+          type: string
+        builtIn:
+          $ref: '#/components/schemas/TraceBuiltInAuthorizer'
+    AuthorizationTraceResponseUserRole:
+      type: object
+      properties:
+        name:
+          type: string
+        permissions:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/storageAccess'
+        accessScopeName:
+          type: string
+        accessScope:
+          $ref: '#/components/schemas/SimpleAccessScopeRules'
+    SimpleAccessScopeRules:
+      type: object
+      properties:
+        includedClusters:
+          type: array
+          items:
+            type: string
+        includedNamespaces:
+          type: array
+          items:
+            $ref: '#/components/schemas/SimpleAccessScopeRulesNamespace'
+        clusterLabelSelectors:
+          type: array
+          items:
+            $ref: '#/components/schemas/storageSetBasedLabelSelector'
+        namespaceLabelSelectors:
+          type: array
+          items:
+            $ref: '#/components/schemas/storageSetBasedLabelSelector'
+      description: |-
+        Each element of any repeated field is an individual rule. Rules are
+        joined by logical OR: if there exists a rule allowing resource `x`,
+        `x` is in the access scope.
+    SimpleAccessScopeRulesNamespace:
+      type: object
+      properties:
+        clusterName:
+          type: string
+          description: Both fields must be set.
+        namespaceName:
+          type: string
+    TraceBuiltInAuthorizer:
+      type: object
+      properties:
+        clustersTotalNum:
+          type: integer
+          format: int32
+        namespacesTotalNum:
+          type: integer
+          format: int32
+        deniedAuthzDecisions:
+          type: object
+          additionalProperties:
+            type: integer
+            format: int32
+        allowedAuthzDecisions:
+          type: object
+          additionalProperties:
+            type: integer
+            format: int32
+        effectiveAccessScopes:
+          type: object
+          additionalProperties:
+            type: string
+    runtimeStreamError:
+      type: object
+      properties:
+        grpcCode:
+          type: integer
+          format: int32
+        httpCode:
+          type: integer
+          format: int32
+        message:
+          type: string
+        httpStatus:
+          type: string
+        details:
+          type: array
+          items:
+            $ref: '#/components/schemas/protobufAny'
+    storageSetBasedLabelSelector:
+      type: object
+      properties:
+        requirements:
+          type: array
+          items:
+            $ref: '#/components/schemas/storageSetBasedLabelSelectorRequirement'
+      description: |-
+        SetBasedLabelSelector only allows set-based label requirements.
+
+        Next available tag: 3
+    storageSetBasedLabelSelectorOperator:
+      type: string
+      enum:
+        - UNKNOWN
+        - IN
+        - NOT_IN
+        - EXISTS
+        - NOT_EXISTS
+      default: UNKNOWN
+    storageSetBasedLabelSelectorRequirement:
+      type: object
+      properties:
+        key:
+          type: string
+        op:
+          $ref: '#/components/schemas/storageSetBasedLabelSelectorOperator'
+        values:
+          type: array
+          items:
+            type: string
+      title: 'Next available tag: 4'
+    v1AuthorizationTraceResponse:
+      type: object
+      properties:
+        arrivedAt:
+          type: string
+          format: date-time
+        processedAt:
+          type: string
+          format: date-time
+        request:
+          $ref: '#/components/schemas/v1AuthorizationTraceResponseRequest'
+        response:
+          $ref: '#/components/schemas/v1AuthorizationTraceResponseResponse'
+        user:
+          $ref: '#/components/schemas/v1AuthorizationTraceResponseUser'
+        trace:
+          $ref: '#/components/schemas/AuthorizationTraceResponseTrace'
+    v1AuthorizationTraceResponseRequest:
+      type: object
+      properties:
+        endpoint:
+          type: string
+        method:
+          type: string
+    v1AuthorizationTraceResponseResponse:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/AuthorizationTraceResponseResponseStatus'
+        error:
+          type: string
+    v1AuthorizationTraceResponseUser:
+      type: object
+      properties:
+        username:
+          type: string
+        friendlyName:
+          type: string
+        aggregatedPermissions:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/storageAccess'
+        roles:
+          type: array
+          items:
+            $ref: '#/components/schemas/AuthorizationTraceResponseUserRole'
     v1LogLevelRequest:
       type: object
       properties:
@@ -10230,6 +11164,11 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/DeployDetectionResponseRun'
+        ignoredObjectRefs:
+          type: array
+          items:
+            type: string
+          description: 'The reference will be in the format: namespace/name[<group>/<version>, Kind=<kind>].'
     v1DeployYAMLDetectionRequest:
       type: object
       properties:
@@ -10316,6 +11255,20 @@ components:
       title: |-
         GroupBatchUpdateRequest is an in transaction batch update to the groups present.
         Next Available Tag: 3
+    ECRConfigAuthorizationData:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+        expiresAt:
+          type: string
+          format: date-time
+      description: |-
+        An authorization data represents the IAM authentication credentials and
+        can be used to access any Amazon ECR registry that the IAM principal has
+        access to.
     storageAnchoreConfig:
       type: object
       properties:
@@ -10386,6 +11339,14 @@ components:
           type: boolean
         endpoint:
           type: string
+        useAssumeRole:
+          type: boolean
+        assumeRoleId:
+          type: string
+        assumeRoleExternalId:
+          type: string
+        authorizationData:
+          $ref: '#/components/schemas/ECRConfigAuthorizationData'
     storageGoogleConfig:
       type: object
       properties:
@@ -10413,11 +11374,6 @@ components:
           type: string
         type:
           type: string
-        clusters:
-          type: array
-          items:
-            type: string
-          description: If a list of clusters is provided, the integration will only be accessed from the specified clusters' sensors.
         categories:
           type: array
           items:
@@ -10494,11 +11450,6 @@ components:
         updatePassword:
           type: boolean
           description: When false, use the stored credentials of an existing image integration given its ID.
-    EmbeddedImageScanComponentExecutable:
-      type: object
-      properties:
-        path:
-          type: string
     WatchImageResponseErrorType:
       type: string
       enum:
@@ -10507,6 +11458,152 @@ components:
         - NO_VALID_INTEGRATION
         - SCAN_FAILED
       default: NO_ERROR
+    scannerV1Components:
+      type: object
+      properties:
+        namespace:
+          type: string
+        osComponents:
+          type: array
+          items:
+            $ref: '#/components/schemas/scannerV1OSComponent'
+        rhelComponents:
+          type: array
+          items:
+            $ref: '#/components/schemas/scannerV1RHELComponent'
+        languageComponents:
+          type: array
+          items:
+            $ref: '#/components/schemas/scannerV1LanguageComponent'
+    scannerV1Executable:
+      type: object
+      properties:
+        path:
+          type: string
+        requiredFeatures:
+          type: array
+          items:
+            $ref: '#/components/schemas/scannerV1FeatureNameVersion'
+    scannerV1FeatureNameVersion:
+      type: object
+      properties:
+        name:
+          type: string
+        version:
+          type: string
+    scannerV1JavaComponent:
+      type: object
+      properties:
+        implementationVersion:
+          type: string
+        mavenVersion:
+          type: string
+        origins:
+          type: array
+          items:
+            type: string
+        specificationVersion:
+          type: string
+        bundleName:
+          type: string
+    scannerV1LanguageComponent:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/scannerV1SourceType'
+        name:
+          type: string
+        version:
+          type: string
+        location:
+          type: string
+        java:
+          $ref: '#/components/schemas/scannerV1JavaComponent'
+        python:
+          $ref: '#/components/schemas/scannerV1PythonComponent'
+        addedBy:
+          type: string
+    scannerV1Note:
+      type: string
+      enum:
+        - OS_CVES_UNAVAILABLE
+        - OS_CVES_STALE
+        - LANGUAGE_CVES_UNAVAILABLE
+        - CERTIFIED_RHEL_SCAN_UNAVAILABLE
+      default: OS_CVES_UNAVAILABLE
+    scannerV1OSComponent:
+      type: object
+      properties:
+        name:
+          type: string
+        namespace:
+          type: string
+        version:
+          type: string
+        addedBy:
+          type: string
+        executables:
+          type: array
+          items:
+            $ref: '#/components/schemas/scannerV1Executable'
+    scannerV1PythonComponent:
+      type: object
+      properties:
+        homepage:
+          type: string
+        authorEmail:
+          type: string
+        downloadUrl:
+          type: string
+        summary:
+          type: string
+        description:
+          type: string
+    scannerV1RHELComponent:
+      type: object
+      properties:
+        id:
+          type: string
+          format: int64
+        name:
+          type: string
+        namespace:
+          type: string
+        version:
+          type: string
+        arch:
+          type: string
+        module:
+          type: string
+        cpes:
+          type: array
+          items:
+            type: string
+        addedBy:
+          type: string
+        executables:
+          type: array
+          items:
+            $ref: '#/components/schemas/scannerV1Executable'
+    scannerV1SourceType:
+      type: string
+      enum:
+        - UNSET_SOURCE_TYPE
+        - JAVA
+        - PYTHON
+        - NPM
+        - GEM
+        - DOTNETCORERUNTIME
+      default: UNSET_SOURCE_TYPE
+    storageCosignSignature:
+      type: object
+      properties:
+        rawSignature:
+          type: string
+          format: byte
+        signaturePayload:
+          type: string
+          format: byte
     storageDataSource:
       type: object
       properties:
@@ -10549,8 +11646,18 @@ components:
         executables:
           type: array
           items:
-            $ref: '#/components/schemas/EmbeddedImageScanComponentExecutable'
+            $ref: '#/components/schemas/storageEmbeddedImageScanComponentExecutable'
+          title: Values are cleared after moving to cache, remove them from the grpc return as well
       title: 'Next Tag: 13'
+    storageEmbeddedImageScanComponentExecutable:
+      type: object
+      properties:
+        path:
+          type: string
+        dependencies:
+          type: array
+          items:
+            type: string
     storageImage:
       type: object
       properties:
@@ -10562,6 +11669,10 @@ components:
           $ref: '#/components/schemas/storageImageMetadata'
         scan:
           $ref: '#/components/schemas/storageImageScan'
+        signatureVerificationData:
+          $ref: '#/components/schemas/storageImageSignatureVerificationData'
+        signature:
+          $ref: '#/components/schemas/storageImageSignature'
         components:
           type: integer
           format: int32
@@ -10576,6 +11687,8 @@ components:
           format: date-time
         notPullable:
           type: boolean
+        isClusterLocal:
+          type: boolean
         priority:
           type: string
           format: int64
@@ -10589,7 +11702,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/storageImageNote'
-      title: 'Next Tag: 15'
+      title: 'Next Tag: 18'
     storageImageLayer:
       type: object
       properties:
@@ -10618,15 +11731,27 @@ components:
           title: We never need both sets of layers so consolidate them. They will be ordered by oldest->newest
         dataSource:
           $ref: '#/components/schemas/storageDataSource'
+        version:
+          type: string
+          format: uint64
+          title: Version is used to determine if the metadata needs to be re-pulled
+      title: |-
+        If any fields of ImageMetadata are modified including subfields, please check pkg/images/enricher/metadata.go
+        to ensure that those changes will be automatically picked up
+        Next Tag: 6
     storageImageNote:
       type: string
       enum:
         - MISSING_METADATA
         - MISSING_SCAN_DATA
+        - MISSING_SIGNATURE
+        - MISSING_SIGNATURE_VERIFICATION_DATA
       default: MISSING_METADATA
     storageImageScan:
       type: object
       properties:
+        scannerVersion:
+          type: string
         scanTime:
           type: string
           format: date-time
@@ -10642,6 +11767,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/storageImageScanNote'
+      title: 'Next tag: 7'
     storageImageScanNote:
       type: string
       enum:
@@ -10653,6 +11779,57 @@ components:
         - LANGUAGE_CVES_UNAVAILABLE
         - CERTIFIED_RHEL_SCAN_UNAVAILABLE
       default: UNSET
+    storageImageSignature:
+      type: object
+      properties:
+        signatures:
+          type: array
+          items:
+            $ref: '#/components/schemas/storageSignature'
+        fetched:
+          type: string
+          format: date-time
+    storageImageSignatureVerificationData:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/storageImageSignatureVerificationResult'
+    storageImageSignatureVerificationResult:
+      type: object
+      properties:
+        verificationTime:
+          type: string
+          format: date-time
+        verifierId:
+          type: string
+          description: verifier_id correlates to the ID of the signature integration used to verify the signature.
+        status:
+          $ref: '#/components/schemas/storageImageSignatureVerificationResultStatus'
+        description:
+          type: string
+          description: description is set in the case of an error with the specific error's message. Otherwise, this will not be set.
+      title: 'Next Tag: 5'
+    storageImageSignatureVerificationResultStatus:
+      type: string
+      enum:
+        - UNSET
+        - VERIFIED
+        - FAILED_VERIFICATION
+        - INVALID_SIGNATURE_ALGO
+        - CORRUPTED_SIGNATURE
+        - GENERIC_ERROR
+      default: UNSET
+      description: |-
+        Status represents the status of the result.
+
+         - VERIFIED: VERIFIED is set when the signature's verification was successful.
+         - FAILED_VERIFICATION: FAILED_VERIFICATION is set when the signature's verification failed.
+         - INVALID_SIGNATURE_ALGO: INVALID_SIGNATURE_ALGO is set when the signature's algorithm is invalid and unsupported.
+         - CORRUPTED_SIGNATURE: CORRUPTED_SIGNATURE is set when the raw signature is corrupted, i.e. wrong base64 encoding.
+         - GENERIC_ERROR: GENERIC_ERROR is set when an error occurred during verification that cannot be associated with a specific
+        status.
     storageLicense:
       type: object
       properties:
@@ -10687,6 +11864,11 @@ components:
         priority:
           type: string
           format: int64
+    storageSignature:
+      type: object
+      properties:
+        cosign:
+          $ref: '#/components/schemas/storageCosignSignature'
     storageSourceType:
       type: string
       enum:
@@ -11933,6 +13115,52 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/storageContainerInstance'
+    storageContainerInstance:
+      type: object
+      properties:
+        instanceId:
+          $ref: '#/components/schemas/storageContainerInstanceID'
+        containingPodId:
+          type: string
+          description: The pod containing this container instance (kubernetes only).
+        containerName:
+          type: string
+          description: Container name.
+        containerIps:
+          type: array
+          items:
+            type: string
+          description: The IP addresses of this container.
+        started:
+          type: string
+          format: date-time
+          title: The start time of the container
+        imageDigest:
+          type: string
+          title: Image ID
+        finished:
+          type: string
+          format: date-time
+          description: The finish time of the container, if it finished.
+        exitCode:
+          type: integer
+          format: int32
+          description: The exit code of the container. Only valid when finished is populated.
+        terminationReason:
+          type: string
+          description: The reason for the container's termination, if it finished.
+      description: ContainerInstanceID allows to uniquely identify a container within a cluster.
+    storageContainerInstanceID:
+      type: object
+      properties:
+        containerRuntime:
+          $ref: '#/components/schemas/storageContainerRuntime'
+        id:
+          type: string
+          description: The ID of the container, specific to the given runtime.
+        node:
+          type: string
+          description: The node on which this container runs.
     storagePod:
       type: object
       properties:
@@ -12012,6 +13240,8 @@ components:
           format: date-time
         eventSource:
           $ref: '#/components/schemas/storageEventSource'
+        isDefault:
+          type: boolean
     v1DryRunJobStatusResponse:
       type: object
       properties:
@@ -12578,6 +13808,113 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/storageK8sRole'
+    ReportConfigurationReportType:
+      type: string
+      enum:
+        - VULNERABILITY
+      default: VULNERABILITY
+    ReportLastRunStatusRunStatus:
+      type: string
+      enum:
+        - SUCCESS
+        - FAILURE
+      default: SUCCESS
+    VulnerabilityReportFiltersFixability:
+      type: string
+      enum:
+        - BOTH
+        - FIXABLE
+        - NOT_FIXABLE
+      default: BOTH
+    storageEmailNotifierConfiguration:
+      type: object
+      properties:
+        notifierId:
+          type: string
+        mailingLists:
+          type: array
+          items:
+            type: string
+    storageReportConfiguration:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        type:
+          $ref: '#/components/schemas/ReportConfigurationReportType'
+        vulnReportFilters:
+          $ref: '#/components/schemas/storageVulnerabilityReportFilters'
+        scopeId:
+          type: string
+        emailConfig:
+          $ref: '#/components/schemas/storageEmailNotifierConfiguration'
+        schedule:
+          $ref: '#/components/schemas/storageSchedule'
+        lastRunStatus:
+          $ref: '#/components/schemas/storageReportLastRunStatus'
+        lastSuccessfulRunTime:
+          type: string
+          format: date-time
+    storageReportLastRunStatus:
+      type: object
+      properties:
+        reportStatus:
+          $ref: '#/components/schemas/ReportLastRunStatusRunStatus'
+        lastRunTime:
+          type: string
+          format: date-time
+        errorMsg:
+          type: string
+    storageVulnerabilityReportFilters:
+      type: object
+      properties:
+        fixability:
+          $ref: '#/components/schemas/VulnerabilityReportFiltersFixability'
+        sinceLastReport:
+          type: boolean
+        severities:
+          type: array
+          items:
+            $ref: '#/components/schemas/storageVulnerabilitySeverity'
+    v1CountReportConfigurationsResponse:
+      type: object
+      properties:
+        count:
+          type: integer
+          format: int32
+    v1GetReportConfigurationResponse:
+      type: object
+      properties:
+        reportConfig:
+          $ref: '#/components/schemas/storageReportConfiguration'
+    v1GetReportConfigurationsResponse:
+      type: object
+      properties:
+        reportConfigs:
+          type: array
+          items:
+            $ref: '#/components/schemas/storageReportConfiguration'
+    v1PostReportConfigurationRequest:
+      type: object
+      properties:
+        reportConfig:
+          $ref: '#/components/schemas/storageReportConfiguration'
+    v1PostReportConfigurationResponse:
+      type: object
+      properties:
+        reportConfig:
+          $ref: '#/components/schemas/storageReportConfiguration'
+    v1UpdateReportConfigurationRequest:
+      type: object
+      properties:
+        id:
+          type: string
+        reportConfig:
+          $ref: '#/components/schemas/storageReportConfiguration'
     ComputeEffectiveAccessScopeRequestDetail:
       type: string
       enum:
@@ -12590,37 +13927,6 @@ components:
       properties:
         simpleRules:
           $ref: '#/components/schemas/SimpleAccessScopeRules'
-    SimpleAccessScopeRules:
-      type: object
-      properties:
-        includedClusters:
-          type: array
-          items:
-            type: string
-        includedNamespaces:
-          type: array
-          items:
-            $ref: '#/components/schemas/SimpleAccessScopeRulesNamespace'
-        clusterLabelSelectors:
-          type: array
-          items:
-            $ref: '#/components/schemas/storageSetBasedLabelSelector'
-        namespaceLabelSelectors:
-          type: array
-          items:
-            $ref: '#/components/schemas/storageSetBasedLabelSelector'
-      description: |-
-        Each element of any repeated field is an individual rule. Rules are
-        joined by logical OR: if there exists a rule allowing resource `x`,
-        `x` is in the access scope.
-    SimpleAccessScopeRulesNamespace:
-      type: object
-      properties:
-        clusterName:
-          type: string
-          description: Both fields must be set.
-        namespaceName:
-          type: string
     storageEffectiveAccessScope:
       type: object
       properties:
@@ -12714,38 +14020,6 @@ components:
         objects. Permissions be can either specified directly via setting
         resource_to_access together with global_access or by referencing a
         permission set by its id in permission_set_name.
-    storageSetBasedLabelSelector:
-      type: object
-      properties:
-        requirements:
-          type: array
-          items:
-            $ref: '#/components/schemas/storageSetBasedLabelSelectorRequirement'
-      description: |-
-        SetBasedLabelSelector only allows set-based label requirements.
-
-        Next available tag: 3
-    storageSetBasedLabelSelectorOperator:
-      type: string
-      enum:
-        - UNKNOWN
-        - IN
-        - NOT_IN
-        - EXISTS
-        - NOT_EXISTS
-      default: UNKNOWN
-    storageSetBasedLabelSelectorRequirement:
-      type: object
-      properties:
-        key:
-          type: string
-        op:
-          $ref: '#/components/schemas/storageSetBasedLabelSelectorOperator'
-        values:
-          type: array
-          items:
-            type: string
-      title: 'Next available tag: 4'
     storageSimpleAccessScope:
       type: object
       properties:
@@ -12899,15 +14173,20 @@ components:
         - SERVICE_ACCOUNTS
         - ROLES
         - ROLEBINDINGS
+        - REPORT_CONFIGURATIONS
         - PROCESS_BASELINES
         - SUBJECTS
         - RISKS
         - VULNERABILITIES
+        - CLUSTER_VULNERABILITIES
+        - IMAGE_VULNERABILITIES
+        - NODE_VULNERABILITIES
         - COMPONENT_VULN_EDGE
         - CLUSTER_VULN_EDGE
         - NETWORK_ENTITY
+        - VULN_REQUEST
       default: SEARCH_UNSET
-      title: 'Next available tag: 31'
+      title: 'Next available tag: 37'
     v1SearchOptionsResponse:
       type: object
       properties:
@@ -12944,6 +14223,12 @@ components:
           format: double
         location:
           type: string
+          description: |-
+            Location is intended to be a unique, yet human readable,
+            identifier for the result. For example, for a deployment,
+            the location will be "$cluster_name/$namespace/$deployment_name.
+            It is displayed in the UI in the global search results, underneath
+            the name for each result.
     ImagePullSecretRegistry:
       type: object
       properties:
@@ -13006,6 +14291,8 @@ components:
         id:
           type: string
         name:
+          type: string
+        clusterId:
           type: string
         clusterName:
           type: string
@@ -13291,6 +14578,36 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/storageServiceIdentity'
+    CosignPublicKeyVerificationPublicKey:
+      type: object
+      properties:
+        name:
+          type: string
+        publicKeyPemEnc:
+          type: string
+    storageCosignPublicKeyVerification:
+      type: object
+      properties:
+        publicKeys:
+          type: array
+          items:
+            $ref: '#/components/schemas/CosignPublicKeyVerificationPublicKey'
+    storageSignatureIntegration:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        cosign:
+          $ref: '#/components/schemas/storageCosignPublicKeyVerification'
+    v1ListSignatureIntegrationsResponse:
+      type: object
+      properties:
+        integrations:
+          type: array
+          items:
+            $ref: '#/components/schemas/storageSignatureIntegration'
     v1SummaryCountsResponse:
       type: object
       properties:
@@ -13353,6 +14670,214 @@ components:
       title: |-
         UserAttributeTuple descript the auth:key:value tuple that decides group membership.
         Next Tag: 4
+    ScopeGlobal:
+      type: object
+    VulnerabilityRequestCVEs:
+      type: object
+      properties:
+        ids:
+          type: array
+          items:
+            type: string
+    VulnerabilityRequestScopeImage:
+      type: object
+      properties:
+        registry:
+          type: string
+        remote:
+          type: string
+        tag:
+          type: string
+    storageDeferralRequest:
+      type: object
+      properties:
+        expiry:
+          $ref: '#/components/schemas/storageRequestExpiry'
+    storageFalsePositiveRequest:
+      type: object
+    storageRequestComment:
+      type: object
+      properties:
+        id:
+          type: string
+        message:
+          type: string
+        user:
+          $ref: '#/components/schemas/storageSlimUser'
+        createdAt:
+          type: string
+          format: date-time
+    storageRequestExpiry:
+      type: object
+      properties:
+        expiresWhenFixed:
+          type: boolean
+          description: Indicates that this request expires when the associated vulnerability is fixed.
+        expiresOn:
+          type: string
+          format: date-time
+          description: Indicates the timestamp when this request expires.
+    storageRequestStatus:
+      type: string
+      enum:
+        - PENDING
+        - APPROVED
+        - DENIED
+        - APPROVED_PENDING_UPDATE
+      default: PENDING
+      description: |-
+        Indicates the status of a request. Requests canceled by the user before they are acted upon by the approver
+        are not tracked/persisted (with the exception of audit logs if it is turned on).
+
+         - PENDING: Default request state. It indicates that the request has not been fulfilled and that an action (approve/deny) is required.
+         - APPROVED: Indicates that the request has been approved by the approver.
+         - DENIED: Indicates that the request has been denied by the approver.
+         - APPROVED_PENDING_UPDATE: Indicates that the original request was approved, but an update is still pending an approval or denial.
+    storageSlimUser:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+    storageVulnerabilityRequest:
+      type: object
+      properties:
+        id:
+          type: string
+        targetState:
+          $ref: '#/components/schemas/storageVulnerabilityState'
+        status:
+          $ref: '#/components/schemas/storageRequestStatus'
+        expired:
+          type: boolean
+          description: |-
+            Indicates if this request is a historical request that is no longer in effect
+            due to deferral expiry, cancellation, or restarting cve observation.
+        requestor:
+          $ref: '#/components/schemas/storageSlimUser'
+        approvers:
+          type: array
+          items:
+            $ref: '#/components/schemas/storageSlimUser'
+        createdAt:
+          type: string
+          format: date-time
+        lastUpdated:
+          type: string
+          format: date-time
+        comments:
+          type: array
+          items:
+            $ref: '#/components/schemas/storageRequestComment'
+        scope:
+          $ref: '#/components/schemas/storageVulnerabilityRequestScope'
+        deferralReq:
+          $ref: '#/components/schemas/storageDeferralRequest'
+        fpRequest:
+          $ref: '#/components/schemas/storageFalsePositiveRequest'
+        cves:
+          $ref: '#/components/schemas/VulnerabilityRequestCVEs'
+        updatedDeferralReq:
+          $ref: '#/components/schemas/storageDeferralRequest'
+      description: |-
+        Next available tag: 21
+        VulnerabilityRequest encapsulates a request such as deferral request and false-positive request.
+    storageVulnerabilityRequestScope:
+      type: object
+      properties:
+        imageScope:
+          $ref: '#/components/schemas/VulnerabilityRequestScopeImage'
+        globalScope:
+          $ref: '#/components/schemas/ScopeGlobal'
+    v1ApproveVulnRequest:
+      type: object
+      properties:
+        id:
+          type: string
+        comment:
+          type: string
+    v1ApproveVulnRequestResponse:
+      type: object
+      properties:
+        requestInfo:
+          $ref: '#/components/schemas/storageVulnerabilityRequest'
+    v1DeferVulnRequest:
+      type: object
+      properties:
+        cve:
+          type: string
+        comment:
+          type: string
+        scope:
+          $ref: '#/components/schemas/storageVulnerabilityRequestScope'
+        expiresWhenFixed:
+          type: boolean
+        expiresOn:
+          type: string
+          format: date-time
+    v1DeferVulnResponse:
+      type: object
+      properties:
+        requestInfo:
+          $ref: '#/components/schemas/storageVulnerabilityRequest'
+    v1DenyVulnRequest:
+      type: object
+      properties:
+        id:
+          type: string
+        comment:
+          type: string
+    v1DenyVulnRequestResponse:
+      type: object
+      properties:
+        requestInfo:
+          $ref: '#/components/schemas/storageVulnerabilityRequest'
+    v1FalsePositiveVulnRequest:
+      type: object
+      properties:
+        cve:
+          type: string
+        scope:
+          $ref: '#/components/schemas/storageVulnerabilityRequestScope'
+        comment:
+          type: string
+    v1FalsePositiveVulnResponse:
+      type: object
+      properties:
+        requestInfo:
+          $ref: '#/components/schemas/storageVulnerabilityRequest'
+    v1GetVulnerabilityRequestResponse:
+      type: object
+      properties:
+        requestInfo:
+          $ref: '#/components/schemas/storageVulnerabilityRequest'
+    v1ListVulnerabilityRequestsResponse:
+      type: object
+      properties:
+        requestInfos:
+          type: array
+          items:
+            $ref: '#/components/schemas/storageVulnerabilityRequest'
+    v1UndoVulnRequestResponse:
+      type: object
+      properties:
+        requestInfo:
+          $ref: '#/components/schemas/storageVulnerabilityRequest'
+    v1UpdateVulnRequest:
+      type: object
+      properties:
+        id:
+          type: string
+        comment:
+          type: string
+        expiry:
+          $ref: '#/components/schemas/storageRequestExpiry'
+    v1UpdateVulnRequestResponse:
+      type: object
+      properties:
+        requestInfo:
+          $ref: '#/components/schemas/storageVulnerabilityRequest'
   ##########################
   securitySchemes:
     basicAuth:
