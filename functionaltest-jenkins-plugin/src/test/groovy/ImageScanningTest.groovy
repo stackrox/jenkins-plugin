@@ -3,6 +3,7 @@ import static com.offbytwo.jenkins.model.BuildResult.FAILURE
 import static com.offbytwo.jenkins.model.BuildResult.SUCCESS
 import static com.stackrox.model.StorageEnforcementAction.FAIL_BUILD_ENFORCEMENT
 import static com.stackrox.model.StorageLifecycleStage.BUILD
+import static com.stackrox.model.StorageLifecycleStage.DEPLOY
 
 import com.offbytwo.jenkins.model.BuildResult
 
@@ -11,7 +12,6 @@ import com.stackrox.model.StorageImageNamePolicy
 import com.stackrox.model.StorageListPolicy
 import com.stackrox.model.StoragePolicy
 import com.stackrox.model.StoragePolicyFields
-import com.stackrox.model.StorageSeverity
 
 import spock.lang.Unroll
 
@@ -27,7 +27,7 @@ class ImageScanningTest extends BaseSpecification {
 
         then:
         assert enforcementPolicy.enforcementActions == enforcements
-        assert enforcementPolicy.lifecycleStages == [BUILD]
+        assert enforcementPolicy.lifecycleStages == [BUILD, DEPLOY]
 
         when:
         BuildResult status = jenkins.createAndRunJob(
@@ -51,7 +51,7 @@ class ImageScanningTest extends BaseSpecification {
 
         then:
         assert enforcementPolicy.enforcementActions == enforcements
-        assert enforcementPolicy.lifecycleStages == [BUILD]
+        assert enforcementPolicy.lifecycleStages == [BUILD, DEPLOY]
 
         when:
         BuildResult status = jenkins.createAndRunJob(
@@ -93,15 +93,11 @@ class ImageScanningTest extends BaseSpecification {
         def policyId = policies.find { it.name == policyName }?.id
         assert policyId != null
 
-        StoragePolicy updatedPolicy = new StoragePolicy()
-                .name(policyName)
-                .lifecycleStages([BUILD])
-                .severity(StorageSeverity.MEDIUM_SEVERITY)
-                .fields(new StoragePolicyFields().imageName(
-                        new StorageImageNamePolicy().tag(tag)))
-                .categories(["Image Assurance"])
-                .enforcementActions(enforcements)
-        restApiClient.updatePolicy(updatedPolicy, policyId)
+        def policy = restApiClient.getPolicy(policyId)
+        policy.setEnforcementActions(enforcements)
+        policy.setFields(new StoragePolicyFields().imageName(new StorageImageNamePolicy().tag(tag)))
+        policy.setDisabled(false)
+        restApiClient.updatePolicy(policy, policyId)
         return restApiClient.getPolicy(policyId)
     }
 
