@@ -19,7 +19,7 @@
     <description>This plugin provides vulnerability scanning of container images for OS packages and language
         vulnerabilities using the StackRox Kubernetes Security Platform
     </description>
-    <url>https://github.com/jenkinsci/${project.artifactId}-plugin</url>
+    <url>https://github.com/stackrox/jenkins-plugin</url>
     <licenses>
         <license>
             <name>Apache 2 License</name>
@@ -34,16 +34,16 @@
         </developer>
     </developers>
     <scm>
-        <connection>scm:git:git://github.com/jenkinsci/${project.artifactId}-plugin.git</connection>
-        <developerConnection>scm:git:git@github.com:jenkinsci/${project.artifactId}-plugin.git</developerConnection>
-        <url>https://github.com/jenkinsci/${project.artifactId}-plugin</url>
+        <connection>scm:git:git://github.com/stackrox/jenkins-plugin.git</connection>
+        <developerConnection>scm:git:git@github.com:stackrox/jenkins-plugin.git</developerConnection>
+        <url>https://github.com/stackrox/jenkins-plugin</url>
       <tag>HEAD</tag>
   </scm>
     <dependencies>
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.22</version>
+            <version>1.18.24</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -105,17 +105,17 @@
         <dependency>
             <groupId>io.swagger</groupId>
             <artifactId>swagger-annotations</artifactId>
-            <version>1.6.4</version>
+            <version>1.6.6</version>
         </dependency>
         <dependency>
             <groupId>com.squareup.okhttp3</groupId>
             <artifactId>okhttp</artifactId>
-            <version>4.9.3</version>
+            <version>4.10.0</version>
         </dependency>
         <dependency>
             <groupId>com.squareup.okhttp3</groupId>
             <artifactId>logging-interceptor</artifactId>
-            <version>4.9.3</version>
+            <version>4.10.0</version>
         </dependency>
         <dependency>
             <groupId>com.google.code.gson</groupId>
@@ -151,7 +151,7 @@
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
             <artifactId>kotlin-stdlib-common</artifactId>
-            <version>1.6.10</version>
+            <version>1.7.0</version>
         </dependency>
     </dependencies>
     <dependencyManagement>
@@ -206,7 +206,7 @@
         <plugins>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.10.0</version>
+                <version>3.10.1</version>
             </plugin>
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
@@ -258,7 +258,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.3.2</version>
+                <version>3.4.0</version>
                 <configuration>
                     <excludePackageNames>com.stackrox.api:com.stackrox.model:com.stackrox.invoker</excludePackageNames>
                 </configuration>
