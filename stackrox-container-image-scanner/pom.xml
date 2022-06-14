@@ -19,7 +19,7 @@
     <description>This plugin provides vulnerability scanning of container images for OS packages and language
         vulnerabilities using the StackRox Kubernetes Security Platform
     </description>
-    <url>https://github.com/jenkinsci/${project.artifactId}-plugin</url>
+    <url>https://github.com/stackrox/jenkins-plugin</url>
     <licenses>
         <license>
             <name>Apache 2 License</name>
@@ -34,22 +34,22 @@
         </developer>
     </developers>
     <scm>
-        <connection>scm:git:git://github.com/jenkinsci/${project.artifactId}-plugin.git</connection>
-        <developerConnection>scm:git:git@github.com:jenkinsci/${project.artifactId}-plugin.git</developerConnection>
-        <url>https://github.com/jenkinsci/${project.artifactId}-plugin</url>
+        <connection>scm:git:git://github.com/stackrox/jenkins-plugin.git</connection>
+        <developerConnection>scm:git:git@github.com:stackrox/jenkins-plugin.git</developerConnection>
+        <url>https://github.com/stackrox/jenkins-plugin</url>
       <tag>HEAD</tag>
   </scm>
     <dependencies>
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.22</version>
+            <version>1.18.24</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.github.tomakehurst</groupId>
-            <artifactId>wiremock-jre8</artifactId>
-            <version>2.31.0</version>
+            <artifactId>wiremock-jre8-standalone</artifactId>
+            <version>2.33.2</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -105,12 +105,12 @@
         <dependency>
             <groupId>com.squareup.okhttp3</groupId>
             <artifactId>okhttp</artifactId>
-            <version>4.9.3</version>
+            <version>4.10.0</version>
         </dependency>
         <dependency>
             <groupId>com.squareup.okhttp3</groupId>
             <artifactId>logging-interceptor</artifactId>
-            <version>4.9.3</version>
+            <version>4.10.0</version>
         </dependency>
         <dependency>
             <groupId>com.google.code.gson</groupId>
