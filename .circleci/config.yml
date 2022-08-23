@@ -100,13 +100,13 @@ jobs:
           name: Unit tests
           command: |
             cd stackrox-container-image-scanner
-            mvn verify
+            ./mvnw verify
       - run:
           name: Build and package the Jenkins plugin
           command: |
             cd stackrox-container-image-scanner
-            mvn package
-            mvn hpi:hpi
+            ./mvnw package
+            ./mvnw hpi:hpi
       - store_test_results:
           path: /home/circleci/jenkins-plugin/stackrox-container-image-scanner/target/surefire-reports
       - store_artifacts:

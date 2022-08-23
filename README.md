@@ -32,7 +32,7 @@ nohup kubectl port-forward -n jenkins svc/jenkins 8080:8080 &
 
 ```
  cd stackrox-container-image-scanner
- mvn package && mvn hpi:hpi
+ ./mvnw package && ./mvnw hpi:hpi
 ```
 
 3. Install Plugin
