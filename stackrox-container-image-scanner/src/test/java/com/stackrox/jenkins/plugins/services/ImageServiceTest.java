@@ -73,6 +73,19 @@ class ImageServiceTest extends AbstractServiceTest {
         assertEquals(expected, actual);
     }
 
+    @Test
+    public void shouldNotFailOnUnknownEnumValue() throws IOException {
+        MOCK_SERVER.stubFor(postImagesScan().willReturn(
+                ok().withBodyFile("v1/images/scan/unknown-enum.json")));
+        List<CVE> actual = imageService.getImageScanResults("nginx:latest");
+        ImmutableList<CVE> expected = ImmutableList.of(
+                new CVE(null, null, new StorageEmbeddedVulnerability()
+                        .cve("CVE-MISSING-DATA")
+                        .scoreVersion(V2))
+        );
+        assertEquals(expected, actual);
+    }
+
     private MappingBuilder postImagesScan() {
         return post(urlEqualTo("/v1/images/scan"))
                 .withHeader("Authorization", equalTo("Bearer {some token}"))

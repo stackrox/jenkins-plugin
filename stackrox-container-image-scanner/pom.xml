@@ -82,6 +82,11 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>javax</groupId>
+            <artifactId>javaee-api</artifactId>
+            <version>7.0</version>
+        </dependency>
+        <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
             <version>31.1-jre</version>
@@ -193,7 +198,7 @@
                 <groupId>org.openapitools</groupId>
                 <artifactId>openapi-generator-maven-plugin</artifactId>
                 <!-- RELEASE_VERSION -->
-                <version>5.4.0</version>
+                <version>6.1.0</version>
                 <!-- /RELEASE_VERSION -->
                 <executions>
                     <execution>
@@ -214,6 +219,7 @@
                                 <dateLibrary>java8</dateLibrary>
                                 <java8>true</java8>
                                 <sourceFolder>src/gen/java/main</sourceFolder>
+                                <enumUnknownDefaultCase>true</enumUnknownDefaultCase>
                             </configOptions>
                         </configuration>
                     </execution>
