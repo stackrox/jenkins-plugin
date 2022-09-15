@@ -18,7 +18,7 @@ jobs:
         java-version: '8'
         cache: 'maven'
     - name: Build with Maven
-      run: ./mvnw package hpi:hpi --file stackrox-container-image-scanner/pom.xml
+      run: stackrox-container-image-scanner/mvnw package hpi:hpi --file stackrox-container-image-scanner/pom.xml
     - uses: "marvinpinto/action-automatic-releases@latest"
       with:
         repo_token: "${{ secrets.GITHUB_TOKEN }}"
