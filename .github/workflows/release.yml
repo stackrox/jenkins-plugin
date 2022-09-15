@@ -1,0 +1,50 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release version (tag)'
+        default: 1.4.0
+        required: true
+        type: string
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write  # Enable OIDC
+    env:
+      # Output logs to file in case we need to inspect errors.
+      GITSIGN_LOG: "/tmp/gitsign.log"
+    steps:
+      - uses: actions/checkout@v3
+      - uses: chainguard-dev/actions/setup-gitsign@main
+      - name: Setup git user
+        run: |
+          git config --global user.email "roxbot@stackrox.com"
+          git config --global user.name "Robot Rox"
+      - uses: actions/setup-java@v2
+        with:
+          distribution: 'temurin'
+          java-version: '8'
+          cache: 'maven'
+      - name: Prepare Release
+        run: >
+          cd 'stackrox-container-image-scanner/' &&
+          ./mvnw -B
+          -DreleaseVersion=${{ inputs.tag }}
+          -DdevelopmentVersion=${{ inputs.tag }}-SNAPSHOT
+          -Dtag=${{ inputs.tag }}
+          release:prepare
+      - name: Write maven settings
+        env:
+          SETTINGS: ${{ secrets.M2_SETTINGS }}
+        shell: bash
+        run: 'echo "$SETTINGS" > ${HOME}/.m2/settings.xml'
+      - name: Perform Release
+        run: cd 'stackrox-container-image-scanner/' && ./mvnw -B release:perform
+      - name: Debug log
+        if: failure()
+        run: cat ${GITSIGN_LOG}
