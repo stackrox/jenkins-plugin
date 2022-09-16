@@ -3,6 +3,8 @@ name: CI
 on:
   push:
     branches: [ master ]
+    tags:
+      - "*"
 
   workflow_dispatch:
 
@@ -19,12 +21,19 @@ jobs:
         cache: 'maven'
     - name: Build with Maven
       run: stackrox-container-image-scanner/mvnw package hpi:hpi --file stackrox-container-image-scanner/pom.xml
-    - uses: "marvinpinto/action-automatic-releases@latest"
+    - uses: release-drafter/release-drafter@v5
+      id: release_drafter
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Upload Release Asset Linux
+      id: upload-release-asset-linux
+      uses: gfreezy/upload-release-asset@v1.0.2
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        repo_token: "${{ secrets.GITHUB_TOKEN }}"
-        prerelease: true
-        automatic_release_tag: "latest"
-        title: "Development Build"
-        files: |
-          stackrox-container-image-scanner/target/stackrox-container-image-scanner.hpi
+        release_id: ${{ steps.release_drafter.outputs.id }}
+        upload_url: ${{ steps.release_drafter.outputs.upload_url }}
+        asset_path: stackrox-container-image-scanner/target/stackrox-container-image-scanner.hpi
+        asset_name: stackrox-container-image-scanner.hpi
+        asset_content_type: application/octet-stream
 
