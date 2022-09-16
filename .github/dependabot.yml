@@ -4,13 +4,15 @@ updates:
     directory: 'stackrox-container-image-scanner/'
     schedule:
       interval: "monthly"
-    reviewers:
-      - "stackrox/backend-dep-updaters"
 
   - package-ecosystem: 'gradle'
     directory: 'functionaltest-jenkins-plugin/'
     schedule:
       interval: "monthly"
-    reviewers:
-      - "stackrox/backend-dep-updaters"
 
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    open-pull-requests-limit: 3
+    schedule:
+      interval: 'weekly'
+      day: 'wednesday'
