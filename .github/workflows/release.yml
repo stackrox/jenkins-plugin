@@ -20,6 +20,8 @@ jobs:
       GITSIGN_LOG: "/tmp/gitsign.log"
     steps:
       - uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.PAT }}
       - uses: chainguard-dev/actions/setup-gitsign@main
       - name: Setup git user
         run: |
