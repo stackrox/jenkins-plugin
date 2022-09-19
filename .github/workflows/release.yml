@@ -27,7 +27,7 @@ jobs:
         run: |
           git config --global user.email "roxbot@stackrox.com"
           git config --global user.name "Robot Rox"
-      - uses: actions/setup-java@v2
+      - uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
           java-version: '8'
