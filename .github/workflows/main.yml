@@ -20,7 +20,7 @@ jobs:
         java-version: '8'
         cache: 'maven'
     - name: Build with Maven
-      run: stackrox-container-image-scanner/mvnw package hpi:hpi --file stackrox-container-image-scanner/pom.xml
+      run: cd stackrox-container-image-scanner && ./mvnw -B package hpi:hpi cyclonedx:makeAggregateBom
     - uses: release-drafter/release-drafter@v5
       id: release_drafter
       env:
@@ -36,4 +36,26 @@ jobs:
         asset_path: stackrox-container-image-scanner/target/stackrox-container-image-scanner.hpi
         asset_name: stackrox-container-image-scanner.hpi
         asset_content_type: application/octet-stream
+    - name: Upload SBOM XML Asset Linux
+      id: upload-release-asset-linux
+      uses: gfreezy/upload-release-asset@v1.0.2
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        release_id: ${{ steps.release_drafter.outputs.id }}
+        upload_url: ${{ steps.release_drafter.outputs.upload_url }}
+        asset_path: stackrox-container-image-scanner/target/sbom.xml
+        asset_name: sbom.xml
+        asset_content_type: text/xml
+    - name: Upload SBOM JSON Asset Linux
+      id: upload-release-asset-linux
+      uses: gfreezy/upload-release-asset@v1.0.2
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        release_id: ${{ steps.release_drafter.outputs.id }}
+        upload_url: ${{ steps.release_drafter.outputs.upload_url }}
+        asset_path: stackrox-container-image-scanner/target/sbom.json
+        asset_name: sbom.json
+        asset_content_type: application/json
 
