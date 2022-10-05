@@ -44,8 +44,8 @@ jobs:
       with:
         release_id: ${{ steps.release_drafter.outputs.id }}
         upload_url: ${{ steps.release_drafter.outputs.upload_url }}
-        asset_path: stackrox-container-image-scanner/target/sbom.xml
-        asset_name: sbom.xml
+        asset_path: stackrox-container-image-scanner/target/bom.xml
+        asset_name: bom.xml
         asset_content_type: text/xml
     - name: Upload SBOM JSON Asset Linux
       id: upload-sbom-json
@@ -55,7 +55,7 @@ jobs:
       with:
         release_id: ${{ steps.release_drafter.outputs.id }}
         upload_url: ${{ steps.release_drafter.outputs.upload_url }}
-        asset_path: stackrox-container-image-scanner/target/sbom.json
-        asset_name: sbom.json
+        asset_path: stackrox-container-image-scanner/target/bom.json
+        asset_name: bom.json
         asset_content_type: application/json
 
