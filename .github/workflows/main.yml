@@ -37,7 +37,7 @@ jobs:
         asset_name: stackrox-container-image-scanner.hpi
         asset_content_type: application/octet-stream
     - name: Upload SBOM XML Asset Linux
-      id: upload-release-asset-linux
+      id: upload-sbom-xml
       uses: gfreezy/upload-release-asset@v1.0.2
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -48,7 +48,7 @@ jobs:
         asset_name: sbom.xml
         asset_content_type: text/xml
     - name: Upload SBOM JSON Asset Linux
-      id: upload-release-asset-linux
+      id: upload-sbom-json
       uses: gfreezy/upload-release-asset@v1.0.2
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
