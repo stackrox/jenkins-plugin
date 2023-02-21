@@ -140,7 +140,7 @@
         <dependency>
             <groupId>org.openapitools</groupId>
             <artifactId>jackson-databind-nullable</artifactId>
-            <version>0.2.3</version>
+            <version>0.2.4</version>
         </dependency>
         <!-- required by OkHTTP -->
         <dependency>
