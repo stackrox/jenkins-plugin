@@ -26,10 +26,15 @@
             <url>http://opensource.org/licenses/Apache-2.0</url>
         </license>
     </licenses>
+    <organization>
+        <name>Red Hat</name>
+        <url>https://redhat.com/</url>
+    </organization>
     <developers>
         <developer>
             <id>stackrox-k8s-security-platform</id>
-            <name>StackRox Inc.</name>
+            <name>Red Hat</name>
+            <url>https://redhat.com/</url>
             <email>jenkins-plugin@stackrox.com</email>
         </developer>
     </developers>
