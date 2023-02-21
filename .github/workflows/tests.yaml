@@ -15,4 +15,4 @@ jobs:
         java-version: '8'
         cache: 'maven'
     - name: Build with Maven
-      run: cd stackrox-container-image-scanner && ./mvnw -B package hpi:hpi cyclonedx:makeAggregateBom
+      run: cd stackrox-container-image-scanner && ./mvnw -B verify package hpi:hpi cyclonedx:makeAggregateBom
