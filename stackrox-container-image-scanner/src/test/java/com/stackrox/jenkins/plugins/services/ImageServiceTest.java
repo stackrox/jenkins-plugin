@@ -24,6 +24,8 @@ import com.stackrox.model.StorageEmbeddedVulnerability;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 class ImageServiceTest extends AbstractServiceTest {
 
@@ -60,10 +62,11 @@ class ImageServiceTest extends AbstractServiceTest {
         assertEquals("Did not get scan results from StackRox", exception.getMessage());
     }
 
-    @Test
-    public void shouldNotFailOnMissingData() throws IOException {
+    @ParameterizedTest
+    @ValueSource(strings = {"minimal.json", "minimal-with-names.json"})
+    public void shouldNotFailOnMissingData(String file) throws IOException {
         MOCK_SERVER.stubFor(postImagesScan().willReturn(
-                ok().withBodyFile("v1/images/scan/minimal.json")));
+                ok().withBodyFile("v1/images/scan/" + file)));
         List<CVE> actual = imageService.getImageScanResults("nginx:latest");
         ImmutableList<CVE> expected = ImmutableList.of(
                 new CVE(null, null, new StorageEmbeddedVulnerability()

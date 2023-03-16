@@ -11665,6 +11665,10 @@ components:
           type: string
         name:
           $ref: '#/components/schemas/storageImageName'
+        names:
+          type: array
+          items:
+            $ref: '#/components/schemas/storageImageName'
         metadata:
           $ref: '#/components/schemas/storageImageMetadata'
         scan:
