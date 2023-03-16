@@ -37,7 +37,7 @@
                     <j:forEach items="${it.results}" var="result" indexVar="index">
                         <h5 class="collapsible-header">
                             <span class="arrow-r"></span>
-                            <span style="width:100%;">${result.imageName}</span>
+                            <span class="collapsible-header-text">${result.imageName}</span>
                             <j:if test="${result.statusPass == true}">
                                 <div class="chipPassed">Pass</div>
                             </j:if>
