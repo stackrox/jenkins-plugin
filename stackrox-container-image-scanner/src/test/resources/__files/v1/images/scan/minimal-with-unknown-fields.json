@@ -1,12 +1,17 @@
 {
-  "scan": {
+  "scan" : {
+    "a" : [
+      {}
+    ],
     "b" : {},
     "c" : false,
-    "components": [
+    "d" : null,
+    "e" : [],
+    "components" : [
       {
-        "vulns": [
+        "vulns" : [
           {
-            "cve": "CVE-MISSING-DATA"
+            "cve" : "CVE-MISSING-DATA"
           }
         ]
       }
