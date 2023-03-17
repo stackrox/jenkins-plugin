@@ -63,7 +63,7 @@ class ImageServiceTest extends AbstractServiceTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"minimal.json", "minimal-with-names.json", , "minimal-with-unknown-fields.json"})
+    @ValueSource(strings = {"minimal.json", "minimal-with-names.json", "minimal-with-unknown-fields.json"})
     public void shouldNotFailOnMissingData(String file) throws IOException {
         MOCK_SERVER.stubFor(postImagesScan().willReturn(
                 ok().withBodyFile("v1/images/scan/" + file)));
