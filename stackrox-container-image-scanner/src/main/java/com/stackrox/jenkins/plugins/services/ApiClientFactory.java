@@ -29,8 +29,6 @@ import okhttp3.OkHttpClient;
 
 import com.stackrox.invoker.ApiClient;
 
-import okhttp3.logging.HttpLoggingInterceptor;
-
 public class ApiClientFactory {
 
     public enum StackRoxTlsValidationMode {
@@ -94,9 +92,6 @@ public class ApiClientFactory {
         } catch (Exception e) {
             throw new IOException("Could not load certificate", e);
         }
-        HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
-        logging.setLevel(HttpLoggingInterceptor.Level.BODY);
-        builder.addInterceptor(logging);
         builder.retryOnConnectionFailure(true);
         builder.connectTimeout(TIMEOUT);
         builder.readTimeout(TIMEOUT);
