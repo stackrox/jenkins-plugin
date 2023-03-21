@@ -25,7 +25,7 @@ jobs:
           gradle-v2-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}-
           gradle-v2-
     - name: Build with Maven
-      run: cd stackrox-container-image-scanner && ./mvnw -B hpi:hpi
+      run: cd stackrox-container-image-scanner && ./mvnw -B package hpi:hpi
     - name: Copy plugin to jenkins
       run: cp  stackrox-container-image-scanner/target/stackrox-container-image-scanner.hpi jenkins/
     - name: Set up Docker Buildx
