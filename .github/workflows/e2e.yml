@@ -1,0 +1,55 @@
+name: E2E
+
+on:
+  push:
+
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: quay.io/stackrox-io/apollo-ci:stackrox-test-0.3.56
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build with Maven
+      run: cd stackrox-container-image-scanner && ./mvnw -B verify package hpi:hpi cyclonedx:makeAggregateBom
+    - name: Copy plugin to jenkins
+      run: cp  stackrox-container-image-scanner/target/stackrox-container-image-scanner.hpi jenkins/
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+    - name: Build jenkins image
+      uses: docker/build-push-action@v4
+      with:
+        context: jenkins
+        push: false
+        tags: jenkins-test
+    - uses: actions/checkout@v3
+      with:
+        repository: stackrox/stackrox
+        path: stackrox
+    - name: Create GKE cluster
+      id: create-cluster
+      env:
+        GCLOUD_SERVICE_ACCOUNT_OPENSHIFT_CI_ROX: ${secretes.GCLOUD_SERVICE_ACCOUNT_OPENSHIFT_CI_ROX}
+      run: |
+        cd stackrox
+        source "scripts/ci/gke.sh"
+        provision_gke_cluster
+        wait_for_cluster
+        MAIN_IMAGE_TAG=latest ./deploy/k8s/deploy-local.sh
+        pass=$(cat deploy/k8s/central-deploy/password)
+        echo "ROX_PASSWORD=$(cat deploy/k8s/central-deploy/password)" >> $GITHUB_OUTPUT
+    - name: Run jenkins
+      run: docker run -d --add-host host.docker.internal:host-gateway -p 8080:8080 jenkins-test
+    - name: Run tests
+      env:
+        ROX_PASSWORD: ${{ steps.create-cluster.outputs.ROX_PASSWORD }}"
+        ROX_ENDPOINT: https://localhost:8000
+        JENKINS_ROX_ENDPOINT: https://host.docker.internal:8000
+      run: make -C functionaltest-jenkins-plugin tests
+    - name: Teardown GKE cluster
+      if: always()
+      run: |
+        source "stackrox/scripts/ci/gke.sh"
+        teardown_gke_cluster
