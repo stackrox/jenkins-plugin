@@ -16,14 +16,12 @@ jobs:
       uses: actions/cache@v2
       with:
         path: |
-          ~/.gradle/caches
-          ~/.gradle/wrapper
           ~/.m2/repository
-        key: gradle-v2-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}-${{ github.job }}
+        key: gradle-v1-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}-${{ github.job }}
         restore-keys: |
-          gradle-v2-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}-${{ github.job }}
-          gradle-v2-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}-
-          gradle-v2-
+          gradle-v1-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}-${{ github.job }}
+          gradle-v1-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}-
+          gradle-v1-
     - name: Downgrade java
       run: |
         dnf -y install java-11-openjdk-devel
