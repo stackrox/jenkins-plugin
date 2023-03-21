@@ -40,28 +40,29 @@ jobs:
         context: jenkins
         push: false
         tags: jenkins-test
+    - name: Run jenkins
+      run: docker run -d --add-host host.docker.internal:host-gateway -p 8080:8080 jenkins-test
     - uses: actions/checkout@v3
       with:
         repository: stackrox/stackrox
         path: stackrox
-    # - name: Create GKE cluster
-    #   id: create-cluster
-    #   env:
-    #     OPENSHIFT_CI: true
-    #     GCLOUD_SERVICE_ACCOUNT_OPENSHIFT_CI_ROX: ${{ secrets.GCLOUD_SERVICE_ACCOUNT_OPENSHIFT_CI_ROX }}
-    #   run: |
-    #     cd stackrox
-    #     export BUILD_ID=${GITHUB_RUN_ID}
-    #     export JOB_NAME=${GITHUB_JOB}
-    #     source "scripts/ci/gke.sh"
-    #     provision_gke_cluster "jenkins-plugin-e2e" 1 e2-medium
-    #     wait_for_cluster
-    #     MAIN_IMAGE_TAG=latest ./deploy/k8s/deploy-local.sh
-    #     pass=$(cat deploy/k8s/central-deploy/password)
-    #     echo "ROX_PASSWORD=$(cat deploy/k8s/central-deploy/password)" >> $GITHUB_OUTPUT
-    #     echo "CLUSTER_NAME=${CLUSTER_NAME}" >> $GITHUB_OUTPUT
-    - name: Run jenkins
-      run: docker run -d --add-host host.docker.internal:host-gateway -p 8080:8080 jenkins-test
+    - name: Create GKE cluster
+      id: create-cluster
+      env:
+        OPENSHIFT_CI: true
+        GCLOUD_SERVICE_ACCOUNT_OPENSHIFT_CI_ROX: ${{ secrets.GCLOUD_SERVICE_ACCOUNT_OPENSHIFT_CI_ROX }}
+      run: |
+        cd stackrox
+        export BUILD_ID=${GITHUB_RUN_ID}
+        export JOB_NAME=${GITHUB_JOB}
+        source "scripts/ci/gke.sh"
+        provision_gke_cluster "jenkins-plugin-e2e" 1 e2-standard-4
+        wait_for_cluster
+        MAIN_IMAGE_TAG=latest ./deploy/k8s/deploy-local.sh
+        pass=$(cat deploy/k8s/central-deploy/password)
+        echo "ROX_PASSWORD=$(cat deploy/k8s/central-deploy/password)" >> $GITHUB_OUTPUT
+        echo "CLUSTER_NAME=${CLUSTER_NAME}" >> $GITHUB_OUTPUT
+
     - name: Run tests
       env:
         ROX_PASSWORD: ${{ steps.create-cluster.outputs.ROX_PASSWORD }}"
