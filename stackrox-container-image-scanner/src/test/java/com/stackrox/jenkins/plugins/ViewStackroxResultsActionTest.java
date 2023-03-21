@@ -15,7 +15,7 @@ import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class ViewStackroxResultsActionTest {
+public class ViewStackroxResultsActionTest {
     @MethodSource
     @DisplayName("getUrl/DisplayName should return joined and escaped image names")
     @ParameterizedTest(name = "{0}")

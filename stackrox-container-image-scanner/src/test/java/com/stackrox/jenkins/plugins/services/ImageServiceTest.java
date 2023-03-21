@@ -27,7 +27,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-class ImageServiceTest extends AbstractServiceTest {
+public class ImageServiceTest extends AbstractServiceTest {
 
     private ImageService imageService;
 

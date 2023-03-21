@@ -42,7 +42,7 @@ import com.stackrox.model.StoragePolicy;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-class ReportGeneratorTest {
+public class ReportGeneratorTest {
 
     @TempDir
     Path folder;

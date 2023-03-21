@@ -8,7 +8,7 @@ import org.junit.jupiter.params.provider.CsvSource;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class ServiceExceptionTest {
+public class ServiceExceptionTest {
 
     @DisplayName("ServiceException message")
     @ParameterizedTest(name = "should be \"{2}\" when response body \"{0}\"")
