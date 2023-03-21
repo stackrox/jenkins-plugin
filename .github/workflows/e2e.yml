@@ -55,7 +55,7 @@ jobs:
         export BUILD_ID=${GITHUB_RUN_ID}
         export JOB_NAME=${GITHUB_JOB}
         source "scripts/ci/gke.sh"
-        provision_gke_cluster "jenkins-plugin-e2e" 1 e2-standard-4
+        provision_gke_cluster "jenkins-plugin-e2e" 3 e2-standard-4
         echo "CLUSTER_NAME=${CLUSTER_NAME}" >> $GITHUB_OUTPUT
         wait_for_cluster
         MAIN_IMAGE_TAG=latest ./deploy/k8s/deploy-local.sh
@@ -69,7 +69,7 @@ jobs:
         JENKINS_ROX_ENDPOINT: https://host.docker.internal:8000
       run: make -C functionaltest-jenkins-plugin tests
     - name: Teardown GKE cluster
-      if: steps.create-cluster.outputs.CLUSTER_NAME != ''
+      if: always() && steps.create-cluster.outputs.CLUSTER_NAME != ''
       env:
         OPENSHIFT_CI: true
         CLUSTER_NAME: ${{ steps.create-cluster.outputs.CLUSTER_NAME }}"
