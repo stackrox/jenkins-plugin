@@ -57,11 +57,11 @@ jobs:
         export JOB_NAME=${GITHUB_JOB}
         source "scripts/ci/gke.sh"
         provision_gke_cluster "jenkins-plugin-e2e" 1 e2-standard-4
+        echo "CLUSTER_NAME=${CLUSTER_NAME}" >> $GITHUB_OUTPUT
         wait_for_cluster
         MAIN_IMAGE_TAG=latest ./deploy/k8s/deploy-local.sh
         pass=$(cat deploy/k8s/central-deploy/password)
         echo "ROX_PASSWORD=$(cat deploy/k8s/central-deploy/password)" >> $GITHUB_OUTPUT
-        echo "CLUSTER_NAME=${CLUSTER_NAME}" >> $GITHUB_OUTPUT
 
     - name: Run tests
       env:
