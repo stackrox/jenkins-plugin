@@ -47,15 +47,18 @@ jobs:
     - name: Create GKE cluster
       id: create-cluster
       env:
+        OPENSHIFT_CI: true
+        BUILD_ID: ${{ vars.GITHUB_RUN_ID }}
         GCLOUD_SERVICE_ACCOUNT_OPENSHIFT_CI_ROX: ${{ secrets.GCLOUD_SERVICE_ACCOUNT_OPENSHIFT_CI_ROX }}
       run: |
         cd stackrox
         source "scripts/ci/gke.sh"
-        provision_gke_cluster
+        provision_gke_cluster "jenkins-plugin-e2e" 1 e2-medium
         wait_for_cluster
         MAIN_IMAGE_TAG=latest ./deploy/k8s/deploy-local.sh
         pass=$(cat deploy/k8s/central-deploy/password)
         echo "ROX_PASSWORD=$(cat deploy/k8s/central-deploy/password)" >> $GITHUB_OUTPUT
+        echo "CLUSTER_NAME=${CLUSTER_NAME}" >> $GITHUB_OUTPUT
     - name: Run jenkins
       run: docker run -d --add-host host.docker.internal:host-gateway -p 8080:8080 jenkins-test
     - name: Run tests
@@ -66,6 +69,9 @@ jobs:
       run: make -C functionaltest-jenkins-plugin tests
     - name: Teardown GKE cluster
       if: always()
+      env:
+        OPENSHIFT_CI: true
+        CLUSTER_NAME: ${{ steps.create-cluster.outputs.CLUSTER_NAME }}"
       run: |
         source "stackrox/scripts/ci/gke.sh"
         teardown_gke_cluster
