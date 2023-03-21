@@ -72,7 +72,7 @@ jobs:
       if: always() && steps.create-cluster.outputs.CLUSTER_NAME != ''
       env:
         OPENSHIFT_CI: true
-        CLUSTER_NAME: ${{ steps.create-cluster.outputs.CLUSTER_NAME }}"
+        CLUSTER_NAME: ${{ steps.create-cluster.outputs.CLUSTER_NAME }}
       run: |
         source "stackrox/scripts/ci/gke.sh"
         teardown_gke_cluster
