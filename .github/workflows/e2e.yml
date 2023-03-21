@@ -35,10 +35,10 @@ jobs:
     - name: Build jenkins image
       uses: docker/build-push-action@v4
       with:
+        tags: jenkins-test
         context: jenkins
         push: false
-        tags: jenkins-test
-        output: type=docker
+        load: true
     - name: Run jenkins
       run: docker run -d --add-host host.docker.internal:host-gateway -p 8080:8080 jenkins-test
     - uses: actions/checkout@v3
