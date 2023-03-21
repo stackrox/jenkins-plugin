@@ -38,6 +38,7 @@ jobs:
         context: jenkins
         push: false
         tags: jenkins-test
+        output: type=docker
     - name: Run jenkins
       run: docker run -d --add-host host.docker.internal:host-gateway -p 8080:8080 jenkins-test
     - uses: actions/checkout@v3
