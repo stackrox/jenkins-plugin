@@ -48,7 +48,7 @@ jobs:
       id: create-cluster
       env:
         OPENSHIFT_CI: true
-        BUILD_ID: ${{ vars.GITHUB_RUN_ID }}
+        BUILD_ID: ${{ env.GITHUB_RUN_ID }}
         GCLOUD_SERVICE_ACCOUNT_OPENSHIFT_CI_ROX: ${{ secrets.GCLOUD_SERVICE_ACCOUNT_OPENSHIFT_CI_ROX }}
       run: |
         cd stackrox
