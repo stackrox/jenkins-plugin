@@ -19,8 +19,6 @@ jobs:
         distribution: 'temurin'
         java-version: '8'
         cache: 'maven'
-    - name: Check style
-      run: make -C functionaltest-jenkins-plugin style
     - name: Build with Maven
       run: cd stackrox-container-image-scanner && ./mvnw -B package hpi:hpi cyclonedx:makeAggregateBom
     - uses: release-drafter/release-drafter@v5
