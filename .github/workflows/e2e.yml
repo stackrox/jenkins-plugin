@@ -9,15 +9,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-
-
-    - name: Run jenkins
-      run: docker run -d --add-host host.docker.internal:host-gateway -p 8080:8080 jenkins/jenkins
-    - name: Check jenkins
+    - name: Install tools
       run: |
-        sleep 10
-        docker ps
-        curl http://localhost:8080
+        curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+        snap install google-cloud-cli --classic
+
     - uses: actions/checkout@v3
     - name: Cache Gradle Dependencies
       uses: actions/cache@v2
