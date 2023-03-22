@@ -11,6 +11,14 @@ jobs:
       image: quay.io/stackrox-io/apollo-ci:stackrox-test-0.3.56
 
     steps:
+
+
+    - name: Run jenkins
+      run: docker run -d --add-host host.docker.internal:host-gateway -p 8080:8080 jenkins/jenkins
+    - name: Check jenkins
+      run: |
+        docker ps
+        curl http://localhost:8080
     - uses: actions/checkout@v3
     - name: Cache Gradle Dependencies
       uses: actions/cache@v2
