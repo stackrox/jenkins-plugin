@@ -15,6 +15,7 @@ jobs:
       run: docker run -d --add-host host.docker.internal:host-gateway -p 8080:8080 jenkins/jenkins
     - name: Check jenkins
       run: |
+        sleep 10
         docker ps
         curl http://localhost:8080
     - uses: actions/checkout@v3
