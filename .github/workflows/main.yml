@@ -58,3 +58,4 @@ jobs:
         asset_path: stackrox-container-image-scanner/target/bom.json
         asset_name: bom.json
         asset_content_type: application/json
+
