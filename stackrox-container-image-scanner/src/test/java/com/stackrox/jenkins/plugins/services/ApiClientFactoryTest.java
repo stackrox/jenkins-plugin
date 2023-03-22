@@ -26,7 +26,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
-public class ApiClientFactoryTest {
+class ApiClientFactoryTest {
 
     private final static String KEY_STORE_PATH = Paths.get("src", "test", "resources", "cert", "localhost.jks").toString();
     private final static String KEY_STORE_PASSWORD = "password";

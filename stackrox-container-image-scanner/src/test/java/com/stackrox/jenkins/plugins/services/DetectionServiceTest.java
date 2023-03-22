@@ -25,7 +25,7 @@ import com.stackrox.model.StoragePolicy;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class DetectionServiceTest extends AbstractServiceTest {
+class DetectionServiceTest extends AbstractServiceTest {
 
     private static final List<StorageEnforcementAction> FAIL_BUILD_ENFORCEMENTS = ImmutableList.of(FAIL_BUILD_ENFORCEMENT);
 
