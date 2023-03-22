@@ -63,6 +63,7 @@ jobs:
       id: deploy
       run: |
         cd stackrox
+        echo '#!/usr/bin/env bash\necho "Skipping sensor installation."' > x.sh
         MAIN_IMAGE_TAG=latest ./deploy/k8s/deploy-local.sh
         pass=$(cat deploy/k8s/central-deploy/password)
         echo "ROX_PASSWORD=$(cat deploy/k8s/central-deploy/password)" >> $GITHUB_OUTPUT
