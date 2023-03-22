@@ -11,8 +11,8 @@ jobs:
     steps:
     - name: Install tools
       run: |
-        curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-        snap install google-cloud-cli --classic
+        sudo snap install kubectl --classic
+        sudo snap install google-cloud-cli --classic
 
     - uses: actions/checkout@v3
     - uses: actions/setup-java@v3
