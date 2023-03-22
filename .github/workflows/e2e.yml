@@ -68,6 +68,13 @@ jobs:
         pass=$(cat deploy/k8s/central-deploy/password)
         echo "ROX_PASSWORD=$(cat deploy/k8s/central-deploy/password)" >> $GITHUB_OUTPUT
 
+    - name: Restart proxy
+      run: |
+        export port=8000
+        pid="$(lsof -n -i "tcp:${port}" | grep kubectl | awk '{print $2}' | uniq)"
+        [[ -n "${pid}" ]] || { einfo "No kubectl port-forward is running on port ${port}."; exit 0; }
+        kill "${pid}" || die "Kill failed"
+
     - name: Run tests
       env:
         ROX_PASSWORD: ${{ steps.deploy.outputs.ROX_PASSWORD }}
