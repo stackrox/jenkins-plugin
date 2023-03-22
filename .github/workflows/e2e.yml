@@ -58,13 +58,17 @@ jobs:
         provision_gke_cluster "jenkins-plugin-e2e" 3 e2-standard-4
         echo "CLUSTER_NAME=${CLUSTER_NAME}" >> $GITHUB_OUTPUT
         wait_for_cluster
+
+    - name: Deploy Stackrox
+      id: deploy
+      run: |
         MAIN_IMAGE_TAG=latest ./deploy/k8s/deploy-local.sh
         pass=$(cat deploy/k8s/central-deploy/password)
         echo "ROX_PASSWORD=$(cat deploy/k8s/central-deploy/password)" >> $GITHUB_OUTPUT
 
     - name: Run tests
       env:
-        ROX_PASSWORD: ${{ steps.create-cluster.outputs.ROX_PASSWORD }}"
+        ROX_PASSWORD: ${{ steps.deploy.outputs.ROX_PASSWORD }}"
         ROX_ENDPOINT: https://localhost:8000
         JENKINS_ROX_ENDPOINT: https://host.docker.internal:8000
       run: make -C functionaltest-jenkins-plugin tests
