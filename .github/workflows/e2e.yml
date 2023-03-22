@@ -66,11 +66,13 @@ jobs:
         echo "ROX_PASSWORD=$(cat deploy/k8s/central-deploy/password)" >> $GITHUB_OUTPUT
 
     - name: Restart proxy
+      env:
+        port: 8000
       run: |
-        export port=8000
         pid="$(lsof -n -i "tcp:${port}" | grep kubectl | awk '{print $2}' | uniq)"
         [[ -n "${pid}" ]] || { einfo "No kubectl port-forward is running on port ${port}."; exit 0; }
         kill "${pid}" || die "Kill failed"
+        kubectl port-forward -n 'stackrox' svc/central "8000:443"  --address='0.0.0.0' &
 
     - name: Run tests
       env:
