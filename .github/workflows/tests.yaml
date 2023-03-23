@@ -88,11 +88,10 @@ jobs:
       id: deploy
       run: |
         cd stackrox
-        echo '#!/usr/bin/env bash\necho "Skipping sensor installation."' > deploy/k8s/sensor.sh
-        MAIN_IMAGE_TAG=latest ./deploy/k8s/deploy-local.sh
+        MAIN_IMAGE_TAG=latest ./deploy/k8s/central.sh
         pass=$(cat deploy/k8s/central-deploy/password)
         echo "ROX_PASSWORD=$(cat deploy/k8s/central-deploy/password)" >> $GITHUB_OUTPUT
-    - name: Restart kubectl port-forward #TODO(janisz): Remove after merging https://github.com/stackrox/stackrox/pull/5348
+    - name: Run proxy
       env:
         port: 8000
       run: |
@@ -100,6 +99,11 @@ jobs:
         [[ -n "${pid}" ]] || { einfo "No kubectl port-forward is running on port ${port}."; exit 0; }
         kill "${pid}" || die "Kill failed"
         kubectl port-forward -n 'stackrox' svc/central "8000:443"  --address='0.0.0.0' &
+    - name: Wait for API
+      run: |
+        cd stackrox
+        source "tests/e2e/lib.sh"
+        wait_for_api
     - name: Run tests
       env:
         ROX_PASSWORD: ${{ steps.deploy.outputs.ROX_PASSWORD }}
