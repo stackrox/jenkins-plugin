@@ -43,6 +43,7 @@ jobs:
       with:
         repository: stackrox/stackrox
         path: stackrox
+        ref: support_deploy_from_gha #TODO(janisz): remove after https://github.com/stackrox/stackrox/pull/5363
     - uses: docker/setup-buildx-action@v2
     - uses: actions/setup-java@v3
       with:
@@ -74,12 +75,9 @@ jobs:
     - name: Create GKE cluster
       id: create-cluster
       env:
-        OPENSHIFT_CI: true
         GCLOUD_SERVICE_ACCOUNT_OPENSHIFT_CI_ROX: ${{ secrets.GCLOUD_SERVICE_ACCOUNT_OPENSHIFT_CI_ROX }}
       run: |
         cd stackrox
-        export BUILD_ID=${GITHUB_RUN_ID}
-        export JOB_NAME=${GITHUB_JOB}
         source "scripts/ci/gke.sh"
         provision_gke_cluster "jenkins-plugin-e2e" 3 e2-standard-4
         echo "CLUSTER_NAME=${CLUSTER_NAME}" >> $GITHUB_OUTPUT
@@ -113,7 +111,6 @@ jobs:
     - name: Teardown GKE cluster
       if: always() && steps.create-cluster.outputs.CLUSTER_NAME != ''
       env:
-        OPENSHIFT_CI: true
         CLUSTER_NAME: ${{ steps.create-cluster.outputs.CLUSTER_NAME }}
       run: |
         source "stackrox/scripts/ci/gke.sh"
