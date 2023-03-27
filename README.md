@@ -30,7 +30,7 @@ docker build -t jenkins-test  jenkins
 docker run -d --add-host host.docker.internal:host-gateway -p 8080:8080 jenkins-test
 ```
 
-4. Create a new job with the plugin or run e2e
+4. Run the E2E tests
 
 ```
 export JENKINS_ROX_ENDPOINT='https://host.docker.internal:8000' # endpoint accessed by jenkins
