@@ -118,7 +118,7 @@ jobs:
         ROX_PASSWORD: ${{ steps.deploy.outputs.ROX_PASSWORD }}
         ROX_ENDPOINT: https://localhost:8000
         JENKINS_ROX_ENDPOINT: https://host.docker.internal:8000
-      run: make -C functionaltest-jenkins-plugin test -o stackrox-container-image-scanner/target/stackrox-container-image-scanner.jar
+      run: make -C functionaltest-jenkins-plugin test
     - name: Teardown GKE cluster
       if: always() && steps.create-cluster.outputs.CLUSTER_NAME != ''
       env:

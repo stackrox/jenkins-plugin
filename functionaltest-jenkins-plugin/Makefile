@@ -4,7 +4,7 @@ all: style test
 ## Test ##
 ##########
 .PHONY: test
-test: ../stackrox-container-image-scanner/target/stackrox-container-image-scanner.jar
+test:
 	@echo "+ $@"
 	@./gradlew :cleanTest :test
 ###########
@@ -20,6 +20,5 @@ style:
     fi ; \
     exit $$STATUS
 
-../stackrox-container-image-scanner/target/stackrox-container-image-scanner.jar:
-	cd ../stackrox-container-image-scanner && \
-	./mvnw package
+
+
