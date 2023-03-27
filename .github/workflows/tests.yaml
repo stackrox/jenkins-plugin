@@ -83,9 +83,12 @@ jobs:
         wait_for_cluster
     - name: Deploy Stackrox
       id: deploy
+      env:
+        MAIN_IMAGE_TAG: latest
+        MONITORING_SUPPORT: false
       run: |
         cd stackrox
-        MAIN_IMAGE_TAG=latest ./deploy/k8s/central.sh
+        ./deploy/k8s/central.sh
         pass=$(cat deploy/k8s/central-deploy/password)
         echo "ROX_PASSWORD=$(cat deploy/k8s/central-deploy/password)" >> $GITHUB_OUTPUT
     - name: Run proxy
