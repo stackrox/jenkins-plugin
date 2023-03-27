@@ -12,37 +12,33 @@ Please take a look at [plugin README](stackrox-container-image-scanner/README.md
 
 0. Requirements
 
-- K8s cluster to run Jenkins
-- kubectl
-- Maven
+- Podman/Docker
 - Java 8
-- curl
-- jq
 
-1. Deploy Jenkins
-
-```
-kubectl create namespace jenkins
-kubectl apply -f jenkins/jenkins-app-deployment.yaml
-kubectl apply -f jenkins/jenkins-service.yaml
-nohup kubectl port-forward -n jenkins svc/jenkins 8080:8080 &
-```
-
-2. Create HPI file
+1. Create HPI file
 
 ```
  cd stackrox-container-image-scanner
  ./mvnw package && ./mvnw hpi:hpi
 ```
 
-3. Install Plugin
+2. Run Jenkins with plugin installed
 
 ```
-export JENKIS_CRUMB=`curl  --cookie-jar cookies.txt -s http://localhost:8080/crumbIssuer/api/json | jq .crumb -r`
-curl -b cookies.txt -i -F file=@stackrox-container-image-scanner/target/stackrox-container-image-scanner.hpi http://localhost:8080/pluginManager/uploadPlugin\?Jenkins-Crumb=$JENKIS_CRUMB
+cp  stackrox-container-image-scanner/target/stackrox-container-image-scanner.hpi jenkins/
+docker build -t jenkins-test  jenkins
+docker run -d --add-host host.docker.internal:host-gateway -p 8080:8080 jenkins-test
 ```
 
-4. Create a new job with the plugin
+4. Run the E2E tests
+
+```
+export JENKINS_ROX_ENDPOINT='https://host.docker.internal:8000' # endpoint accessed by jenkins
+export ROX_ENDPOINT='https://localhost:8000' # endpoint accessed from local machine
+export ROX_PASSWORD=... # stackrox admin password
+make -C functionaltest-jenkins-plugin test
+```
+
 5. This project uses [Lombok](https://projectlombok.org/) so you may need to [enable Annotation Processing](https://stackoverflow.com/q/9424364/1387612)
 
 ### Updating API Schema

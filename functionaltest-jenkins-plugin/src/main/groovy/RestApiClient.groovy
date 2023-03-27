@@ -10,6 +10,8 @@ import com.stackrox.model.StoragePolicy
 import com.stackrox.model.V1GenerateTokenRequest
 import com.stackrox.model.V1Metadata
 
+import util.Config
+
 @CompileStatic
 class RestApiClient {
 
@@ -18,13 +20,11 @@ class RestApiClient {
     ApiTokenServiceApi tokenApi
 
     RestApiClient() {
-        def env = System.getenv()
-
         OkHttpClient client = UnsafeOkHttpClient.getUnsafeOkHttpClient()
         ApiClient apiClient = new ApiClient(client)
-        apiClient.setBasePath("https://localhost:8000")
+        apiClient.setBasePath(Config.roxEndpoint)
         apiClient.setUsername("admin")
-        apiClient.setPassword(env['ROX_PASSWORD'])
+        apiClient.setPassword(Config.roxPassword)
 
         policyServiceApi = new PolicyServiceApi(apiClient)
         metadataApi = new MetadataServiceApi(apiClient)
