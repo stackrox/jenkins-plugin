@@ -29,32 +29,8 @@ repositories {
     }
 }
 
-// Assign all Java source dirs to Groovy, as the groovy compiler should take care of them.
-sourceSets.each { ss ->
-    ss.groovy.srcDirs += ss.java.srcDirs
-    ss.java.srcDirs = []
-}
-
-openApiGenerate {
-    generatorName = "java"
-    generateApiTests = false
-    inputSpec = "../stackrox-container-image-scanner/api.yaml"
-    outputDir = "$buildDir/generated".toString()
-    apiPackage = "com.stackrox.api"
-    invokerPackage = "com.stackrox.invoker"
-    modelPackage = "com.stackrox.model"
-    configOptions = [
-            dateLibrary                             : "java8",
-            library                                 : "okhttp-gson",
-            java8                                   : "true",
-            disallowAdditionalPropertiesIfNotPresent: "false",
-    ]
-}
-
-sourceSets.main.java.srcDirs += "$buildDir/generated/src/main".toString()
-compileJava.dependsOn tasks.openApiGenerate
-
 dependencies {
+    implementation files('../stackrox-container-image-scanner/target/stackrox-container-image-scanner.jar')
     implementation 'org.codehaus.groovy:groovy-all:3.0.8'
     implementation group: 'org.spockframework', name: 'spock-core', version: '2.0-groovy-3.0'
     implementation group: 'com.offbytwo.jenkins', name: 'jenkins-client', version: '0.3.8'
@@ -62,15 +38,8 @@ dependencies {
     implementation "jakarta.xml.bind:jakarta.xml.bind-api:4.0.0"
     implementation "org.glassfish.jaxb:jaxb-runtime:4.0.0"
 
-    implementation 'io.swagger:swagger-annotations:1.6.6'
-    implementation "com.google.code.findbugs:jsr305:3.0.2"
     implementation 'com.squareup.okhttp3:okhttp:4.10.0'
-    implementation 'com.squareup.okhttp3:logging-interceptor:4.10.0'
     implementation 'com.google.code.gson:gson:2.10.1'
     implementation 'io.gsonfire:gson-fire:1.8.5'
-    implementation 'org.openapitools:jackson-databind-nullable:0.2.3'
-    implementation "jakarta.annotation:jakarta.annotation-api:2.1.1"
-    implementation 'javax:javaee-api:8.0.1'
-    implementation 'javax.annotation:javax.annotation-api:1.3.2'
     implementation 'javax.xml.bind:jaxb-api:2.3.1'
 }
