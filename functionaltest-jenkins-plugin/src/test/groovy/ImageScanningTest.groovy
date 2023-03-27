@@ -13,11 +13,13 @@ import com.stackrox.model.StorageListPolicy
 import com.stackrox.model.StoragePolicy
 import com.stackrox.model.StoragePolicyFields
 
+import util.Config
+
 import spock.lang.Unroll
 
 class ImageScanningTest extends BaseSpecification {
 
-    protected static final String CENTRAL_URI = "https://central.stackrox:443"
+    protected static final String CENTRAL_URI = Config.centralUri
 
     @Unroll
     def "image scanning test with toggle enforcement(#imageName, #policyName,  #enforcements, #endStatus)"() {
