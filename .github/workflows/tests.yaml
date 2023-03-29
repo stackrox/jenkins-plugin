@@ -34,6 +34,14 @@ jobs:
         name: stackrox-container-image-scanner.hpi
         path: stackrox-container-image-scanner/target/stackrox-container-image-scanner.hpi
 
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v2
+      with:
+        languages: java, javascript
+
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v2
+
   e2e:
     runs-on: ubuntu-latest
     needs: build
