@@ -27,17 +27,18 @@ jobs:
         distribution: 'temurin'
         java-version: '8'
         cache: 'maven'
+
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v2
+      with:
+        languages: java, javascript
+
     - name: Build with Maven
       run: cd stackrox-container-image-scanner && ./mvnw -B verify package hpi:hpi cyclonedx:makeAggregateBom
     - uses: actions/upload-artifact@v3
       with:
         name: stackrox-container-image-scanner.hpi
         path: stackrox-container-image-scanner/target/stackrox-container-image-scanner.hpi
-
-    - name: Initialize CodeQL
-      uses: github/codeql-action/init@v2
-      with:
-        languages: java, javascript
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v2
