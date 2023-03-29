@@ -20,9 +20,14 @@ import spock.lang.Unroll
 class ImageScanningTest extends BaseSpecification {
 
     protected static final String CENTRAL_URI = Config.centralUri
+    protected static final String QUAY_REPO = "quay.io/openshifttest/"
 
     @Unroll
     def "image scanning test with toggle enforcement(#imageName, #policyName,  #enforcements, #endStatus)"() {
+        given:
+        updatePolicy("Fixable CVSS >= 7", "latest", [])
+        updatePolicy("Fixable Severity at least Important", "latest", [])
+
         when:
         StoragePolicy enforcementPolicy = updatePolicy(policyName, "latest", enforcements)
 
@@ -39,9 +44,9 @@ class ImageScanningTest extends BaseSpecification {
 
         where:
         "data inputs are: "
-        imageName      | policyName   | enforcements             | endStatus
-        "nginx:latest" | "Latest tag" | []                       | SUCCESS
-        "nginx:latest" | "Latest tag" | [FAIL_BUILD_ENFORCEMENT] | FAILURE
+        imageName             | policyName   | enforcements             | endStatus
+        "nginx-alpine:latest" | "Latest tag" | []                       | SUCCESS
+        "nginx-alpine:latest" | "Latest tag" | [FAIL_BUILD_ENFORCEMENT] | FAILURE
     }
 
     @Unroll
@@ -63,9 +68,9 @@ class ImageScanningTest extends BaseSpecification {
 
         where:
         "data inputs are: "
-        imageName              | policyName          | tag
-        "jenkins/jenkins:2.77" | "Fixable CVSS >= 7" | "2.77"
-        "nginx:latest"         | "Latest tag"        | "latest"
+        imageName             | policyName          | tag
+        "nginx-alpine:1.2.1"  | "Fixable CVSS >= 7" | "1.2.1"
+        "nginx-alpine:latest" | "Latest tag"        | "latest"
     }
 
     @Unroll
@@ -79,14 +84,14 @@ class ImageScanningTest extends BaseSpecification {
 
         where:
         "data inputs are: "
-        imageName         | failOnCriticalPluginError | endStatus
-        "postgres:latest" | true                      | SUCCESS
-        "mis-spelled:lts" | true                      | FAILURE
-        "mis-spelled:lts" | false                     | SUCCESS
+        imageName             | failOnCriticalPluginError | endStatus
+        "nginx-alpine:latest" | true                      | SUCCESS
+        "mis-spelled:lts"     | true                      | FAILURE
+        "mis-spelled:lts"     | false                     | SUCCESS
     }
 
     String getJobConfig(String imageName, Boolean policyEvalCheck, Boolean failOnCriticalPluginError) {
-        return createJobConfig(imageName, CENTRAL_URI, token, policyEvalCheck, failOnCriticalPluginError)
+        return createJobConfig(QUAY_REPO + imageName, CENTRAL_URI, token, policyEvalCheck, failOnCriticalPluginError)
     }
 
     StoragePolicy updatePolicy(String policyName, String tag, List<StorageEnforcementAction> enforcements) {
