@@ -2,17 +2,18 @@ version: 2
 updates:
   - package-ecosystem: 'maven'
     directory: 'stackrox-container-image-scanner/'
+    open-pull-requests-limit: 1
     schedule:
-      interval: "monthly"
+      interval: "daily"
 
   - package-ecosystem: 'gradle'
     directory: 'functionaltest-jenkins-plugin/'
+    open-pull-requests-limit: 1
     schedule:
-      interval: "monthly"
+      interval: "daily"
 
   - package-ecosystem: "github-actions"
     directory: "/"
-    open-pull-requests-limit: 3
+    open-pull-requests-limit: 1
     schedule:
-      interval: 'weekly'
-      day: 'wednesday'
+      interval: 'daily'
