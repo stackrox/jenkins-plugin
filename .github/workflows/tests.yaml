@@ -39,6 +39,10 @@ jobs:
       with:
         name: stackrox-container-image-scanner.hpi
         path: stackrox-container-image-scanner/target/stackrox-container-image-scanner.hpi
+    - uses: actions/upload-artifact@v3
+      with:
+        name: stackrox-container-image-scanner.jar
+        path: stackrox-container-image-scanner/target/stackrox-container-image-scanner.jar
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v2
@@ -71,6 +75,10 @@ jobs:
       with:
         name: stackrox-container-image-scanner.hpi
         path: jenkins
+    - uses: actions/download-artifact@v3
+      with:
+        name: stackrox-container-image-scanner.hpi
+        path: stackrox-container-image-scanner/target/
     - name: Build jenkins image
       uses: docker/build-push-action@v4
       with:
