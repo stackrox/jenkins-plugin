@@ -95,6 +95,7 @@ jobs:
       env:
         MAIN_IMAGE_TAG: latest
         MONITORING_SUPPORT: false
+        POD_SECURITY_POLICIES: false
       run: |
         cd stackrox
         ./deploy/k8s/central.sh
