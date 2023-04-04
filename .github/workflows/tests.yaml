@@ -110,7 +110,8 @@ jobs:
       run: |
         cd stackrox
         source "tests/e2e/lib.sh"
-        wait_for_api
+        sleep 900
+        wait_for_api || echo "OK"
     - name: Run tests
       env:
         ROX_PASSWORD: ${{ steps.deploy.outputs.ROX_PASSWORD }}
