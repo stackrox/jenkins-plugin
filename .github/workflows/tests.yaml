@@ -88,16 +88,8 @@ jobs:
         load: true
     - name: Run jenkins in background
       run: docker run -d --add-host host.docker.internal:host-gateway -p 8080:8080 jenkins-test
-    - name: Create GKE cluster
-      id: create-cluster
-      env:
-        GCLOUD_SERVICE_ACCOUNT_OPENSHIFT_CI_ROX: ${{ secrets.GCLOUD_SERVICE_ACCOUNT_OPENSHIFT_CI_ROX }}
-      run: |
-        cd stackrox
-        source "scripts/ci/gke.sh"
-        provision_gke_cluster "jenkins-plugin-e2e" 3 e2-standard-4
-        echo "CLUSTER_NAME=${CLUSTER_NAME}" >> $GITHUB_OUTPUT
-        wait_for_cluster
+    - name: Create k8s Kind Cluster
+      uses: helm/kind-action@v1.4.0
     - name: Deploy Stackrox
       id: deploy
       env:
