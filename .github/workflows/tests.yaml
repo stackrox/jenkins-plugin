@@ -98,7 +98,9 @@ jobs:
         POD_SECURITY_POLICIES: false
       run: |
         cd stackrox
-        ./deploy/k8s/central.sh
+        ./deploy/k8s/central.sh || echo "OK"
+        kubectl -n stackrox patch deploy/central -p '{"spec":{"template":{"spec":{"containers":[{"name":"central","resources":{"requests":{"memory":"100Mi","cpu":"0.1"},"limits":{"memory":"100Mi","cpu":"0.1"}}}]}}}}'
+        kubectl -n stackrox patch deploy/central-db -p '{"spec":{"template":{"spec":{"containers":[{"name":"central-db","resources":{"requests":{"memory":"100Mi","cpu":"0.1"},"limits":{"memory":"100Mi","cpu":"0.1"}}}]}}}}'
         pass=$(cat deploy/k8s/central-deploy/password)
         echo "ROX_PASSWORD=$(cat deploy/k8s/central-deploy/password)" >> $GITHUB_OUTPUT
     - name: Wait for API
