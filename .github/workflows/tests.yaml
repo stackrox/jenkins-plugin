@@ -2,6 +2,11 @@ name: Tests
 
 on:
   push:
+    branches:
+      - master
+    tags:
+      - "*"
+  pull_request:
   schedule:
   - cron:  '0 5 * * *'
 
@@ -29,6 +34,7 @@ jobs:
         cache: 'maven'
 
     - name: Initialize CodeQL
+      if: github.event_name == 'push'
       uses: github/codeql-action/init@v2
       with:
         languages: java, javascript
@@ -45,9 +51,11 @@ jobs:
         path: stackrox-container-image-scanner/target/stackrox-container-image-scanner.jar
 
     - name: Perform CodeQL Analysis
+      if: github.event_name == 'push'
       uses: github/codeql-action/analyze@v2
 
   e2e:
+    if: github.event_name == 'push' || !github.event.pull_request.head.repo.fork
     runs-on: ubuntu-latest
     needs: build
     steps:
