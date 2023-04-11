@@ -57,7 +57,7 @@ class ReportGeneratorTest {
     }
 
     @Test
-    void testGenerateReportFroEmptyCVSAndViolationsGeneratesEmptyDir() throws IOException, InterruptedException {
+    void testGenerateReportForEmptyCVSAndViolationsGeneratesEmptyFiles() throws IOException, InterruptedException {
         FilePath reportsDir = new FilePath(folder.toFile());
 
         ImmutableList<ImageCheckResults> results = ImmutableList.of(
@@ -66,7 +66,7 @@ class ReportGeneratorTest {
 
         List<String> actual = reportsDir.list().stream().map(FilePath::getName).collect(Collectors.toList());
         assertEquals(ImmutableList.of("mis-spelled.lts"), actual);
-        assertTrue(reportsDir.child("mis-spelled.lts").list().isEmpty());
+        assertDirsAreEqual(Paths.get("src", "test", "resources", "report_with_no_issues"), folder);
     }
 
     @Test

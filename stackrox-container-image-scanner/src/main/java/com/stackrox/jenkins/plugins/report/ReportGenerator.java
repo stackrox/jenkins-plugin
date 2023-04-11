@@ -43,37 +43,33 @@ public class ReportGenerator {
         FilePath imageResultDir = new FilePath(reportsDir, result.getImageName().replace(":", "."));
         imageResultDir.mkdirs();
 
-        if (!result.getCves().isEmpty()) {
-            try (OutputStream outputStream = new FilePath(imageResultDir, CVES_FILENAME).write();
-                 CSVPrinter printer = openCsv(outputStream, CVES_HEADER)) {
-                for (CVE cve : result.getCves()) {
-                    printer.printRecord(nullIfEmpty(
-                            cve.getPackageName(),
-                            cve.getPackageVersion(),
-                            cve.getId(),
-                            cve.getSeverity(),
-                            cve.isFixable(),
-                            cve.getCvssScore(),
-                            cve.getScoreType(),
-                            cve.getLink()
-                    ));
-                }
+        try (OutputStream outputStream = new FilePath(imageResultDir, CVES_FILENAME).write();
+             CSVPrinter printer = openCsv(outputStream, CVES_HEADER)) {
+            for (CVE cve : result.getCves()) {
+                printer.printRecord(nullIfEmpty(
+                        cve.getPackageName(),
+                        cve.getPackageVersion(),
+                        cve.getId(),
+                        cve.getSeverity(),
+                        cve.isFixable(),
+                        cve.getCvssScore(),
+                        cve.getScoreType(),
+                        cve.getLink()
+                ));
             }
         }
 
-        if (!result.getViolatedPolicies().isEmpty()) {
-            try (OutputStream outputStream = new FilePath(imageResultDir, POLICY_VIOLATIONS_FILENAME).write();
-                 CSVPrinter printer = openCsv(outputStream, VIOLATED_POLICIES_HEADER)) {
-                for (PolicyViolation policy : result.getViolatedPolicies()) {
-                    printer.printRecord(nullIfEmpty(
-                            policy.getName(),
-                            policy.getSeverity(),
-                            policy.getDescription(),
-                            policy.getViolations(),
-                            prettyRemediation(policy.getRemediation()),
-                            policy.isBuildEnforced() ? "X" : "-"
-                    ));
-                }
+        try (OutputStream outputStream = new FilePath(imageResultDir, POLICY_VIOLATIONS_FILENAME).write();
+             CSVPrinter printer = openCsv(outputStream, VIOLATED_POLICIES_HEADER)) {
+            for (PolicyViolation policy : result.getViolatedPolicies()) {
+                printer.printRecord(nullIfEmpty(
+                        policy.getName(),
+                        policy.getSeverity(),
+                        policy.getDescription(),
+                        policy.getViolations(),
+                        prettyRemediation(policy.getRemediation()),
+                        policy.isBuildEnforced() ? "X" : "-"
+                ));
             }
         }
     }
