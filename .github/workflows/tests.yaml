@@ -99,7 +99,7 @@ jobs:
     - name: Create GKE cluster
       id: create-cluster
       env:
-        GCLOUD_SERVICE_ACCOUNT_OPENSHIFT_CI_ROX: ${{ secrets.GCLOUD_SERVICE_ACCOUNT_OPENSHIFT_CI_ROX }}
+        GCLOUD_SERVICE_ACCOUNT_CI_ROX: ${{ secrets.GCLOUD_SERVICE_ACCOUNT_OPENSHIFT_CI_ROX }}
       run: |
         cd stackrox
         source "scripts/ci/gke.sh"
