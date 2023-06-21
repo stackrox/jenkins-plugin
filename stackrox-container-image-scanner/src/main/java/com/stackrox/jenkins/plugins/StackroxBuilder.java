@@ -257,7 +257,7 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
                     return FormValidation.ok("Success");
                 }
                 return FormValidation.error("Invalid credentials, user not authenticated");
-            } catch (IOException ex) {
+            } catch (Exception ex) {
                 Throwable e = Throwables.getRootCause(ex);
                 if (e instanceof ServiceException) {
                     return FormValidation.error(e, "Invalid response from central");
