@@ -262,13 +262,13 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
                 if (e instanceof ServiceException) {
                     return FormValidation.error(e, "Invalid response from StackRox portal");
                 } else if (e instanceof UnknownHostException) {
-                    return FormValidation.error(e, "Unknown host " + portalAddress);
+                    return FormValidation.error(e, "Unknown host: " + portalAddress);
                 } else if (e instanceof SSLException) {
                     return FormValidation.error(e, "Could not validate TLS");
                 } else if (e instanceof SocketException) {
                     return FormValidation.error(e, "Connection error");
                 }
-                return FormValidation.error(ex, Messages.StackroxBuilder_TestConnectionError());
+                return FormValidation.error(ex, "Failed to connect to StackRox portal, please provide a valid portal address and API token");
             }
         }
 
