@@ -264,7 +264,7 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
                 } else if (e instanceof UnknownHostException) {
                     return FormValidation.error(e, "Unknown host " + portalAddress);
                 } else if (e instanceof SSLException) {
-                    return FormValidation.error(e, "Could not validate SSL");
+                    return FormValidation.error(e, "Could not validate TLS");
                 } else if (e instanceof SocketException) {
                     return FormValidation.error(e, "Connection error");
                 }
