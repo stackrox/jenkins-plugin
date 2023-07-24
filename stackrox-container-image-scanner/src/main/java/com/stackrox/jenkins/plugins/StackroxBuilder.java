@@ -260,7 +260,7 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
             } catch (Exception ex) {
                 Throwable e = Throwables.getRootCause(ex);
                 if (e instanceof ServiceException) {
-                    return FormValidation.error(e, "Invalid response from central");
+                    return FormValidation.error(e, "Invalid response from StackRox portal");
                 } else if (e instanceof UnknownHostException) {
                     return FormValidation.error(e, "Unknown host " + portalAddress);
                 } else if (e instanceof SSLException) {
