@@ -3,6 +3,7 @@ package com.stackrox.jenkins.plugins;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
+import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
@@ -47,7 +48,10 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.verb.POST;
 
 import javax.annotation.Nonnull;
+import javax.net.ssl.SSLException;
 import java.io.IOException;
+import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.List;
 
 import static com.stackrox.jenkins.plugins.services.ApiClientFactory.StackRoxTlsValidationMode.INSECURE_ACCEPT_ANY;
@@ -252,9 +256,19 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
                 if (checkRoxAuthStatus(portalAddress, apiToken, tlsVerify, caCertPEM)) {
                     return FormValidation.ok("Success");
                 }
-                return FormValidation.error(Messages.StackroxBuilder_TestConnectionError());
-            } catch (Exception e) {
-                return FormValidation.error(e, Messages.StackroxBuilder_TestConnectionError());
+                return FormValidation.error("Invalid credentials, user not authenticated");
+            } catch (Exception ex) {
+                Throwable e = Throwables.getRootCause(ex);
+                if (e instanceof ServiceException) {
+                    return FormValidation.error(e, "Invalid response from StackRox portal");
+                } else if (e instanceof UnknownHostException) {
+                    return FormValidation.error(e, "Unknown host: " + portalAddress);
+                } else if (e instanceof SSLException) {
+                    return FormValidation.error(e, "Could not validate TLS");
+                } else if (e instanceof SocketException) {
+                    return FormValidation.error(e, "Connection error");
+                }
+                return FormValidation.error(ex, "Failed to connect to StackRox portal, please provide a valid portal address and API token");
             }
         }
 
@@ -264,7 +278,7 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
                 V1AuthStatus status = new AuthServiceApi(apiClient).authServiceGetAuthStatus();
                 return !Strings.isNullOrEmpty(status.getUserId());
             } catch (ApiException e) {
-                throw ServiceException.fromApiException("Could not get auth status.", e);
+                throw ServiceException.fromApiException("Could not get auth status", e);
             }
         }
 
