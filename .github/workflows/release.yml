@@ -19,7 +19,7 @@ jobs:
       # Output logs to file in case we need to inspect errors.
       GITSIGN_LOG: "/tmp/gitsign.log"
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           token: ${{ secrets.PAT }}
       - uses: chainguard-dev/actions/setup-gitsign@main
