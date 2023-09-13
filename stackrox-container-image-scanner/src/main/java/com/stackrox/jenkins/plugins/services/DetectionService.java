@@ -27,9 +27,9 @@ public class DetectionService {
         api = new DetectionServiceApi(client);
     }
 
-    public List<PolicyViolation> getPolicyViolations(String imageName) throws IOException {
+    public List<PolicyViolation> getPolicyViolations(String imageName, String cluster) throws IOException {
 
-        List<StorageAlert> alerts = getAlertsForImage(imageName);
+        List<StorageAlert> alerts = getAlertsForImage(imageName, cluster);
 
         return emptyIfNull(alerts).stream()
                 .filter(a -> a.getPolicy() != null)
@@ -46,10 +46,12 @@ public class DetectionService {
                 .collect(Collectors.joining(" - "));
     }
 
-    private List<StorageAlert> getAlertsForImage(String imageName) throws ServiceException {
+    private List<StorageAlert> getAlertsForImage(String imageName, String cluster) throws ServiceException {
         try {
             return api.detectionServiceDetectBuildTime(new V1BuildDetectionRequest()
-                            .imageName(imageName))
+                            .imageName(imageName)
+                            .cluster(cluster)
+                            )
                     .getAlerts();
         } catch (ApiException e) {
             throw ServiceException.fromApiException("Failed build time detection request", e);

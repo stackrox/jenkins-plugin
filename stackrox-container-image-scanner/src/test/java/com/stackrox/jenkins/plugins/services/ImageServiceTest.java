@@ -41,7 +41,7 @@ class ImageServiceTest extends AbstractServiceTest {
         MOCK_SERVER.stubFor(post(anyUrl()).willReturn(serverError()
                 .withBodyFile("v1/images/scan/error.json")));
 
-        Exception exception = assertThrows(IOException.class, () -> imageService.getImageScanResults("jenkins:lts"));
+        Exception exception = assertThrows(IOException.class, () -> imageService.getImageScanResults("jenkins:lts", ""));
         String expected = "Failed image scan request. Status code: 500. Error" +
                 ": image enrichment error" +
                 ": error getting metadata for image: docker.io/library/jenkins:lts errors" +
@@ -58,7 +58,7 @@ class ImageServiceTest extends AbstractServiceTest {
     public void shouldThrowWhenNoDataFor200() throws IOException {
         MOCK_SERVER.stubFor(postImagesScan().willReturn(
                 ok().withBody("{}")));
-        Exception exception = assertThrows(NullPointerException.class, () -> imageService.getImageScanResults("nginx:latest"));
+        Exception exception = assertThrows(NullPointerException.class, () -> imageService.getImageScanResults("nginx:latest", ""));
         assertEquals("Did not get scan results from StackRox", exception.getMessage());
     }
 
@@ -67,7 +67,7 @@ class ImageServiceTest extends AbstractServiceTest {
     public void shouldNotFailOnMissingData(String file) throws IOException {
         MOCK_SERVER.stubFor(postImagesScan().willReturn(
                 ok().withBodyFile("v1/images/scan/" + file)));
-        List<CVE> actual = imageService.getImageScanResults("nginx:latest");
+        List<CVE> actual = imageService.getImageScanResults("nginx:latest", "");
         ImmutableList<CVE> expected = ImmutableList.of(
                 new CVE(null, null, new StorageEmbeddedVulnerability()
                         .cve("CVE-MISSING-DATA")
@@ -80,7 +80,7 @@ class ImageServiceTest extends AbstractServiceTest {
     public void shouldNotFailOnUnknownEnumValue() throws IOException {
         MOCK_SERVER.stubFor(postImagesScan().willReturn(
                 ok().withBodyFile("v1/images/scan/unknown-enum.json")));
-        List<CVE> actual = imageService.getImageScanResults("nginx:latest");
+        List<CVE> actual = imageService.getImageScanResults("nginx:latest", "");
         ImmutableList<CVE> expected = ImmutableList.of(
                 new CVE(null, null, new StorageEmbeddedVulnerability()
                         .cve("CVE-MISSING-DATA")
@@ -92,6 +92,6 @@ class ImageServiceTest extends AbstractServiceTest {
     private MappingBuilder postImagesScan() {
         return post(urlEqualTo("/v1/images/scan"))
                 .withHeader("Authorization", equalTo("Bearer {some token}"))
-                .withRequestBody(equalToJson("{\"imageName\" : \"nginx:latest\",\"force\" : true}"));
+                .withRequestBody(equalToJson("{\"imageName\" : \"nginx:latest\",\"force\" : true, \"cluster\" : \"\"}"));
     }
 }

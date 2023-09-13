@@ -11139,6 +11139,9 @@ components:
           type: array
           items:
             type: string
+        cluster:
+          type: string
+          description: Cluster to delegate scan to, may be the cluster's name or ID.
     v1BuildDetectionResponse:
       type: object
       properties:
@@ -11968,6 +11971,9 @@ components:
           type: boolean
         includeSnoozed:
           type: boolean
+        cluster:
+          type: string
+          description: Cluster to delegate scan to, may be the cluster's name or ID.
     v1WatchImageRequest:
       type: object
       properties:

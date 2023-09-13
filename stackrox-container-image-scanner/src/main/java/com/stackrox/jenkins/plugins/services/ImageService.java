@@ -27,10 +27,11 @@ public class ImageService {
     }
 
 
-    public List<CVE> getImageScanResults(String imageName) throws IOException {
+    public List<CVE> getImageScanResults(String imageName, String cluster) throws IOException {
         V1ScanImageRequest request = new V1ScanImageRequest()
                 .imageName(imageName)
-                .force(true);
+                .force(true)
+                .cluster(cluster);
         StorageImageScan scan;
         try {
             scan = api.imageServiceScanImage(request).getScan();
