@@ -156,6 +156,17 @@ freestyle projects and pipelines.
     </blockquote></td>
     </tr>
     <tr class="even">
+        <td><p><code>cluster</code></p></td>
+        <td><p>The Secured Cluster <b>name</b> or <b>ID</b> to delegate image scans to</p></td>
+        <td>
+            <p>Leave this blank to use the default delegated scanning config.</p>
+            <blockquote>
+                <p><strong>Note</strong></p>
+                <p>Requires version <code>4.3+</code> of the StackRox Kubernetes Security Platform.</p>
+            </blockquote>
+        </td>
+    </tr>
+    <tr class="odd">
     <td colspan="3"><p><em><sup>*</sup> Required</em></p></td>
     </tr>
     </tbody>
@@ -206,7 +217,8 @@ To use the StackRox Container Image Scanner plugin in your pipeline:
                         failOnCriticalPluginError: true,
                         failOnPolicyEvalFailure: true,
                         portalAddress: 'https://central.stackrox:443',
-                        imageNames: "nginx:latest,ubuntu:bionic,busybox:stable"
+                        imageNames: "nginx:latest,ubuntu:bionic,busybox:stable",
+                        cluster: ""
                     )
                 }
             }
@@ -215,7 +227,7 @@ To use the StackRox Container Image Scanner plugin in your pipeline:
     ```
 
     -   For more information about the variables, see the [plugin
-        configuration variables](#plugin-configuration-variables)
+        configuration variables](#freestyle-project)
         section.
 
     ![plugin pipeline](./src/main/resources/img/plugin-pipeline.png)
