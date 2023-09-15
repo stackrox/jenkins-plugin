@@ -14,6 +14,7 @@ import com.stackrox.jenkins.plugins.data.CVE;
 import com.stackrox.jenkins.plugins.data.ImageCheckResults;
 import com.stackrox.jenkins.plugins.data.PolicyViolation;
 import com.stackrox.jenkins.plugins.jenkins.RunConfig;
+import com.stackrox.jenkins.plugins.jenkins.ScanTask;
 import com.stackrox.jenkins.plugins.report.ReportGenerator;
 import com.stackrox.jenkins.plugins.services.ApiClientFactory;
 import com.stackrox.jenkins.plugins.services.DetectionService;
@@ -34,7 +35,10 @@ import hudson.tasks.Builder;
 import hudson.util.FormValidation;
 import hudson.util.Secret;
 import jenkins.model.Jenkins;
+import jenkins.security.MasterToSlaveCallable;
 import jenkins.tasks.SimpleBuildStep;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import net.sf.json.JSONObject;
@@ -49,7 +53,11 @@ import org.kohsuke.stapler.verb.POST;
 
 import javax.annotation.Nonnull;
 import javax.net.ssl.SSLException;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.io.Serializable;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.List;
@@ -109,30 +117,27 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
             @Nonnull Launcher launcher,
             @Nonnull TaskListener listener) throws IOException, InterruptedException {
 
-        runConfig = RunConfig.create(listener.getLogger(), run.getCharacteristicEnvVars().get("BUILD_TAG"), workspace, getImages());
-
         try {
-            List<ImageCheckResults> results = checkImages();
+            List<ImageCheckResults> results = workspace.act(new ScanTask(
+                    run.getCharacteristicEnvVars().get("BUILD_TAG"), workspace.getRemote(), getImages(),
+                    getPortalAddress(), getApiToken(), getCaCertPEM(), getTLSValidationMode()));
+
+            runConfig = RunConfig.create(listener.getLogger(), run.getCharacteristicEnvVars().get("BUILD_TAG"), workspace, getImages(),
+                    getPortalAddress(), getApiToken(), getCaCertPEM(), getTLSValidationMode());
+
+
             ReportGenerator.generateBuildReport(results, runConfig.getReportsDir());
             prepareArtifacts(run, workspace, launcher, listener);
             run.addAction(new ViewStackroxResultsAction(results, run));
-            cleanupJenkinsWorkspace();
 
-            if (enforcedPolicyViolationExists(results)) {
-                throw new PolicyEvalException(
-                        "At least one image violated at least one enforced system policy. Marking StackRox Image Security plugin build step failed. Check the report for additional details.");
+            if (this.failOnPolicyEvalFailure && enforcedPolicyViolationExists(results)) {
+                throw new AbortException("At least one image violated at least one enforced system policy. Marking StackRox Image Security plugin build step failed. Check the report for additional details.");
             }
-
         } catch (IOException e) {
             if (this.failOnCriticalPluginError) {
                 throw new AbortException(String.format("Fatal error: %s. Aborting ...", e.getMessage()));
             }
             runConfig.getLog().println("Marking StackRox Image Security plugin build step as successful despite error.");
-        } catch (PolicyEvalException e) {
-            if (this.failOnPolicyEvalFailure) {
-                throw new AbortException(e.getMessage());
-            }
-            runConfig.getLog().println("Marking StackRox Image Security plugin build step as successful despite enforced policy violations.");
         }
 
         runConfig.getLog().println("No system policy violations found. Marking StackRox Image Security plugin build step as successful.");
@@ -144,29 +149,6 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
         artifactArchiver.perform(run, workspace, launcher, listener);
     }
 
-    private List<ImageCheckResults> checkImages() throws IOException {
-        List<ImageCheckResults> results = Lists.newArrayList();
-
-        ApiClient apiClient = ApiClientFactory.newApiClient(
-                getPortalAddress(), getApiToken().getPlainText(), getCaCertPEM(), getTLSValidationMode());
-        ImageService imageService = new ImageService(apiClient);
-        DetectionService detectionService = new DetectionService(apiClient);
-
-        for (String name : runConfig.getImageNames()) {
-            runConfig.getLog().printf("Checking image %s...%n", name);
-
-            List<CVE> cves = imageService.getImageScanResults(name);
-            List<PolicyViolation> violatedPolicies = detectionService.getPolicyViolations(name);
-            results.add(new ImageCheckResults(name, cves, violatedPolicies));
-        }
-
-        results.sort((result1, result2) -> {
-            //descending order
-            return Boolean.compare(result1.isStatusPass(), result2.isStatusPass());
-        });
-        return results;
-    }
-
     // Runs an image scan and the build time policy checks on the image
 
     private boolean enforcedPolicyViolationExists(List<ImageCheckResults> results) {
@@ -176,17 +158,6 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
             }
         }
         return false;
-    }
-
-    private void cleanupJenkinsWorkspace() {
-        runConfig.getLog().println("Cleaning up the workspace ...");
-
-        try {
-            runConfig.getBaseWorkDir().deleteRecursive();
-            runConfig.getReportsDir().deleteRecursive();
-        } catch (IOException | InterruptedException e) {
-            runConfig.getLog().println("WARN: Failed to cleanup.");
-        }
     }
 
     @Override

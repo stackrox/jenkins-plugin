@@ -1,8 +1,12 @@
 package com.stackrox.jenkins.plugins.jenkins;
 
+import com.stackrox.jenkins.plugins.services.ApiClientFactory;
+
 import hudson.AbortException;
 import hudson.FilePath;
+import hudson.util.Secret;
 import lombok.Data;
+import org.kohsuke.stapler.DataBoundSetter;
 
 import javax.annotation.Nonnull;
 import java.io.File;
@@ -14,6 +18,8 @@ import java.util.List;
 
 @Data
 public class RunConfig {
+    private static final long serialVersionUID = 1L;
+
     private static final String IMAGE_LIST_FILENAME = "rox_images_to_scan";
     private static final String REPORTS_DIR_NAME = "rox_image_security_reports/";
 
@@ -23,8 +29,18 @@ public class RunConfig {
     private final List<String> imageNames;
     private final String artifactsRelativePath;
 
-    public static RunConfig create(PrintStream log, String buildTag, FilePath workspace, List<String> images) throws AbortException {
-        try {
+    private final String portalAddress;
+    private final Secret apiToken;
+    private final String caCertPEM;
+
+    private final ApiClientFactory.StackRoxTlsValidationMode TLSValidationMode;
+
+
+    public static RunConfig createForTest(PrintStream log, String buildTag, FilePath workspace, List<String> images) throws IOException, InterruptedException {
+            return create(log, buildTag, workspace, images, "", Secret.fromString(""), "",  ApiClientFactory.StackRoxTlsValidationMode.INSECURE_ACCEPT_ANY);
+    }
+    public static RunConfig create(PrintStream log, String buildTag, FilePath workspace, List<String> images,
+                                   String portalAddress, Secret apiToken, String caCertPEM, ApiClientFactory.StackRoxTlsValidationMode tlsValidationMode) throws IOException, InterruptedException {
             FilePath baseWorkDir = new FilePath(workspace, buildTag);
             FilePath reportsDir = new FilePath(workspace, REPORTS_DIR_NAME);
 
@@ -35,11 +51,12 @@ public class RunConfig {
                     baseWorkDir,
                     reportsDir,
                     imageNames,
-                    REPORTS_DIR_NAME
+                    REPORTS_DIR_NAME,
+                    portalAddress,
+                    apiToken,
+                    caCertPEM,
+                    tlsValidationMode
             );
-        } catch (IOException | InterruptedException e) {
-            throw new AbortException(String.format("Error in creating a run configuration: %s", e.getMessage()));
-        }
     }
 
     @Nonnull
