@@ -73,6 +73,8 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
     private boolean enableTLSVerification;
     @DataBoundSetter
     private String caCertPEM;
+    @DataBoundSetter
+    private String cluster;
 
     private RunConfig runConfig;
 
@@ -155,8 +157,8 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
         for (String name : runConfig.getImageNames()) {
             runConfig.getLog().printf("Checking image %s...%n", name);
 
-            List<CVE> cves = imageService.getImageScanResults(name);
-            List<PolicyViolation> violatedPolicies = detectionService.getPolicyViolations(name);
+            List<CVE> cves = imageService.getImageScanResults(name, cluster);
+            List<PolicyViolation> violatedPolicies = detectionService.getPolicyViolations(name, cluster);
             results.add(new ImageCheckResults(name, cves, violatedPolicies));
         }
 

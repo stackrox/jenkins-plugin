@@ -30,5 +30,6 @@ hs_err_pid*
 .idea/
 cookies.txt
 nohup.out
+.DS_Store
 
 !functionaltest-jenkins-plugin/gradle/wrapper/gradle-wrapper.jar
