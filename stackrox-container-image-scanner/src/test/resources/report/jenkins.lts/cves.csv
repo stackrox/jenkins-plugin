@@ -1,4 +1,4 @@
-COMPONENT,VERSION,CVE,FIXABLE,SEVERITY,CVSS SCORE,SCORE TYPE,LINK
+COMPONENT,VERSION,CVE,SEVERITY,FIXABLE,CVSS SCORE,SCORE TYPE,LINK
 util-linux,2.25.2-6,CVE-2015-5224,IMPORTANT,false,9.8,V3,https://security-tracker.debian.org/tracker/CVE-2015-5224
 gcc-4.8,4.8.4-1,CVE-2017-11671,MODERATE,false,4.0,V3,https://security-tracker.debian.org/tracker/CVE-2017-11671
 bzip2,1.0.6-7,CVE-2016-3189,LOW,true,6.5,V3,https://security-tracker.debian.org/tracker/CVE-2016-3189
