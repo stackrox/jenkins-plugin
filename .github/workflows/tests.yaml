@@ -120,6 +120,7 @@ jobs:
       run: |
         cd stackrox
         source "tests/e2e/lib.sh"
+        export USE_MIDSTREAM_IMAGES=false
         wait_for_api
     - name: Run tests
       env:
