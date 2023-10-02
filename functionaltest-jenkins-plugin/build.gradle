@@ -35,7 +35,7 @@ dependencies {
     implementation 'org.spockframework:spock-core:2.0-groovy-3.0'
     implementation 'com.offbytwo.jenkins:jenkins-client:0.3.8'
     // JAX-B dependencies for JDK 9+
-    implementation "jakarta.xml.bind:jakarta.xml.bind-api:4.0.0"
+    implementation "jakarta.xml.bind:jakarta.xml.bind-api:4.0.1"
     implementation "org.glassfish.jaxb:jaxb-runtime:4.0.3"
 
     implementation 'com.squareup.okhttp3:okhttp:4.11.0'
