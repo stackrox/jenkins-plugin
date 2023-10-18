@@ -43,6 +43,12 @@ plugin you must meet the following requirements:
     registry](https://help.stackrox.com/docs/integrate-with-other-tools/integrate-with-image-registries/)
     you use.
 
+> **Important**
+>
+> This Jenkins plugin operates on the Jenkins controller, not on an agent.
+> To ensure its proper functionality, please make sure to configure your Jenkins controller
+> and RedHat ACS to allow connections.
+
 ## Install the StackRox Container Image Scanner plugin
 
 You can use [Web UI](#web-ui) or [Jenkins CLI](#jenkins-cli) to install
