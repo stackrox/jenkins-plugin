@@ -36,7 +36,7 @@ dependencies {
     implementation 'com.offbytwo.jenkins:jenkins-client:0.3.8'
     // JAX-B dependencies for JDK 9+
     implementation "jakarta.xml.bind:jakarta.xml.bind-api:4.0.1"
-    implementation "org.glassfish.jaxb:jaxb-runtime:4.0.3"
+    implementation "org.glassfish.jaxb:jaxb-runtime:4.0.4"
 
     implementation 'com.squareup.okhttp3:okhttp:4.12.0'
     implementation 'com.google.code.gson:gson:2.10.1'
