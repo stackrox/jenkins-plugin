@@ -13,7 +13,7 @@ Please take a look at [plugin README](stackrox-container-image-scanner/README.md
 0. Requirements
 
 - Podman/Docker
-- Java 8
+- Java 11
 
 1. Create HPI file
 
