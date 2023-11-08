@@ -103,7 +103,7 @@ jobs:
       run: |
         cd stackrox
         source "scripts/ci/gke.sh"
-        provision_gke_cluster "jenkins-plugin-e2e" 3 e2-standard-4
+        provision_gke_cluster "jenkins-plugin-e2e"
         echo "CLUSTER_NAME=${CLUSTER_NAME}" >> $GITHUB_OUTPUT
         wait_for_cluster
     - name: Deploy Stackrox
