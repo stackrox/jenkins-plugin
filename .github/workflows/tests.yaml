@@ -35,7 +35,7 @@ jobs:
 
     - name: Initialize CodeQL
       if: github.event_name == 'push'
-      uses: github/codeql-action/init@v2
+      uses: github/codeql-action/init@v3
       with:
         languages: java, javascript
 
@@ -52,7 +52,7 @@ jobs:
 
     - name: Perform CodeQL Analysis
       if: github.event_name == 'push'
-      uses: github/codeql-action/analyze@v2
+      uses: github/codeql-action/analyze@v3
 
   e2e:
     if: github.event_name == 'push' || !github.event.pull_request.head.repo.fork
