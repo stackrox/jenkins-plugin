@@ -2,7 +2,7 @@ plugins {
     id 'groovy'
     id 'java'
     id "codenarc"
-    id "org.openapi.generator" version "7.0.1"
+    id "org.openapi.generator" version "7.1.0"
 }
 
 group 'functional-automation'
