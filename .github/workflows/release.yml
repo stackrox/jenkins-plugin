@@ -21,13 +21,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          token: ${{ secrets.PAT }}
+          token: ${{ secrets.RHACS_BOT_GITHUB_TOKEN }}
       - uses: chainguard-dev/actions/setup-gitsign@main
       - name: Setup git user
+        env:
+          GITHUB_USERNAME: ${{ secrets.RHACS_BOT_GITHUB_USERNAME }}
+          GITHUB_EMAIL: ${{ secrets.RHACS_BOT_GITHUB_EMAIL }}
         run: |
-          git config --global user.email "roxbot@stackrox.com"
-          git config --global user.name "Robot Rox"
-      - uses: actions/setup-java@v3
+          git config --global user.email "${GITHUB_EMAIL}"
+          git config --global user.name "${GITHUB_USERNAME}"
+      - uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '8'
