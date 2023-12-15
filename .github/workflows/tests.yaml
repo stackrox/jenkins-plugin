@@ -41,11 +41,11 @@ jobs:
 
     - name: Build with Maven
       run: cd stackrox-container-image-scanner && ./mvnw -B verify package hpi:hpi cyclonedx:makeAggregateBom
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
         name: stackrox-container-image-scanner.hpi
         path: stackrox-container-image-scanner/target/stackrox-container-image-scanner.hpi
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
         name: stackrox-container-image-scanner.jar
         path: stackrox-container-image-scanner/target/stackrox-container-image-scanner.jar
