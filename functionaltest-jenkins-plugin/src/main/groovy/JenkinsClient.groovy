@@ -70,7 +70,7 @@ class JenkinsClient {
     private static Map<String, Serializable> createConfigMap(String imageName, String portalAddress, String token,
                                                              boolean policyEvalCheck,
                                                              boolean failOnCriticalPluginError) {
-        return [
+        return [  // codenarc-disable UnnecessaryCast
                 command                  : """mkdir \$BUILD_TAG
                                cd \$BUILD_TAG
                                echo '${imageName}' >> rox_images_to_scan""",
@@ -80,7 +80,7 @@ class JenkinsClient {
                 failOnCriticalPluginError: failOnCriticalPluginError,
                 enableTLSVerification    : false,
                 imageNames               : imageName,
-        ] as Map<String, Serializable> // codenarc-disable UnnecessaryCast
+        ] as Map<String, Serializable>
     }
 
     @CompileStatic(TypeCheckingMode.SKIP)
