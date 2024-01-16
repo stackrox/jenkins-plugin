@@ -35,7 +35,7 @@
             <id>stackrox-k8s-security-platform</id>
             <name>Red Hat</name>
             <url>https://redhat.com/</url>
-            <email>rhacs-eng@redhat.com+jenkins@redhat.com</email>
+            <email>rhacs-eng+jenkins@redhat.com</email>
         </developer>
     </developers>
     <scm>
