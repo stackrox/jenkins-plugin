@@ -9,7 +9,7 @@
     </parent>
 
     <artifactId>stackrox-container-image-scanner</artifactId>
-    <version>1.4.0-SNAPSHOT</version>
+    <version>1.4.1</version>
     <packaging>hpi</packaging>
     <properties>
         <jenkins.version>2.164.1</jenkins.version>
@@ -42,7 +42,7 @@
         <connection>scm:git:https://github.com/stackrox/jenkins-plugin.git</connection>
         <developerConnection>scm:git:https://github.com/stackrox/jenkins-plugin.git</developerConnection>
         <url>https://github.com/stackrox/jenkins-plugin</url>
-      <tag>HEAD</tag>
+      <tag>1.4.1</tag>
   </scm>
     <dependencies>
         <dependency>
