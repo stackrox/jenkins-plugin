@@ -23,7 +23,7 @@ class RestApiClient {
 
     RestApiClient() {
         ApiClient apiClient = ApiClientFactory.newApiClient(Config.roxEndpoint, "", "", INSECURE_ACCEPT_ANY)
-        apiClient.setBearerToken(null)
+        apiClient.setBearerToken(null as String)
         apiClient.setUsername("admin")
         apiClient.setPassword(Config.roxPassword)
 
