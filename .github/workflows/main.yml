@@ -21,7 +21,7 @@ jobs:
         cache: 'maven'
     - name: Build with Maven
       run: cd stackrox-container-image-scanner && ./mvnw -B package hpi:hpi cyclonedx:makeAggregateBom
-    - uses: release-drafter/release-drafter@v5
+    - uses: release-drafter/release-drafter@v6
       id: release_drafter
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
