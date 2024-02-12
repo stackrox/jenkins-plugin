@@ -117,10 +117,12 @@ jobs:
         pass=$(cat deploy/k8s/central-deploy/password)
         echo "ROX_PASSWORD=$(cat deploy/k8s/central-deploy/password)" >> $GITHUB_OUTPUT
     - name: Wait for API
+      env: 
+        ROX_SCANNER_V4: false
+        USE_MIDSTREAM_IMAGES: false
       run: |
         cd stackrox
         source "tests/e2e/lib.sh"
-        export USE_MIDSTREAM_IMAGES=false
         wait_for_api
     - name: Run tests
       env:
