@@ -118,8 +118,6 @@ jobs:
           echo "ROX_ENDPOINT=$ROX_ENDPOINT" >> $GITHUB_ENV   
 
       - name: Run tests
-        env:
-          JENKINS_ROX_ENDPOINT: https://host.docker.internal:8000
         run: |
           echo $ROX_ENDPOINT
           make -C functionaltest-jenkins-plugin test
