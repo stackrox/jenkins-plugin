@@ -111,7 +111,7 @@ jobs:
           infractl artifacts --download-dir=${ARTIFACTS_DIR} ${CLUSTER_NAME} >/dev/null
           # Set both URL and admin password.
           ROX_PASSWORD=$(cat ${ARTIFACTS_DIR}/admin-password)
-          ROX_ENDPOINT=https://$(cat ${ARTIFACTS_DIR}/url)
+          ROX_ENDPOINT=$(cat ${ARTIFACTS_DIR}/url)
           echo "::add-mask::$ROX_PASSWORD"
           echo "::add-mask::$ROX_ENDPOINT"
           echo "ROX_PASSWORD=$ROX_PASSWORD" >> $GITHUB_ENV
@@ -119,6 +119,7 @@ jobs:
 
       - name: Run tests
         env:
+          ROX_ENDPOINT: https://${{ env.ROX_ENDPOINT }}
           JENKINS_ROX_ENDPOINT: https://host.docker.internal:8000
         run: make -C functionaltest-jenkins-plugin test
 
