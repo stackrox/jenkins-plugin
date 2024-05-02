@@ -113,13 +113,12 @@ jobs:
           ROX_PASSWORD=$(cat ${ARTIFACTS_DIR}/admin-password)
           ROX_ENDPOINT=$(cat ${ARTIFACTS_DIR}/url)
           echo "::add-mask::$ROX_PASSWORD"
-          #echo "::add-mask::$ROX_ENDPOINT"
+          echo "::add-mask::$ROX_ENDPOINT"
           echo "ROX_PASSWORD=$ROX_PASSWORD" >> $GITHUB_ENV
           echo "ROX_ENDPOINT=$ROX_ENDPOINT" >> $GITHUB_ENV   
 
       - name: Run tests
         env:
-          ROX_ENDPOINT: https://${{ env.ROX_ENDPOINT }}
           JENKINS_ROX_ENDPOINT: https://host.docker.internal:8000
         run: |
           echo $ROX_ENDPOINT
