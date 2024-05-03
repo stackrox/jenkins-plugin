@@ -19,7 +19,7 @@ import spock.lang.Unroll
 
 class ImageScanningTest extends BaseSpecification {
 
-    protected static final String CENTRAL_URI = Config.centralUri
+    protected static final String CENTRAL_URI = Config.roxEndpoint
     protected static final String QUAY_REPO = "quay.io/openshifttest/"
 
     @Unroll
