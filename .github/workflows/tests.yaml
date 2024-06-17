@@ -82,7 +82,7 @@ jobs:
           name: stackrox-container-image-scanner.hpi
           path: stackrox-container-image-scanner/target/
       - name: Build jenkins image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           tags: jenkins-test
           context: jenkins
