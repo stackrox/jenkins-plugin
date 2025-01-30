@@ -2,6 +2,7 @@ package com.stackrox.jenkins.plugins.services;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.anyUrl;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.matching;
 import static com.github.tomakehurst.wiremock.client.WireMock.ok;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static com.stackrox.jenkins.plugins.services.ApiClientFactory.StackRoxTlsValidationMode.VALIDATE;
@@ -36,12 +37,13 @@ class ApiClientFactoryTest {
 
     @BeforeAll
     static void beforeAll() {
-        SERVER.stubFor(get(anyUrl()).willReturn(ok().withBody("{}")));
+        SERVER.stubFor(get(anyUrl()).withHeader("User-Agent", matching("stackrox-container-image-scanner/.* CI")).willReturn(ok().withBody("{}")));
         SERVER.start();
     }
 
     @AfterAll
     static void cleanup() {
+
         SERVER.stop();
     }
 

@@ -24,10 +24,16 @@ import com.google.common.base.Strings;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import hudson.PluginWrapper;
+import jenkins.model.Jenkins;
 import lombok.Data;
+import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 
 import com.stackrox.invoker.ApiClient;
+
+import okhttp3.Response;
+import org.jetbrains.annotations.NotNull;
 
 public class ApiClientFactory {
 
@@ -96,6 +102,7 @@ public class ApiClientFactory {
         builder.connectTimeout(TIMEOUT);
         builder.readTimeout(TIMEOUT);
         builder.writeTimeout(TIMEOUT);
+        builder.addNetworkInterceptor(new UserAgentInterceptor());
         return builder.build();
     }
 
@@ -155,5 +162,41 @@ public class ApiClientFactory {
         SSLContext sslContext = SSLContext.getInstance("TLS");
         sslContext.init(null, trustManagers, null);
         return sslContext;
+    }
+
+    public static class UserAgentInterceptor implements Interceptor {
+        public static final String STACKROX_CONTAINER_IMAGE_SCANNER = "stackrox-container-image-scanner";
+
+        @NotNull
+        @Override
+        public Response intercept(@NotNull Chain chain) throws IOException {
+            String value = String.format("%s/%s (%s; %s) %s",
+                    STACKROX_CONTAINER_IMAGE_SCANNER,
+                    getVersion(),
+                    System.getProperty("os.name"),
+                    System.getProperty("os.arch"),
+                    "CI"
+            );
+
+            return chain.proceed(
+                    chain.request()
+                            .newBuilder()
+                            .header("User-Agent", value)
+                            .build()
+            );
+        }
+
+        String getVersion() {
+            Jenkins jenkins = Jenkins.getInstanceOrNull();
+            if (jenkins == null) {
+                return "";
+            }
+
+            PluginWrapper plugin = jenkins.pluginManager.getPlugin(STACKROX_CONTAINER_IMAGE_SCANNER);
+            if (plugin == null) {
+                return "";
+            }
+            return String.format("%s:%s", plugin.getVersion(), Jenkins.getVersion());
+        }
     }
 }
