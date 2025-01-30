@@ -38,8 +38,6 @@ import jenkins.tasks.SimpleBuildStep;
 import lombok.Getter;
 import lombok.Setter;
 import net.sf.json.JSONObject;
-import org.apache.commons.validator.routines.RegexValidator;
-import org.apache.commons.validator.routines.UrlValidator;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
@@ -51,6 +49,7 @@ import javax.annotation.Nonnull;
 import javax.net.ssl.SSLException;
 import java.io.IOException;
 import java.net.SocketException;
+import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.List;
 
@@ -225,17 +224,19 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
         @SuppressWarnings("unused")
         public FormValidation doCheckPortalAddress(@QueryParameter final String portalAddress) {
             Jenkins.get().checkPermission(Jenkins.ADMINISTER);
-            String[] schemes = {"https"};
-            UrlValidator urlValidator = new UrlValidator(schemes, UrlValidator.ALLOW_LOCAL_URLS);
-            if (!Strings.isNullOrEmpty(portalAddress) && urlValidator.isValid(portalAddress)) {
+            if (isValidURL(portalAddress)) {
                 return FormValidation.ok();
             } else {
-                // To allow non standard TLDs
-                UrlValidator regexUrlValidator = new UrlValidator(schemes, new RegexValidator("^([\\\\p{Alnum}\\\\-\\\\.]*)(:\\\\d*)?(.*)?"), UrlValidator.ALLOW_LOCAL_URLS);
-                if (regexUrlValidator.isValid(portalAddress)) {
-                    return FormValidation.ok();
-                }
                 return FormValidation.error(Messages.StackroxBuilder_InvalidPortalAddressError());
+            }
+        }
+
+        boolean isValidURL(String url) {
+            try {
+                new URL(url).toURI();
+                return true;
+            } catch (Exception e) {
+                return false;
             }
         }
 
