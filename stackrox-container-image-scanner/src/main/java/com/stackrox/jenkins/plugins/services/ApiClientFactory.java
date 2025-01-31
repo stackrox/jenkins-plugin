@@ -165,28 +165,27 @@ public class ApiClientFactory {
     }
 
     public static class UserAgentInterceptor implements Interceptor {
-        public static final String STACKROX_CONTAINER_IMAGE_SCANNER = "stackrox-container-image-scanner";
+        private static final String STACKROX_CONTAINER_IMAGE_SCANNER = "stackrox-container-image-scanner";
+        private static final String VALUE = String.format("%s%s (%s; %s) %s",
+                STACKROX_CONTAINER_IMAGE_SCANNER,
+                getVersion(),
+                System.getProperty("os.name"),
+                System.getProperty("os.arch"),
+                "CI"
+        );
 
         @NotNull
         @Override
         public Response intercept(@NotNull Chain chain) throws IOException {
-            String value = String.format("%s/%s (%s; %s) %s",
-                    STACKROX_CONTAINER_IMAGE_SCANNER,
-                    getVersion(),
-                    System.getProperty("os.name"),
-                    System.getProperty("os.arch"),
-                    "CI"
-            );
-
             return chain.proceed(
                     chain.request()
                             .newBuilder()
-                            .header("User-Agent", value)
+                            .header("User-Agent", VALUE)
                             .build()
             );
         }
 
-        String getVersion() {
+        static String getVersion() {
             Jenkins jenkins = Jenkins.getInstanceOrNull();
             if (jenkins == null) {
                 return "";
@@ -196,7 +195,7 @@ public class ApiClientFactory {
             if (plugin == null) {
                 return "";
             }
-            return String.format("%s:%s", plugin.getVersion(), Jenkins.getVersion()).replaceAll("\\s+", "_");
+            return String.format("/%s:%s", plugin.getVersion(), Jenkins.getVersion()).replaceAll("\\s+", "_");
         }
     }
 }
