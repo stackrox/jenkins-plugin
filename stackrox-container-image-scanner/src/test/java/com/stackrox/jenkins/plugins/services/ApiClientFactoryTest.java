@@ -37,7 +37,7 @@ class ApiClientFactoryTest {
 
     @BeforeAll
     static void beforeAll() {
-        SERVER.stubFor(get(anyUrl()).withHeader("User-Agent", matching("stackrox-container-image-scanner/.* CI")).willReturn(ok().withBody("{}")));
+        SERVER.stubFor(get(anyUrl()).withHeader("User-Agent", matching("stackrox-container-image-scanner .* CI")).willReturn(ok().withBody("{}")));
         SERVER.start();
     }
 
