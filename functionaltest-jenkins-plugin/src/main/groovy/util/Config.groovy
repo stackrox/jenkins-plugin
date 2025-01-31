@@ -4,10 +4,6 @@ import groovy.transform.CompileStatic
 
 @CompileStatic
 class Config {
-    static String getCentralUri() {
-        return getEnv("JENKINS_ROX_ENDPOINT")
-    }
-
     static String getRoxEndpoint() {
         return getEnv("ROX_ENDPOINT")
     }

@@ -80,7 +80,7 @@ class DetectionServiceTest extends AbstractServiceTest {
     private MappingBuilder postDetectBuild() {
         return post(urlEqualTo("/v1/detect/build"))
                 .withHeader("Authorization", equalTo("Bearer {some token}"))
-                .withRequestBody(equalToJson("{\"imageName\" : \"nginx:latest\", \"cluster\" : \"\"}"));
+                .withRequestBody(equalToJson("{\"imageName\" : \"nginx:latest\", \"policyCategories\" : [ ], \"cluster\" : \"\"}"));
     }
 
 }

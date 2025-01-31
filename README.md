@@ -65,3 +65,10 @@ make -C functionaltest-jenkins-plugin test
       - bearerAuth: [ ]
     ```
 6. Save changes in `stackrox-container-image-scanner/api.yaml`
+
+## Release
+
+The release process is managed by the [release.yml GitHub Action](https://github.com/stackrox/jenkins-plugin/actions/workflows/release.yml). 
+When running the workflow, ensure that the correct version is specified in the workflow options. 
+After the release, it typically takes a few hours for the plugin to be available on the 
+[Jenkins Plugin site](https://plugins.jenkins.io/stackrox-container-image-scanner/).
