@@ -196,7 +196,7 @@ public class ApiClientFactory {
             if (plugin == null) {
                 return "";
             }
-            return String.format("%s:%s", plugin.getVersion(), Jenkins.getVersion());
+            return String.format("%s:%s", plugin.getVersion(), Jenkins.getVersion()).replaceAll("\\s+", "_");
         }
     }
 }
