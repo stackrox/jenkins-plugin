@@ -2,7 +2,6 @@ plugins {
     id 'groovy'
     id 'java'
     id "codenarc"
-    id "org.openapi.generator" version "7.11.0"
 }
 
 group 'functional-automation'
@@ -30,7 +29,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'org.jenkins-ci.plugins:stackrox-container-image-scanner:1.4.1'
+    implementation 'org.jenkins-ci.plugins:stackrox-container-image-scanner:1.4.2'
     implementation 'org.codehaus.groovy:groovy-all:3.0.8'
     implementation 'org.spockframework:spock-core:2.0-groovy-3.0'
     implementation 'com.offbytwo.jenkins:jenkins-client:0.3.8'
