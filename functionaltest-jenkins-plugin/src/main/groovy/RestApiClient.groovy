@@ -16,7 +16,7 @@ import util.Config
 
 @CompileStatic
 class RestApiClient {
-    private static final Duration TIMEOUT = Duration.ofSeconds(30);
+    private static final Duration TIMEOUT = Duration.ofSeconds(30)
 
     PolicyServiceApi policyServiceApi
     MetadataServiceApi metadataApi
