@@ -1,4 +1,7 @@
+import java.time.Duration
+
 import groovy.transform.CompileStatic
+import okhttp3.OkHttpClient
 
 import com.stackrox.api.ApiTokenServiceApi
 import com.stackrox.api.MetadataServiceApi
@@ -13,13 +16,20 @@ import util.Config
 
 @CompileStatic
 class RestApiClient {
+    private static final Duration TIMEOUT = Duration.ofSeconds(30);
 
     PolicyServiceApi policyServiceApi
     MetadataServiceApi metadataApi
     ApiTokenServiceApi tokenApi
 
     RestApiClient() {
-        ApiClient apiClient = new ApiClient()
+        OkHttpClient client = OkHttpClient.Builder.newInstance()
+                .retryOnConnectionFailure(true)
+                .connectTimeout(TIMEOUT)
+                .readTimeout(TIMEOUT)
+                .writeTimeout(TIMEOUT)
+                .build()
+        ApiClient apiClient = new ApiClient(client)
         apiClient.setBearerToken(null as String)
         apiClient.setUsername("admin")
         apiClient.setPassword(Config.roxPassword)
