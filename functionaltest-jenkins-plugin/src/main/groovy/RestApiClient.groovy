@@ -1,12 +1,9 @@
-import static com.stackrox.jenkins.plugins.services.ApiClientFactory.StackRoxTlsValidationMode.INSECURE_ACCEPT_ANY
-
 import groovy.transform.CompileStatic
 
 import com.stackrox.api.ApiTokenServiceApi
 import com.stackrox.api.MetadataServiceApi
 import com.stackrox.api.PolicyServiceApi
 import com.stackrox.invoker.ApiClient
-import com.stackrox.jenkins.plugins.services.ApiClientFactory
 import com.stackrox.model.StorageListPolicy
 import com.stackrox.model.StoragePolicy
 import com.stackrox.model.V1GenerateTokenRequest
@@ -22,10 +19,11 @@ class RestApiClient {
     ApiTokenServiceApi tokenApi
 
     RestApiClient() {
-        ApiClient apiClient = ApiClientFactory.newApiClient(Config.roxEndpoint, "", "", INSECURE_ACCEPT_ANY)
+        ApiClient apiClient = new ApiClient()
         apiClient.setBearerToken(null as String)
         apiClient.setUsername("admin")
         apiClient.setPassword(Config.roxPassword)
+        apiClient.setBasePath(Config.roxEndpoint)
 
         policyServiceApi = new PolicyServiceApi(apiClient)
         metadataApi = new MetadataServiceApi(apiClient)
