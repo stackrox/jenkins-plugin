@@ -5,6 +5,8 @@ updates:
     open-pull-requests-limit: 1
     schedule:
       interval: "daily"
+    ignore:
+      - dependency-name: "org.webjars.*"
 
   - package-ecosystem: 'gradle'
     directory: 'functionaltest-jenkins-plugin/'
