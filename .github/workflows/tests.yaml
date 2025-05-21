@@ -92,7 +92,7 @@ jobs:
         run: docker run -d --add-host host.docker.internal:host-gateway -p 8080:8080 jenkins-test
 
       - name: Create GKE infra cluster
-        uses: stackrox/actions/infra/create-cluster@v1.0.21
+        uses: stackrox/actions/infra/create-cluster@v1.0.22
         with:
           token: ${{ secrets.INFRA_TOKEN }}
           flavor: qa-demo
