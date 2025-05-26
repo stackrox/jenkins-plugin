@@ -101,6 +101,10 @@ jobs:
           ROX_PASSWORD=$(cat stackrox/deploy/k8s/central-deploy/password)
           echo "::add-mask::$ROX_PASSWORD"
           echo "ROX_PASSWORD=$ROX_PASSWORD" >> $GITHUB_ENV
+      - name: Setup cert
+        run: |
+          openssl s_client -connect atlassian.com:443 -servername localhost:8000 < /dev/null | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' > public.crt
+          $JAVA_HOME/bin/keytool -importcert -alias <server_name> -keystore $JAVA_HOME/lib/security/cacerts -file public.crt
       - name: Run tests
         env:
           ROX_ENDPOINT: 'https://localhost:8000'
