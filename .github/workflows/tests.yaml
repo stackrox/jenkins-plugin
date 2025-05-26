@@ -111,6 +111,19 @@ jobs:
           TRUSTSTORE="$JAVA_HOME/lib/security/cacerts"
           TRUSTSTORE_PASS="changeit"
           KEYTOOL="${JAVA_HOME:-/usr}/bin/keytool"
+          HOSTNAME="central.stackrox"
+          IP="127.0.0.1"
+          LINE="$IP $HOSTNAME"
+          
+          echo "🔍 Checking /etc/hosts for '$HOSTNAME'..."
+          
+          if grep -qE "^[^#]*\b$HOSTNAME\b" /etc/hosts; then
+            echo "✅ Entry for '$HOSTNAME' already exists in /etc/hosts."
+          else
+            echo "✍️  Adding '$LINE' to /etc/hosts..."
+            echo "$LINE" | sudo tee -a /etc/hosts > /dev/null
+            echo "✅ Added successfully."
+          fi
           
           # 📡 Step 1: Fetch all certificates from the server
           echo "📡 Fetching certificates from $HOST:$PORT..."
