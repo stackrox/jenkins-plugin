@@ -104,7 +104,7 @@ jobs:
       - name: Setup cert
         run: |
           openssl s_client -connect localhost:8000 -servername localhost < /dev/null | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' > public.crt
-          $JAVA_HOME/bin/keytool -importcert -alias localhost -keystore $JAVA_HOME/lib/security/cacerts -file public.crt -storepass changeit
+          $JAVA_HOME/bin/keytool -importcert -alias localhost -keystore $JAVA_HOME/lib/security/cacerts -file public.crt -storepass changeit -noprompt
       - name: Run tests
         env:
           ROX_ENDPOINT: 'https://localhost:8000'
