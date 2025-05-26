@@ -81,15 +81,8 @@ jobs:
         with:
           name: stackrox-container-image-scanner.hpi
           path: stackrox-container-image-scanner/target/
-      - name: Build jenkins image
-        uses: docker/build-push-action@v6
-        with:
-          tags: jenkins-test
-          context: jenkins
-          push: false
-          load: true
       - name: Run jenkins in background
-        run: docker run -d --add-host host.docker.internal:host-gateway -p 8080:8080 jenkins-test
+        run: ./mvnw hpi:run -Djetty.port=8080
       - name: Create k8s Kind Cluster
         uses: helm/kind-action@v1
       - name: Install
