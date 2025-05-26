@@ -18,7 +18,7 @@ class JenkinsClient {
     JenkinsClient() {
         def env = System.getenv()
         String jenkinsAddress = env.getOrDefault('JENKINS_ADDRESS', "http://localhost:8080/jenkins/")
-        jenkins = new JenkinsServer(new URI("${JENKINS_ADDRESS}"))
+        jenkins = new JenkinsServer(new URI("${jenkinsAddress}"))
     }
 
     String version() {
