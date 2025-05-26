@@ -103,8 +103,40 @@ jobs:
           echo "ROX_PASSWORD=$ROX_PASSWORD" >> $GITHUB_ENV
       - name: Setup cert
         run: |
-          openssl s_client -connect localhost:8000 -servername localhost < /dev/null | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' > public.crt
-          sudo $JAVA_HOME/bin/keytool -importcert -alias localhost -keystore $JAVA_HOME/lib/security/cacerts -file public.crt -storepass changeit -noprompt
+          set -euo pipefail
+          
+          # Configuration
+          HOST="localhost"
+          PORT="8000"
+          TRUSTSTORE="custom-truststore.jks"
+          TRUSTSTORE_PASS="changeit"
+          KEYTOOL="${JAVA_HOME:-/usr}/bin/keytool"
+          
+          # Temp files
+          CHAIN_FILE="fullchain.crt"
+          CERT_PREFIX="cert"
+          rm -f $CHAIN_FILE ${CERT_PREFIX}*.crt
+          
+          echo "📡 Fetching certificates from $HOST:$PORT..."
+          openssl s_client -connect "$HOST:$PORT" -servername "$HOST" -showcerts < /dev/null \
+            | awk '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/' > "$CHAIN_FILE"
+          
+          echo "🔍 Splitting certificate chain into individual files..."
+          awk "/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/ {
+              print > \"${CERT_PREFIX}\" cert++ \".crt\"
+          }" cert=1 "$CHAIN_FILE"
+          
+          echo "📥 Importing certificates into $TRUSTSTORE..."
+          for crt in ${CERT_PREFIX}*.crt; do
+            alias_name=$(basename "$crt" .crt)
+            echo "  🔑 Importing $crt as alias '$alias_name'..."
+            "$KEYTOOL" -importcert \
+              -alias "$alias_name" \
+              -keystore "$TRUSTSTORE" \
+              -storepass "$TRUSTSTORE_PASS" \
+              -file "$crt" \
+              -noprompt
+          done
       - name: Run tests
         env:
           ROX_ENDPOINT: 'https://localhost:8000'
