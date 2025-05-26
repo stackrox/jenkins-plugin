@@ -129,7 +129,7 @@ jobs:
           for crt in ${CERT_PREFIX}*.crt; do
             alias_name=$(basename "$crt" .crt)
             echo "  🔑 Importing $crt as alias '$alias_name'..."
-            "$KEYTOOL" -importcert \
+            sudo "$KEYTOOL" -importcert \
               -alias "$alias_name" \
               -keystore "$TRUSTSTORE" \
               -storepass "$TRUSTSTORE_PASS" \
