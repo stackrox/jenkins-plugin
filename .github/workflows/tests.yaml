@@ -119,12 +119,11 @@ jobs:
           
           echo "📡 Fetching certificates from $HOST:$PORT..."
           openssl s_client -connect "$HOST:$PORT" -servername "$HOST" -showcerts < /dev/null \
-            | awk '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/' > "$CHAIN_FILE"
-          
-          echo "🔍 Splitting certificate chain into individual files..."
-          awk "/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/ {
-              print > \"${CERT_PREFIX}\" cert++ \".crt\"
-          }" cert=1 "$CHAIN_FILE"
+            2>/dev/null | awk '
+              /-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/ {
+                print > (sprintf("cert%d.crt", ++n))
+              }
+          '
           
           echo "📥 Importing certificates into $TRUSTSTORE..."
           for crt in ${CERT_PREFIX}*.crt; do
