@@ -90,41 +90,14 @@ jobs:
           load: true
       - name: Run jenkins in background
         run: docker run -d --add-host host.docker.internal:host-gateway -p 8080:8080 jenkins-test
-
-      - name: Create GKE infra cluster
-        uses: stackrox/actions/infra/create-cluster@v1.0.21
-        with:
-          token: ${{ secrets.INFRA_TOKEN }}
-          flavor: qa-demo
-          name: jenkins-plugin-${{ github.run_id }}
-          lifespan: 1h
-          args: main-image=quay.io/stackrox-io/main:latest
-          wait: "true"
-          no-slack: "true"
-      - name: Setup environment from cluster artifacts
-        env:
-          CLUSTER_NAME: jenkins-plugin-${{ github.run_id }}
-          INFRA_TOKEN: ${{ secrets.INFRA_TOKEN }}
-          ARTIFACTS_DIR: ${{ runner.temp }}/gke-artifacts
+      - name: Create k8s Kind Cluster
+        uses: helm/kind-action@v1
+      - name: Install
         run: |
-          # Fetch the artifacts for the GKE cluster.
-          infractl artifacts --download-dir=${ARTIFACTS_DIR} ${CLUSTER_NAME} >/dev/null
-          # Set both URL and admin password.
-          ROX_PASSWORD=$(cat ${ARTIFACTS_DIR}/admin-password)
-          ROX_ENDPOINT=$(cat ${ARTIFACTS_DIR}/url)
+          ROX_PASSWORD=$(cat stackrox/deploy/k8s/central-deploy/password)
           echo "::add-mask::$ROX_PASSWORD"
-          echo "::add-mask::$ROX_ENDPOINT"
           echo "ROX_PASSWORD=$ROX_PASSWORD" >> $GITHUB_ENV
-          echo "ROX_ENDPOINT=$ROX_ENDPOINT" >> $GITHUB_ENV   
-
       - name: Run tests
-        run: |
-          echo $ROX_ENDPOINT
-          make -C functionaltest-jenkins-plugin test
-
-      - name: Teardown cluster
-        if: always()
         env:
-          INFRA_TOKEN: ${{ secrets.INFRA_TOKEN }}
-        run: |
-          infractl delete jenkins-plugin-${{ github.run_id }} || echo "Failed to remove the infra cluster"
+          ROX_ENDPOINT: 'https://localhost:8000'
+        run: make -C functionaltest-jenkins-plugin test
