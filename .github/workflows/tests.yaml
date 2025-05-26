@@ -102,8 +102,7 @@ jobs:
           echo "::add-mask::$ROX_PASSWORD"
           echo "ROX_PASSWORD=$ROX_PASSWORD" >> $GITHUB_ENV
       - name: Setup cert
-        run: |
-
+        run: scripts/set-certificates.sh
       - name: Run tests
         env:
           ROX_ENDPOINT: 'https://central.stackrox:8000'
