@@ -38,7 +38,7 @@ jobs:
         uses: github/codeql-action/analyze@v3
 
       - name: Run jenkins in background
-        run: cd stackrox-container-image-scanner && ./mvnw hpi:run -Djetty.port=8080
+        run: cd stackrox-container-image-scanner && ./mvnw hpi:run -Djetty.port=8080 &
       - name: Create k8s Kind Cluster
         uses: helm/kind-action@v1
       - name: Install
