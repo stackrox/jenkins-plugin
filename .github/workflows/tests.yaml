@@ -45,7 +45,7 @@ jobs:
         with:
           repository: stackrox/stackrox
           path: stackrox
-      - name: Install
+      - name: Install Stackrox
         env:
           MAIN_IMAGE_TAG: "latest"
           SENSOR_HELM_DEPLOY: "true"
@@ -55,7 +55,7 @@ jobs:
           ROX_PASSWORD=$(cat stackrox/deploy/k8s/central-deploy/password)
           echo "::add-mask::$ROX_PASSWORD"
           echo "ROX_PASSWORD=$ROX_PASSWORD" >> $GITHUB_ENV
-      - name: Setup cert
+      - name: Add stackrox certificate
         run: scripts/set-certificates.sh
       - name: Run tests
         env:
