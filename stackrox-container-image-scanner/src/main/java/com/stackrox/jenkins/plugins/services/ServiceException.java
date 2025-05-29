@@ -7,7 +7,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 
 import com.stackrox.invoker.ApiException;
-import com.stackrox.model.RuntimeError;
+import com.stackrox.model.GooglerpcStatus;
 
 public class ServiceException extends IOException {
 
@@ -23,7 +23,7 @@ public class ServiceException extends IOException {
         String responseBody = apiException.getResponseBody();
         if (!Strings.isNullOrEmpty(responseBody)) {
             try {
-                RuntimeError error = GSON.fromJson(responseBody, RuntimeError.class);
+                GooglerpcStatus error = GSON.fromJson(responseBody, GooglerpcStatus.class);
                 if (!Strings.isNullOrEmpty(error.getMessage())) {
                     messageBuilder.append(String.format(" Error: %s", error.getMessage()));
                 }

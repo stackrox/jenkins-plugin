@@ -22,7 +22,7 @@ import java.util.List;
 
 public class ReportGenerator {
 
-    private static final String[] CVES_HEADER = {"COMPONENT", "VERSION", "CVE", "SEVERITY", "FIXABLE", "CVSS SCORE", "SCORE TYPE", "LINK"};
+    private static final String[] CVES_HEADER = {"COMPONENT", "VERSION", "CVE", "SEVERITY", "FIXABLE", "CVSS SCORE", "SCORE TYPE", "LINK", "ADVISORY", "ADVISORY LINK"};
     private static final String[] VIOLATED_POLICIES_HEADER = {"POLICY", "SEVERITY", "DESCRIPTION", "VIOLATION", "REMEDIATION", "ENFORCED"};
     private static final String CVES_FILENAME = "cves.csv";
     private static final String POLICY_VIOLATIONS_FILENAME = "policyViolations.csv";
@@ -54,7 +54,9 @@ public class ReportGenerator {
                         cve.isFixable(),
                         cve.getCvssScore(),
                         cve.getScoreType(),
-                        cve.getLink()
+                        cve.getLink(),
+                        cve.getAdvisory(),
+                        cve.getAdvisoryLink()
                 ));
             }
         }
