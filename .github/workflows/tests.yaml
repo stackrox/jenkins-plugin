@@ -11,18 +11,6 @@ on:
     - cron: '0 5 * * *'
 
 jobs:
-  style:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '11'
-          cache: 'gradle'
-      - name: Check style
-        run: make -C functionaltest-jenkins-plugin style
-
   build:
     runs-on: ubuntu-latest
     steps:
@@ -39,92 +27,37 @@ jobs:
         with:
           languages: java, javascript
 
+      - name: Check style
+        run: make -C functionaltest-jenkins-plugin style
+
       - name: Build with Maven
         run: cd stackrox-container-image-scanner && ./mvnw -B verify package hpi:hpi cyclonedx:makeAggregateBom
-      - uses: actions/upload-artifact@v4
-        with:
-          name: stackrox-container-image-scanner.hpi
-          path: stackrox-container-image-scanner/target/stackrox-container-image-scanner.hpi
-      - uses: actions/upload-artifact@v4
-        with:
-          name: stackrox-container-image-scanner.jar
-          path: stackrox-container-image-scanner/target/stackrox-container-image-scanner.jar
 
       - name: Perform CodeQL Analysis
         if: github.event_name == 'push'
         uses: github/codeql-action/analyze@v3
 
-  e2e:
-    if: github.event_name == 'push' || !github.event.pull_request.head.repo.fork
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - uses: actions/checkout@v4
-      - name: Setup infractl
-        uses: stackrox/actions/infra/install-infractl@main
+      - name: Run jenkins in background
+        run: cd stackrox-container-image-scanner && ./mvnw hpi:run -Djetty.port=8080 &
+      - name: Create k8s Kind Cluster
+        uses: helm/kind-action@v1
       - uses: actions/checkout@v4
         with:
           repository: stackrox/stackrox
           path: stackrox
-      - uses: docker/setup-buildx-action@v3
-      - uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '11'
-          cache: 'gradle'
-
-      - uses: actions/download-artifact@v4
-        with:
-          name: stackrox-container-image-scanner.hpi
-          path: jenkins
-      - uses: actions/download-artifact@v4
-        with:
-          name: stackrox-container-image-scanner.hpi
-          path: stackrox-container-image-scanner/target/
-      - name: Build jenkins image
-        uses: docker/build-push-action@v6
-        with:
-          tags: jenkins-test
-          context: jenkins
-          push: false
-          load: true
-      - name: Run jenkins in background
-        run: docker run -d --add-host host.docker.internal:host-gateway -p 8080:8080 jenkins-test
-
-      - name: Create GKE infra cluster
-        uses: stackrox/actions/infra/create-cluster@v1.0.21
-        with:
-          token: ${{ secrets.INFRA_TOKEN }}
-          flavor: qa-demo
-          name: jenkins-plugin-${{ github.run_id }}
-          lifespan: 1h
-          args: main-image=quay.io/stackrox-io/main:latest
-          wait: "true"
-          no-slack: "true"
-      - name: Setup environment from cluster artifacts
+      - name: Install Stackrox
         env:
-          CLUSTER_NAME: jenkins-plugin-${{ github.run_id }}
-          INFRA_TOKEN: ${{ secrets.INFRA_TOKEN }}
-          ARTIFACTS_DIR: ${{ runner.temp }}/gke-artifacts
+          MAIN_IMAGE_TAG: "latest"
+          SENSOR_HELM_DEPLOY: "true"
+          ROX_SCANNER_V4: "false"
         run: |
-          # Fetch the artifacts for the GKE cluster.
-          infractl artifacts --download-dir=${ARTIFACTS_DIR} ${CLUSTER_NAME} >/dev/null
-          # Set both URL and admin password.
-          ROX_PASSWORD=$(cat ${ARTIFACTS_DIR}/admin-password)
-          ROX_ENDPOINT=$(cat ${ARTIFACTS_DIR}/url)
+          stackrox/deploy/k8s/deploy-local.sh
+          ROX_PASSWORD=$(cat stackrox/deploy/k8s/central-deploy/password)
           echo "::add-mask::$ROX_PASSWORD"
-          echo "::add-mask::$ROX_ENDPOINT"
           echo "ROX_PASSWORD=$ROX_PASSWORD" >> $GITHUB_ENV
-          echo "ROX_ENDPOINT=$ROX_ENDPOINT" >> $GITHUB_ENV   
-
+      - name: Add stackrox certificate
+        run: scripts/set-certificates.sh
       - name: Run tests
-        run: |
-          echo $ROX_ENDPOINT
-          make -C functionaltest-jenkins-plugin test
-
-      - name: Teardown cluster
-        if: always()
         env:
-          INFRA_TOKEN: ${{ secrets.INFRA_TOKEN }}
-        run: |
-          infractl delete jenkins-plugin-${{ github.run_id }} || echo "Failed to remove the infra cluster"
+          ROX_ENDPOINT: 'https://central.stackrox:8000'
+        run: make -C functionaltest-jenkins-plugin test

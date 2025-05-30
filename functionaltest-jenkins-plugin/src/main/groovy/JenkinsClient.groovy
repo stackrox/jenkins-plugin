@@ -10,8 +10,6 @@ import groovy.xml.XmlUtil
 
 @CompileStatic
 class JenkinsClient {
-    private final static JENKINSPORT = "8080"
-    private final static JENKINSPROTOCOL = "http"
     private final static boolean USE_CRUMB_AUTHENTICATION = true
     public static final String JOB_TEMPLATE_WITH_IMAGE_NAMES = "resources/templateNoFile.xml"
     public static final String TEMPLATE_WITHOUT_IMAGE_NAMES = "resources/template.xml"
@@ -19,8 +17,8 @@ class JenkinsClient {
 
     JenkinsClient() {
         def env = System.getenv()
-        String jenkinsAddress = env.getOrDefault('JENKINS_IP', "localhost")
-        jenkins = new JenkinsServer(new URI("${JENKINSPROTOCOL}://${jenkinsAddress}:${JENKINSPORT}"))
+        String jenkinsAddress = env.getOrDefault('JENKINS_ADDRESS', "http://localhost:8080/jenkins/")
+        jenkins = new JenkinsServer(new URI("${jenkinsAddress}"))
     }
 
     String version() {
