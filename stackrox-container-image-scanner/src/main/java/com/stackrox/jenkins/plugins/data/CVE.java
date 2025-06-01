@@ -20,6 +20,8 @@ public class CVE {
     private final boolean fixable;
     private final String link;
     private final String severity;
+    private final String advisory;
+    private final String advisoryLink;
 
     public CVE(String packageName, String packageVersion, @Nonnull StorageEmbeddedVulnerability vulnerability) {
         this(
@@ -30,7 +32,9 @@ public class CVE {
                 packageVersion,
                 !Strings.isNullOrEmpty(vulnerability.getFixedBy()),
                 vulnerability.getLink(),
-                SeverityUtil.prettySeverity(vulnerability.getSeverity())
+                SeverityUtil.prettySeverity(vulnerability.getSeverity()),
+                vulnerability.getAdvisory() != null ? vulnerability.getAdvisory().getName() : null,
+                vulnerability.getAdvisory() != null ? vulnerability.getAdvisory().getLink() : null
         );
     }
 }
