@@ -14,7 +14,7 @@
     <properties>
         <jenkins.version>2.164.1</jenkins.version>
         <java.level>8</java.level>
-        <jquery.version>3.4.1</jquery.version>
+        <jquery.version>3.7.1</jquery.version>
         <datatables.version>1.10.20</datatables.version>
         <bootstrap.version>4.4.1</bootstrap.version>
     </properties>
