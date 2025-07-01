@@ -16,7 +16,7 @@
         <java.level>8</java.level>
         <jquery.version>3.7.1</jquery.version>
         <datatables.version>1.10.20</datatables.version>
-        <bootstrap.version>4.4.1</bootstrap.version>
+        <bootstrap.version>5.3.7</bootstrap.version>
     </properties>
     <name>StackRox Container Image Scanner</name>
     <description>This plugin provides vulnerability scanning of container images for OS packages and language
