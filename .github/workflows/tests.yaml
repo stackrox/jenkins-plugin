@@ -22,7 +22,7 @@ jobs:
           cache: 'maven'
 
       - name: Initialize CodeQL
-        if: github.event_name == 'push'
+        if: github.event_name == 'pull_request'
         uses: github/codeql-action/init@v3
         with:
           languages: java, javascript
@@ -34,7 +34,7 @@ jobs:
         run: cd stackrox-container-image-scanner && ./mvnw -B verify package hpi:hpi cyclonedx:makeAggregateBom
 
       - name: Perform CodeQL Analysis
-        if: github.event_name == 'push'
+        if: github.event_name == 'pull_request'
         uses: github/codeql-action/analyze@v3
 
       - name: Run jenkins in background
