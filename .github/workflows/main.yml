@@ -11,6 +11,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      # Write permission is required to create a github release
+      contents: write
 
     steps:
     - uses: actions/checkout@v4
