@@ -36,6 +36,7 @@ import org.apache.commons.io.FileUtils;
 import com.stackrox.jenkins.plugins.data.CVE;
 import com.stackrox.jenkins.plugins.data.ImageCheckResults;
 import com.stackrox.jenkins.plugins.data.PolicyViolation;
+import com.stackrox.model.StorageAdvisory;
 import com.stackrox.model.StorageEmbeddedVulnerability;
 import com.stackrox.model.StoragePolicy;
 
@@ -92,7 +93,10 @@ class ReportGeneratorTest {
                                         .severity(IMPORTANT_VULNERABILITY_SEVERITY)
                                         .cvss(9.8F)
                                         .scoreVersion(V3)
-                                        .link("https://security-tracker.debian.org/tracker/CVE-2015-5224")),
+                                        .link("https://security-tracker.debian.org/tracker/CVE-2015-5224")
+                                        .advisory(new StorageAdvisory()
+                                                .name("DSA-SOMETHING")
+                                                .link("https://advisory.com"))),
                                 new CVE("gcc-4.8", "4.8.4-1", new StorageEmbeddedVulnerability()
                                         .cve("CVE-2017-11671")
                                         .severity(MODERATE_VULNERABILITY_SEVERITY)
@@ -105,7 +109,10 @@ class ReportGeneratorTest {
                                         .cvss(6.5F)
                                         .scoreVersion(V3)
                                         .link("https://security-tracker.debian.org/tracker/CVE-2016-3189")
-                                        .fixedBy("1.0.6-8"))
+                                        .fixedBy("1.0.6-8")
+                                        .advisory(new StorageAdvisory()
+                                                .name("DSA-SOMETHING-ELSE")
+                                                .link("https://advisory.com")))
                         ),
                         ImmutableList.of(
                                 new PolicyViolation(new StoragePolicy()
@@ -123,7 +130,10 @@ class ReportGeneratorTest {
                                         .severity(LOW_VULNERABILITY_SEVERITY)
                                         .cvss(5.8F)
                                         .scoreVersion(V2)
-                                        .link("https://security-tracker.debian.org/tracker/CVE-2007-6755")),
+                                        .link("https://security-tracker.debian.org/tracker/CVE-2007-6755")
+                                        .advisory(new StorageAdvisory()
+                                                .name("DSA-SOMETHING")
+                                                .link("https://advisory.com"))),
                                 new CVE(null, null, new StorageEmbeddedVulnerability()
                                         .cve("CVE-MISSING-DATA")
                                         .scoreVersion(null)
