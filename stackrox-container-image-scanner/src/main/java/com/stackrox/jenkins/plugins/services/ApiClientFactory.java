@@ -43,6 +43,7 @@ public class ApiClientFactory {
     }
 
     private static final Duration TIMEOUT = Duration.ofSeconds(30);
+    private static final Duration READ_TIMEOUT = Duration.ofMinutes(10);
     private static final int MAXIMUM_CACHE_SIZE = 5; // arbitrary chosen as there are no data to support this decision
 
     @Data
@@ -100,7 +101,7 @@ public class ApiClientFactory {
         }
         builder.retryOnConnectionFailure(true);
         builder.connectTimeout(TIMEOUT);
-        builder.readTimeout(TIMEOUT);
+        builder.readTimeout(READ_TIMEOUT);
         builder.writeTimeout(TIMEOUT);
         builder.addNetworkInterceptor(new UserAgentInterceptor());
         return builder.build();
