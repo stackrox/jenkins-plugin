@@ -45,6 +45,7 @@ jobs:
         with:
           repository: stackrox/stackrox
           path: stackrox
+          ref: 'c4051901fe1471f57f5cdad225e8d7ed985f6775'
       - name: Install Stackrox
         env:
           MAIN_IMAGE_TAG: "latest"
