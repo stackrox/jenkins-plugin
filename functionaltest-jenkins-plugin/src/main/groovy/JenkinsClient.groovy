@@ -47,16 +47,7 @@ class JenkinsClient {
     }
 
     static String createJobConfig(String imageName, String portalAddress, String token, Boolean policyEvalCheck,
-                                  Boolean failOnCriticalPluginError) {
-        Map<String, Serializable> param = createConfigMap(
-                imageName, portalAddress, token, policyEvalCheck, failOnCriticalPluginError, null)
-        // parse the xml
-        String path = TEMPLATE_WITHOUT_IMAGE_NAMES
-        return createJobConfigFromPath(path, param)
-    }
-
-    static String createJobConfig(String imageName, String portalAddress, String token, Boolean policyEvalCheck,
-                                  Boolean failOnCriticalPluginError, Integer readTimeoutSeconds) {
+                                  Boolean failOnCriticalPluginError, Integer readTimeoutSeconds = null) {
         Map<String, Serializable> param = createConfigMap(
                 imageName, portalAddress, token, policyEvalCheck, failOnCriticalPluginError, readTimeoutSeconds)
         // parse the xml
@@ -83,7 +74,7 @@ class JenkinsClient {
     }
 
     //TODO(ROX-8458): add tests for pipeline
-    private static Map<String, Serializable> createConfigMap(String imageName, String portalAddress, String token,
+    private static Map<String, Serializable>    createConfigMap(String imageName, String portalAddress, String token,
                                                              boolean policyEvalCheck,
                                                              boolean failOnCriticalPluginError,
                                                              Integer readTimeoutSeconds) {

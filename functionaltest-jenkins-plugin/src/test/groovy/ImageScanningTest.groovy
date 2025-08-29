@@ -25,7 +25,7 @@ class ImageScanningTest extends BaseSpecification {
     def "Test read timeout with minimal timeout should fail"() {
         when:
         BuildResult status = jenkins.createAndRunJob(
-                getJobConfigWithTimeout("nginx-alpine:latest", false, true, 1))
+                getJobConfig("nginx-alpine:latest", false, true, 1))
 
         then:
         assert status == FAILURE
@@ -99,11 +99,8 @@ class ImageScanningTest extends BaseSpecification {
         "mis-spelled:lts"     | false                     | SUCCESS
     }
 
-    String getJobConfig(String imageName, Boolean policyEvalCheck, Boolean failOnCriticalPluginError) {
-        return createJobConfig(QUAY_REPO + imageName, CENTRAL_URI, token, policyEvalCheck, failOnCriticalPluginError)
-    }
-
-    String getJobConfigWithTimeout(String imageName, Boolean policyEvalCheck, Boolean failOnCriticalPluginError, Integer readTimeoutSeconds) {
+    String getJobConfig(String imageName, Boolean policyEvalCheck, Boolean failOnCriticalPluginError,
+                        Integer readTimeoutSeconds = null) {
         return createJobConfig(QUAY_REPO + imageName, CENTRAL_URI, token, policyEvalCheck, failOnCriticalPluginError, readTimeoutSeconds)
     }
 
