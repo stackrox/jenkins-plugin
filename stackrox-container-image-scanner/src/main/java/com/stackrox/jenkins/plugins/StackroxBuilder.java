@@ -76,7 +76,7 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
     @DataBoundSetter
     private String cluster;
     @DataBoundSetter
-    private int readTimeoutSeconds = 600;
+    private int readTimeoutSeconds = ApiClientFactory.DEFAULT_READ_TIMEOUT_SECONDS;
 
     private RunConfig runConfig;
 

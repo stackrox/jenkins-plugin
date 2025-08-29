@@ -42,6 +42,7 @@ public class ApiClientFactory {
         INSECURE_ACCEPT_ANY
     }
 
+    public static final int DEFAULT_READ_TIMEOUT_SECONDS = 600;
     private static final Duration TIMEOUT = Duration.ofSeconds(30);
     private static final int MAXIMUM_CACHE_SIZE = 5; // arbitrary chosen as there are no data to support this decision
 
@@ -86,7 +87,7 @@ public class ApiClientFactory {
     @Nonnull
     private static OkHttpClient newHttpClient(@Nullable String caCert, StackRoxTlsValidationMode tlsValidationMode, int readTimeoutSeconds) throws IOException {
         if (readTimeoutSeconds < 1) {
-            readTimeoutSeconds = 600;
+            readTimeoutSeconds = DEFAULT_READ_TIMEOUT_SECONDS;
         }
         OkHttpClient.Builder builder;
         try {
