@@ -99,9 +99,16 @@ class ImageScanningTest extends BaseSpecification {
         "mis-spelled:lts"     | false                     | SUCCESS
     }
 
-    String getJobConfig(String imageName, Boolean policyEvalCheck, Boolean failOnCriticalPluginError,
+    String getJobConfig(String imageName,
+                        Boolean policyEvalCheck,
+                        Boolean failOnCriticalPluginError,
                         Integer readTimeoutSeconds = null) {
-        return createJobConfig(QUAY_REPO + imageName, CENTRAL_URI, token, policyEvalCheck, failOnCriticalPluginError, readTimeoutSeconds)
+        return createJobConfig(QUAY_REPO + imageName,
+                               CENTRAL_URI,
+                               token,
+                               policyEvalCheck,
+                               failOnCriticalPluginError,
+                               readTimeoutSeconds)
     }
 
     StoragePolicy updatePolicy(String policyName, String tag, List<StorageEnforcementAction> enforcements) {
