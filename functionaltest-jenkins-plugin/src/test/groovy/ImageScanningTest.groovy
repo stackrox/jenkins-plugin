@@ -1,4 +1,3 @@
-import static JenkinsClient.createJobConfig
 import static com.offbytwo.jenkins.model.BuildResult.FAILURE
 import static com.offbytwo.jenkins.model.BuildResult.SUCCESS
 import static com.stackrox.model.StorageEnforcementAction.FAIL_BUILD_ENFORCEMENT
@@ -103,12 +102,14 @@ class ImageScanningTest extends BaseSpecification {
                         Boolean policyEvalCheck,
                         Boolean failOnCriticalPluginError,
                         Integer readTimeoutSeconds = null) {
-        return createJobConfig(QUAY_REPO + imageName,
-                               CENTRAL_URI,
-                               token,
-                               policyEvalCheck,
-                               failOnCriticalPluginError,
-                               readTimeoutSeconds)
+        return new JenkinsClient.Config(
+                imageName: QUAY_REPO + imageName,
+                portalAddress: CENTRAL_URI,
+                token: token,
+                policyEvalCheck: policyEvalCheck,
+                failOnCriticalPluginError: failOnCriticalPluginError,
+                readTimeoutSeconds: readTimeoutSeconds)
+                .createJobConfig()
     }
 
     StoragePolicy updatePolicy(String policyName, String tag, List<StorageEnforcementAction> enforcements) {
