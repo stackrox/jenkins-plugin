@@ -27,22 +27,18 @@ class BaseSpecification extends Specification {
 
         for (int i = 0; i < maxRetries; i++) {
             try {
-                if (restApiClient.hasRegisteredScanners()) {
-                    def integrations = restApiClient.getImageIntegrations()
-                    println "Found ${integrations.integrations.size()} scanner integration(s) registered"
+                if (restApiClient.isHealthy()) {
+                    println "Everything OK"
                     return
                 }
             } catch (Exception e) {
-                println "Error checking scanner integrations: ${e.message}"
+                println "Error checking scanner health: ${e.message}"
             }
 
-            println "No scanners registered yet, " +
-                            "waiting ${retryDelay / 1000} seconds... (attempt ${i + 1}/${maxRetries})"
+            println "Cluster is unhealthy"
             Thread.sleep(retryDelay)
         }
 
-        throw new RuntimeException(
-                "Timeout waiting for scanner registration. " +
-                        "No scanners were registered after ${maxRetries * retryDelay / 1000} seconds.")
+        throw new RuntimeException("Timeout waiting for cluster healthy.")
     }
 }
