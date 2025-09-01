@@ -47,7 +47,7 @@ jobs:
           path: stackrox
       - name: Install Stackrox
         env:
-          MAIN_IMAGE_TAG: "4.9.x-537-gbe7a9b213f"
+          MAIN_IMAGE_TAG: "4.9.x-501-g5355aa13d6"
           SENSOR_HELM_DEPLOY: "true"
           ROX_SCANNER_V4: "false"
         run: |
