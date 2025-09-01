@@ -1,8 +1,12 @@
+import spock.lang.Shared
 import spock.lang.Specification
 
 class BaseSpecification extends Specification {
+    @Shared
     JenkinsClient jenkins
+    @Shared
     RestApiClient restApiClient
+    @Shared
     String token
 
     def setupSpec() {
