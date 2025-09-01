@@ -4,12 +4,14 @@ import groovy.transform.CompileStatic
 import okhttp3.OkHttpClient
 
 import com.stackrox.api.ApiTokenServiceApi
+import com.stackrox.api.ImageIntegrationServiceApi
 import com.stackrox.api.MetadataServiceApi
 import com.stackrox.api.PolicyServiceApi
 import com.stackrox.invoker.ApiClient
 import com.stackrox.model.StorageListPolicy
 import com.stackrox.model.StoragePolicy
 import com.stackrox.model.V1GenerateTokenRequest
+import com.stackrox.model.V1GetImageIntegrationsResponse
 import com.stackrox.model.V1Metadata
 
 import util.Config
@@ -21,6 +23,7 @@ class RestApiClient {
     PolicyServiceApi policyServiceApi
     MetadataServiceApi metadataApi
     ApiTokenServiceApi tokenApi
+    ImageIntegrationServiceApi imageIntegrationApi
 
     RestApiClient() {
         OkHttpClient client = OkHttpClient.Builder.newInstance()
@@ -38,6 +41,7 @@ class RestApiClient {
         policyServiceApi = new PolicyServiceApi(apiClient)
         metadataApi = new MetadataServiceApi(apiClient)
         tokenApi = new ApiTokenServiceApi(apiClient)
+        imageIntegrationApi = new ImageIntegrationServiceApi(apiClient)
     }
 
     V1Metadata getMetadata() {
@@ -59,6 +63,15 @@ class RestApiClient {
 
     StoragePolicy getPolicy(String id) {
         return policyServiceApi.policyServiceGetPolicy(id)
+    }
+
+    V1GetImageIntegrationsResponse getImageIntegrations() {
+        return imageIntegrationApi.imageIntegrationServiceGetImageIntegrations(null, null)
+    }
+
+    boolean hasRegisteredScanners() {
+        V1GetImageIntegrationsResponse response = getImageIntegrations()
+        return response.integrations != null && !response.integrations.isEmpty()
     }
 }
 
