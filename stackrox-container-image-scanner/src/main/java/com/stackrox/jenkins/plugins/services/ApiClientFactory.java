@@ -42,7 +42,7 @@ public class ApiClientFactory {
         INSECURE_ACCEPT_ANY
     }
 
-    public static final int DEFAULT_READ_TIMEOUT_SECONDS = 600;
+    public static final int DEFAULT_READ_TIMEOUT_SECONDS = 60;
     private static final Duration TIMEOUT = Duration.ofSeconds(30);
     private static final int MAXIMUM_CACHE_SIZE = 5; // arbitrary chosen as there are no data to support this decision
 
