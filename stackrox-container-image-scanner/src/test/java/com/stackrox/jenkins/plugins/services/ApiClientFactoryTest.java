@@ -54,7 +54,7 @@ class ApiClientFactoryTest {
         File caPemFile = Paths.get("src", "test", "resources", "cert", "localhost.pem").toFile();
         String pem = useCaCert ? FileUtils.readFileToString(caPemFile, StandardCharsets.UTF_8) : null;
 
-        OkHttpClient client = ApiClientFactory.getClient(tlsVerify, pem);
+        OkHttpClient client = ApiClientFactory.getClient(tlsVerify, pem, 1);
 
         Request request = new Request.Builder().url(SERVER.baseUrl()).build();
         Response response = client.newCall(request).execute();
@@ -65,7 +65,7 @@ class ApiClientFactoryTest {
     @Test
     @DisplayName("TLS should FAIL when tlsVerify: true and custom PEM: false")
     void shouldThrowWhenTLSCouldNotBeVerified() throws IOException {
-        OkHttpClient client = ApiClientFactory.getClient(VALIDATE, "");
+        OkHttpClient client = ApiClientFactory.getClient(VALIDATE, "", 1);
 
         Request request = new Request.Builder().url(SERVER.baseUrl()).build();
         Exception exception = assertThrows(IOException.class, () -> client.newCall(request).execute());
@@ -81,7 +81,7 @@ class ApiClientFactoryTest {
         File clientPem = Paths.get("src", "test", "resources", "cert", "client.pem").toFile();
         String pem = FileUtils.readFileToString(clientPem, StandardCharsets.UTF_8);
 
-        OkHttpClient client = ApiClientFactory.getClient(VALIDATE, pem);
+        OkHttpClient client = ApiClientFactory.getClient(VALIDATE, pem, 1);
 
         WireMockServer server = new WireMockServer(wireMockConfig().httpDisabled(true)
                 .dynamicHttpsPort().keystorePath(keyStorePath).keystorePassword(KEY_STORE_PASSWORD));

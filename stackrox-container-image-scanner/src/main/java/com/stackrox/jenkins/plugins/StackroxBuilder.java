@@ -75,6 +75,8 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
     private String caCertPEM;
     @DataBoundSetter
     private String cluster;
+    @DataBoundSetter
+    private int readTimeoutSeconds = ApiClientFactory.DEFAULT_READ_TIMEOUT_SECONDS;
 
     private RunConfig runConfig;
 
@@ -150,7 +152,7 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
         List<ImageCheckResults> results = Lists.newArrayList();
 
         ApiClient apiClient = ApiClientFactory.newApiClient(
-                getPortalAddress(), getApiToken().getPlainText(), getCaCertPEM(), getTLSValidationMode());
+                getPortalAddress(), getApiToken().getPlainText(), getCaCertPEM(), getTLSValidationMode(), getReadTimeoutSeconds());
         ImageService imageService = new ImageService(apiClient);
         DetectionService detectionService = new DetectionService(apiClient);
 
@@ -250,6 +252,16 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
         }
 
         @SuppressWarnings("unused")
+        public FormValidation doCheckReadTimeoutSeconds(@QueryParameter final int readTimeoutSeconds) {
+            Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+            if (readTimeoutSeconds > 0 && readTimeoutSeconds <= 3600) {
+                return FormValidation.ok();
+            } else {
+                return FormValidation.error("Read timeout must be between 1 and 3600 seconds.");
+            }
+        }
+
+        @SuppressWarnings("unused")
         @POST
         public FormValidation doTestConnection(@QueryParameter("portalAddress") final String portalAddress, @QueryParameter("apiToken") final String apiToken,
                                                @QueryParameter("enableTLSVerification") final boolean tlsVerify, @QueryParameter("caCertPEM") final String caCertPEM) {
@@ -275,7 +287,7 @@ public class StackroxBuilder extends Builder implements SimpleBuildStep {
         }
 
         private boolean checkRoxAuthStatus(final String portalAddress, final String apiToken, final boolean tlsVerify, final String caCertPEM) throws IOException {
-            ApiClient apiClient = ApiClientFactory.newApiClient(portalAddress, apiToken, caCertPEM, validationMode(tlsVerify));
+            ApiClient apiClient = ApiClientFactory.newApiClient(portalAddress, apiToken, caCertPEM, validationMode(tlsVerify), 10);
             try {
                 V1AuthStatus status = new AuthServiceApi(apiClient).authServiceGetAuthStatus();
                 return !Strings.isNullOrEmpty(status.getUserId());

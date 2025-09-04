@@ -16,6 +16,10 @@
              help="/plugin/stackrox-container-image-scanner/help/help-cluster.html">
         <f:textbox field="cluster"/>
     </f:entry>
+    <f:entry title="${%ReadTimeoutTitle}"
+             help="/plugin/stackrox-container-image-scanner/help/help-readTimeoutSeconds.html">
+        <f:number field="readTimeoutSeconds" min="1" max="3600" step="1" default="60"/>
+    </f:entry>
     <f:entry>
         <j:if test="${instance != null}">
             <f:optionalBlock title="${%EnableTLSVerification}" name="enableTLSVerification"
