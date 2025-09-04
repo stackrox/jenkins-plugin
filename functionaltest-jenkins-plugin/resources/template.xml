@@ -21,6 +21,7 @@
             <failOnPolicyEvalFailure></failOnPolicyEvalFailure>
             <failOnCriticalPluginError></failOnCriticalPluginError>
             <enableTLSVerification></enableTLSVerification>
+            <readTimeoutSeconds></readTimeoutSeconds>
         </com.stackrox.jenkins.plugins.StackroxBuilder>
     </builders>
     <publishers/>
