@@ -6,7 +6,7 @@ updates:
     schedule:
       interval: "daily"
     ignore:
-      - dependency-name: "org.webjars.*"
+      - dependency-name: "org.webjars*"
 
   - package-ecosystem: 'gradle'
     directory: 'functionaltest-jenkins-plugin/'
