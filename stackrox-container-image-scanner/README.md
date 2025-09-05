@@ -173,6 +173,13 @@ freestyle projects and pipelines.
         </td>
     </tr>
     <tr class="odd">
+        <td><p><code>timeout</code></p></td>
+        <td><p>HTTP read timeout in seconds</p></td>
+        <td>
+            <p>Increase this value if you experience timeout errors during image scans.</p>
+        </td>
+    </tr>
+    <tr class="even">
     <td colspan="3"><p><em><sup>*</sup> Required</em></p></td>
     </tr>
     </tbody>
