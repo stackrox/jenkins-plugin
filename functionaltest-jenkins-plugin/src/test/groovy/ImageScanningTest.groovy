@@ -1,4 +1,3 @@
-import static JenkinsClient.createJobConfig
 import static com.offbytwo.jenkins.model.BuildResult.FAILURE
 import static com.offbytwo.jenkins.model.BuildResult.SUCCESS
 import static com.stackrox.model.StorageEnforcementAction.FAIL_BUILD_ENFORCEMENT
@@ -21,6 +20,15 @@ class ImageScanningTest extends BaseSpecification {
 
     protected static final String CENTRAL_URI = Config.roxEndpoint
     protected static final String QUAY_REPO = "quay.io/openshifttest/"
+
+    def "Test read timeout with minimal timeout should fail"() {
+        when:
+        BuildResult status = jenkins.createAndRunJob(
+                getJobConfig("nginx-alpine:latest", false, true, 1))
+
+        then:
+        assert status == FAILURE
+    }
 
     @Unroll
     def "image scanning test with toggle enforcement(#imageName, #policyName,  #enforcements, #endStatus)"() {
@@ -90,8 +98,18 @@ class ImageScanningTest extends BaseSpecification {
         "mis-spelled:lts"     | false                     | SUCCESS
     }
 
-    String getJobConfig(String imageName, Boolean policyEvalCheck, Boolean failOnCriticalPluginError) {
-        return createJobConfig(QUAY_REPO + imageName, CENTRAL_URI, token, policyEvalCheck, failOnCriticalPluginError)
+    String getJobConfig(String imageName,
+                        Boolean policyEvalCheck,
+                        Boolean failOnCriticalPluginError,
+                        Integer readTimeoutSeconds = null) {
+        return new JenkinsClient.Config(
+                imageName: QUAY_REPO + imageName,
+                portalAddress: CENTRAL_URI,
+                token: token,
+                policyEvalCheck: policyEvalCheck,
+                failOnCriticalPluginError: failOnCriticalPluginError,
+                readTimeoutSeconds: readTimeoutSeconds)
+                .createJobConfig()
     }
 
     StoragePolicy updatePolicy(String policyName, String tag, List<StorageEnforcementAction> enforcements) {

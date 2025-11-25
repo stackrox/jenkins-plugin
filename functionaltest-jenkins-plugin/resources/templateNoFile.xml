@@ -18,6 +18,7 @@
             <failOnPolicyEvalFailure></failOnPolicyEvalFailure>
             <failOnCriticalPluginError></failOnCriticalPluginError>
             <enableTLSVerification></enableTLSVerification>
+            <readTimeoutSeconds></readTimeoutSeconds>
             <imageNames></imageNames>
         </com.stackrox.jenkins.plugins.StackroxBuilder>
     </builders>

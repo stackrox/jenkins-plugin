@@ -42,14 +42,15 @@ public class ApiClientFactory {
         INSECURE_ACCEPT_ANY
     }
 
+    public static final int DEFAULT_READ_TIMEOUT_SECONDS = 60;
     private static final Duration TIMEOUT = Duration.ofSeconds(30);
-    private static final Duration READ_TIMEOUT = Duration.ofMinutes(10);
     private static final int MAXIMUM_CACHE_SIZE = 5; // arbitrary chosen as there are no data to support this decision
 
     @Data
     private static class CacheKey {
         private final String caCert;
         private final StackRoxTlsValidationMode tlsValidationMode;
+        private final int readTimeoutSeconds;
     }
 
     // It is good practice to avoid creating OkHttpClient on each request.
@@ -61,13 +62,13 @@ public class ApiClientFactory {
                     new CacheLoader<CacheKey, OkHttpClient>() {
                         @Override
                         public OkHttpClient load(@Nonnull CacheKey key) throws IOException {
-                            return newHttpClient(key.caCert, key.tlsValidationMode);
+                            return newHttpClient(key.caCert, key.tlsValidationMode, key.readTimeoutSeconds);
                         }
                     });
 
 
-    public static ApiClient newApiClient(String basePath, String apiKey, @Nullable String caCert, StackRoxTlsValidationMode tlsValidationMode) throws IOException {
-        OkHttpClient client = getClient(tlsValidationMode, caCert);
+    public static ApiClient newApiClient(String basePath, String apiKey, @Nullable String caCert, StackRoxTlsValidationMode tlsValidationMode, int readTimeoutSeconds) throws IOException {
+        OkHttpClient client = getClient(tlsValidationMode, caCert, readTimeoutSeconds);
         ApiClient apiClient = new ApiClient(client);
         apiClient.setBearerToken(apiKey);
         apiClient.setBasePath(basePath);
@@ -75,16 +76,19 @@ public class ApiClientFactory {
     }
 
     @Nonnull
-    static OkHttpClient getClient(StackRoxTlsValidationMode tlsValidationMode, @Nullable String caCert) throws IOException {
+    static OkHttpClient getClient(StackRoxTlsValidationMode tlsValidationMode, @Nullable String caCert, int readTimeoutSeconds) throws IOException {
         try {
-            return CLIENT_CACHE.get(new CacheKey(caCert, tlsValidationMode));
+            return CLIENT_CACHE.get(new CacheKey(caCert, tlsValidationMode, readTimeoutSeconds));
         } catch (ExecutionException e) {
             throw new IOException("Could not get HTTP client from cache", e);
         }
     }
 
     @Nonnull
-    private static OkHttpClient newHttpClient(@Nullable String caCert, StackRoxTlsValidationMode tlsValidationMode) throws IOException {
+    private static OkHttpClient newHttpClient(@Nullable String caCert, StackRoxTlsValidationMode tlsValidationMode, int readTimeoutSeconds) throws IOException {
+        if (readTimeoutSeconds < 1) {
+            readTimeoutSeconds = DEFAULT_READ_TIMEOUT_SECONDS;
+        }
         OkHttpClient.Builder builder;
         try {
             if (tlsValidationMode == INSECURE_ACCEPT_ANY) {
@@ -101,7 +105,7 @@ public class ApiClientFactory {
         }
         builder.retryOnConnectionFailure(true);
         builder.connectTimeout(TIMEOUT);
-        builder.readTimeout(READ_TIMEOUT);
+        builder.readTimeout(Duration.ofSeconds(readTimeoutSeconds));
         builder.writeTimeout(TIMEOUT);
         builder.addNetworkInterceptor(new UserAgentInterceptor());
         return builder.build();

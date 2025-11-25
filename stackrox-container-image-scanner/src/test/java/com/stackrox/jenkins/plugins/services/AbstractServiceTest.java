@@ -24,7 +24,7 @@ public abstract class AbstractServiceTest {
     @BeforeAll
     static void setup() throws IOException {
         MOCK_SERVER.start();
-        client = ApiClientFactory.newApiClient(MOCK_SERVER.baseUrl(), MOCK_TOKEN.getPlainText(), "", INSECURE_ACCEPT_ANY);
+        client = ApiClientFactory.newApiClient(MOCK_SERVER.baseUrl(), MOCK_TOKEN.getPlainText(), "", INSECURE_ACCEPT_ANY, 1);
     }
 
     @AfterAll

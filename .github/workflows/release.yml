@@ -19,7 +19,7 @@ jobs:
       # Output logs to file in case we need to inspect errors.
       GITSIGN_LOG: "/tmp/gitsign.log"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           token: ${{ secrets.RHACS_BOT_GITHUB_TOKEN }}
       - uses: chainguard-dev/actions/setup-gitsign@main
@@ -30,7 +30,7 @@ jobs:
         run: |
           git config --global user.email "${GITHUB_EMAIL}"
           git config --global user.name "${GITHUB_USERNAME}"
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
           java-version: '11'

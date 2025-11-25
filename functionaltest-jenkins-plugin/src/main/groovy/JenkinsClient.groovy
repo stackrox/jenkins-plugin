@@ -15,6 +15,63 @@ class JenkinsClient {
     public static final String TEMPLATE_WITHOUT_IMAGE_NAMES = "resources/template.xml"
     private final JenkinsServer jenkins
 
+    static class Config {
+        String imageName
+        String portalAddress
+        String token
+        Boolean policyEvalCheck
+        Boolean failOnCriticalPluginError
+        Integer readTimeoutSeconds = null
+
+        String createJobConfig() {
+            Map<String, Serializable> param = createConfigMap()
+            // parse the xml
+            String path = TEMPLATE_WITHOUT_IMAGE_NAMES
+            return createJobConfigFromPath(path, param)
+        }
+
+        String createJobConfigNoFile() {
+            Map<String, Serializable> param = createConfigMap()
+            // parse the xml
+            String path = JOB_TEMPLATE_WITH_IMAGE_NAMES
+            return createJobConfigFromPath(path, param)
+        }
+
+        //TODO(ROX-8458): add tests for pipeline
+        Map<String, Serializable>    createConfigMap() {
+            Map<String, Serializable> configMap = [  // codenarc-disable UnnecessaryCast
+                                                     command                  : """mkdir \$BUILD_TAG
+                               cd \$BUILD_TAG
+                               echo '${imageName}' >> rox_images_to_scan""",
+                                                     portalAddress            : portalAddress,
+                                                     apiToken                 : token,
+                                                     failOnPolicyEvalFailure  : policyEvalCheck,
+                                                     failOnCriticalPluginError: failOnCriticalPluginError,
+                                                     enableTLSVerification    : false,
+                                                     imageNames               : imageName,
+            ] as Map<String, Serializable>
+
+            if (readTimeoutSeconds != null) {
+                configMap.readTimeoutSeconds = readTimeoutSeconds
+            }
+
+            return configMap
+        }
+
+        @CompileStatic(TypeCheckingMode.SKIP)
+        private static String createJobConfigFromPath(String path, Map<String, Serializable> param) {
+            def parsexml = new XmlSlurper().parse(new File(path))
+            param.each { key, value ->
+                parsexml.breadthFirst().findAll { NodeChild it ->
+                    if (it.name() == key) {
+                        it.replaceBody value
+                    }
+                }
+            }
+            return XmlUtil.serialize(parsexml)
+        }
+    }
+
     JenkinsClient() {
         def env = System.getenv()
         String jenkinsAddress = env.getOrDefault('JENKINS_ADDRESS', "http://localhost:8080/jenkins/")
@@ -44,53 +101,5 @@ class JenkinsClient {
         println "***Output of Jenkins build:"
         println result.consoleOutputText
         return result.result
-    }
-
-    static String createJobConfig(String imageName, String portalAddress, String token, Boolean policyEvalCheck,
-                                  Boolean failOnCriticalPluginError) {
-        Map<String, Serializable> param = createConfigMap(
-                imageName, portalAddress, token, policyEvalCheck, failOnCriticalPluginError)
-        // parse the xml
-        String path = TEMPLATE_WITHOUT_IMAGE_NAMES
-        return createJobConfigFromPath(path, param)
-    }
-
-    static String createJobConfigNoFile(String imageName, String portalAddress, String token, Boolean policyEvalCheck,
-                                        Boolean failOnCriticalPluginError) {
-        Map<String, Serializable> param = createConfigMap(
-                imageName, portalAddress, token, policyEvalCheck, failOnCriticalPluginError)
-        // parse the xml
-        String path = JOB_TEMPLATE_WITH_IMAGE_NAMES
-        return createJobConfigFromPath(path, param)
-    }
-
-    //TODO(ROX-8458): add tests for pipeline
-    private static Map<String, Serializable> createConfigMap(String imageName, String portalAddress, String token,
-                                                             boolean policyEvalCheck,
-                                                             boolean failOnCriticalPluginError) {
-        return [  // codenarc-disable UnnecessaryCast
-                command                  : """mkdir \$BUILD_TAG
-                               cd \$BUILD_TAG
-                               echo '${imageName}' >> rox_images_to_scan""",
-                portalAddress            : portalAddress,
-                apiToken                 : token,
-                failOnPolicyEvalFailure  : policyEvalCheck,
-                failOnCriticalPluginError: failOnCriticalPluginError,
-                enableTLSVerification    : false,
-                imageNames               : imageName,
-        ] as Map<String, Serializable>
-    }
-
-    @CompileStatic(TypeCheckingMode.SKIP)
-    private static String createJobConfigFromPath(String path, Map<String, Serializable> param) {
-        def parsexml = new XmlSlurper().parse(new File(path))
-        param.each { key, value ->
-            parsexml.breadthFirst().findAll { NodeChild it ->
-                if (it.name() == key) {
-                    it.replaceBody value
-                }
-            }
-        }
-        return XmlUtil.serialize(parsexml)
     }
 }
