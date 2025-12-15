@@ -29,7 +29,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'org.jenkins-ci.plugins:stackrox-container-image-scanner:1.4.3'
+    implementation 'org.jenkins-ci.plugins:stackrox-container-image-scanner:1.4.4'
     implementation 'org.codehaus.groovy:groovy-all:3.0.8'
     implementation 'org.spockframework:spock-core:2.0-groovy-3.0'
     implementation 'com.offbytwo.jenkins:jenkins-client:0.3.8'
@@ -38,6 +38,7 @@ dependencies {
     implementation "org.glassfish.jaxb:jaxb-runtime:4.0.5"
 
     implementation 'com.squareup.okhttp3:okhttp:5.1.0'
+    implementation 'com.squareup.okhttp3:logging-interceptor:5.1.0'
     implementation 'com.google.code.gson:gson:2.13.2'
     implementation 'io.gsonfire:gson-fire:1.9.0'
     implementation 'javax.xml.bind:jaxb-api:2.3.1'
