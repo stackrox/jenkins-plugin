@@ -22,6 +22,13 @@ function renderCVETable(tableId, cves) {
                                                }
                     },
                     { title: 'FIXABLE', data : 'fixable' },
+                    { title: 'ADVISORY',mData : function (data, type, dataToSet) {
+                                                    if (!data.hasOwnProperty('advisory')) {
+                                                        return "-"
+                                                    }
+                                                    return `<a target="_blank" href="${data.advisoryLink}">${data.advisory}</a>`;
+                                               }
+                    },
                 ],
         columnDefs: [
                       {
