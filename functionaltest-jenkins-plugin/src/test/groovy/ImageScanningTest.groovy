@@ -112,6 +112,8 @@ class ImageScanningTest extends BaseSpecification {
         policy.setEnforcementActions(enforcements)
         policy.setFields(new StoragePolicyFields().imageName(new StorageImageNamePolicy().tag(tag)))
         policy.setDisabled(false)
+        // Clear exclusions to avoid serialization issues with null scope values
+        policy.setExclusions([])
         restApiClient.updatePolicy(policy, policyId)
         return restApiClient.getPolicy(policyId)
     }
