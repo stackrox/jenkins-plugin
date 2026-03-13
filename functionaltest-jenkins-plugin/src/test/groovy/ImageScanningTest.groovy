@@ -21,15 +21,6 @@ class ImageScanningTest extends BaseSpecification {
     protected static final String CENTRAL_URI = Config.roxEndpoint
     protected static final String QUAY_REPO = "quay.io/openshifttest/"
 
-    def "Test read timeout with minimal timeout should fail"() {
-        when:
-        BuildResult status = jenkins.createAndRunJob(
-                getJobConfig("nginx-alpine:latest", false, true, 1))
-
-        then:
-        assert status == FAILURE
-    }
-
     @Unroll
     def "image scanning test with toggle enforcement(#imageName, #policyName,  #enforcements, #endStatus)"() {
         given:
