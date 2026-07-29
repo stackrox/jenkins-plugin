@@ -10,16 +10,21 @@ jobs:
     steps:
     - name: Verify Dependabot provenance
       env:
+        ACTOR: ${{ github.actor }}
+        GH_REPOSITORY: ${{ github.repository }}
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        PR_HEAD_REF: ${{ github.event.pull_request.head.ref }}
+        PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        PR_NUMBER: ${{ github.event.pull_request.number }}
       run: |
         # 1. Verify actor
-        if [[ "${{ github.actor }}" != "dependabot[bot]" ]]; then
-          echo "::error::Invalid actor: ${{ github.actor }}"
+        if [[ "$ACTOR" != "dependabot[bot]" ]]; then
+          echo "::error::Invalid actor: $ACTOR"
           exit 1
         fi
 
         # 2. Verify PR author type
-        AUTHOR_TYPE=$(gh api repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }} \
+        AUTHOR_TYPE=$(gh api repos/$GH_REPOSITORY/pulls/$PR_NUMBER \
           --jq '.user.type')
 
         if [[ "$AUTHOR_TYPE" != "Bot" ]]; then
@@ -28,14 +33,13 @@ jobs:
         fi
 
         # 3. Verify branch naming convention
-        if [[ ! "${{ github.event.pull_request.head.ref }}" =~ ^dependabot/ ]]; then
+        if [[ ! "$PR_HEAD_REF" =~ ^dependabot/ ]]; then
           echo "::error::Branch doesn't match Dependabot pattern"
           exit 1
         fi
 
         # 4. Verify commit signature
-        COMMIT_SHA="${{ github.event.pull_request.head.sha }}"
-        VERIFIED=$(gh api repos/${{ github.repository }}/commits/$COMMIT_SHA \
+        VERIFIED=$(gh api repos/$GH_REPOSITORY/commits/$PR_HEAD_SHA \
           --jq '.commit.verification.verified')
 
         if [[ "$VERIFIED" != "true" ]]; then
@@ -45,9 +49,8 @@ jobs:
 
         echo "✓ All provenance checks passed"
 
-    - uses: ahmadnassri/action-dependabot-auto-merge@v2.6
-      with:
-        github-token: '${{ secrets.RHACS_BOT_GITHUB_TOKEN }}'
-        command: "squash and merge"
-        approve: true
-        target: minor
+    - name: Enable auto-merge for Dependabot PRs
+      run: gh pr merge --auto --squash "$PR_URL" && gh pr review --approve "$PR_URL"
+      env:
+        GH_TOKEN: ${{ secrets.RHACS_BOT_GITHUB_TOKEN }}
+        PR_URL: ${{ github.event.pull_request.html_url }}
