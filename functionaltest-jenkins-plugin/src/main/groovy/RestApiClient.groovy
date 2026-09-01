@@ -2,6 +2,7 @@ import java.time.Duration
 
 import groovy.transform.CompileStatic
 import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
 
 import com.stackrox.api.ApiTokenServiceApi
 import com.stackrox.api.MetadataServiceApi
@@ -23,7 +24,16 @@ class RestApiClient {
     ApiTokenServiceApi tokenApi
 
     RestApiClient() {
+        HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor(new HttpLoggingInterceptor.Logger() {
+            @Override
+            void log(String message) {
+                println("[HTTP] ${message}")
+            }
+        })
+        loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY)
+
         OkHttpClient client = OkHttpClient.Builder.newInstance()
+                .addInterceptor(loggingInterceptor)
                 .retryOnConnectionFailure(true)
                 .connectTimeout(TIMEOUT)
                 .readTimeout(TIMEOUT)
