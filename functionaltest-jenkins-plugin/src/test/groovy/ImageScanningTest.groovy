@@ -7,10 +7,8 @@ import static com.stackrox.model.StorageLifecycleStage.DEPLOY
 import com.offbytwo.jenkins.model.BuildResult
 
 import com.stackrox.model.StorageEnforcementAction
-import com.stackrox.model.StorageImageNamePolicy
 import com.stackrox.model.StorageListPolicy
 import com.stackrox.model.StoragePolicy
-import com.stackrox.model.StoragePolicyFields
 
 import util.Config
 
@@ -111,7 +109,6 @@ class ImageScanningTest extends BaseSpecification {
         def policy = restApiClient.getPolicy(policyId)
         policy.with {
             setEnforcementActions(enforcements)
-            setFields(new StoragePolicyFields().imageName(new StorageImageNamePolicy().tag(tag)))
             setDisabled(false)
             // Clear exclusions to avoid serialization issues with null scope values
             setExclusions([])
