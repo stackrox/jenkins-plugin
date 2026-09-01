@@ -109,11 +109,17 @@ class ImageScanningTest extends BaseSpecification {
         assert policyId != null
 
         def policy = restApiClient.getPolicy(policyId)
-        policy.setEnforcementActions(enforcements)
-        policy.setFields(new StoragePolicyFields().imageName(new StorageImageNamePolicy().tag(tag)))
-        policy.setDisabled(false)
-        // Clear exclusions to avoid serialization issues with null scope values
-        policy.setExclusions([])
+        policy.with {
+            setEnforcementActions(enforcements)
+            setFields(new StoragePolicyFields().imageName(new StorageImageNamePolicy().tag(tag)))
+            setDisabled(false)
+            // Clear exclusions to avoid serialization issues with null scope values
+            setExclusions([])
+            // Clear other array fields that may contain null complex objects
+            setPolicySections([])
+            setMitreAttackVectors([])
+            setScope([])
+        }
         restApiClient.updatePolicy(policy, policyId)
         return restApiClient.getPolicy(policyId)
     }
