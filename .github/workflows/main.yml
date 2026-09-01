@@ -28,37 +28,15 @@ jobs:
       id: release_drafter
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    - name: Upload Release Asset Linux
-      id: upload-release-asset-linux
-      uses: gfreezy/upload-release-asset@v1.0.2
+    - name: Upload Release Assets
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: ${{ steps.release_drafter.outputs.tag_name }}
+        files: |
+          stackrox-container-image-scanner/target/stackrox-container-image-scanner.hpi
+          stackrox-container-image-scanner/target/bom.xml
+          stackrox-container-image-scanner/target/bom.json
+        draft: true
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        release_id: ${{ steps.release_drafter.outputs.id }}
-        upload_url: ${{ steps.release_drafter.outputs.upload_url }}
-        asset_path: stackrox-container-image-scanner/target/stackrox-container-image-scanner.hpi
-        asset_name: stackrox-container-image-scanner.hpi
-        asset_content_type: application/octet-stream
-    - name: Upload SBOM XML Asset Linux
-      id: upload-sbom-xml
-      uses: gfreezy/upload-release-asset@v1.0.2
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        release_id: ${{ steps.release_drafter.outputs.id }}
-        upload_url: ${{ steps.release_drafter.outputs.upload_url }}
-        asset_path: stackrox-container-image-scanner/target/bom.xml
-        asset_name: bom.xml
-        asset_content_type: text/xml
-    - name: Upload SBOM JSON Asset Linux
-      id: upload-sbom-json
-      uses: gfreezy/upload-release-asset@v1.0.2
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        release_id: ${{ steps.release_drafter.outputs.id }}
-        upload_url: ${{ steps.release_drafter.outputs.upload_url }}
-        asset_path: stackrox-container-image-scanner/target/bom.json
-        asset_name: bom.json
-        asset_content_type: application/json
 
