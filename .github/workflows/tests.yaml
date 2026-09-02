@@ -56,7 +56,9 @@ jobs:
           echo "::add-mask::$ROX_PASSWORD"
           echo "ROX_PASSWORD=$ROX_PASSWORD" >> $GITHUB_ENV
       - name: Wait for scanner to start
-        run: sleep 120
+        env:
+          ROX_ENDPOINT: 'https://central.stackrox:8000'
+        run: scripts/wait-for-scanner.sh
       - name: Add stackrox certificate
         run: scripts/set-certificates.sh
       - name: Run tests
