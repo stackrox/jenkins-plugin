@@ -19,6 +19,7 @@ test {
 }
 
 repositories {
+    mavenLocal()
     mavenCentral()
     maven {
         url 'https://repo.jenkins-ci.org/releases'
@@ -29,7 +30,7 @@ repositories {
 }
 
 dependencies {
-    implementation files('../stackrox-container-image-scanner/target/stackrox-container-image-scanner.hpi')
+    implementation 'org.jenkins-ci.plugins:stackrox-container-image-scanner:1.4.5-SNAPSHOT'
     implementation 'org.codehaus.groovy:groovy-all:3.0.8'
     implementation 'org.spockframework:spock-core:2.0-groovy-3.0'
     implementation 'com.offbytwo.jenkins:jenkins-client:0.3.8'
