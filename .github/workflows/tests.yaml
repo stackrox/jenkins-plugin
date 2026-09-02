@@ -31,7 +31,7 @@ jobs:
         run: make -C functionaltest-jenkins-plugin style
 
       - name: Build with Maven
-        run: cd stackrox-container-image-scanner && ./mvnw -B verify install hpi:hpi cyclonedx:makeAggregateBom
+        run: cd stackrox-container-image-scanner && ./mvnw -B verify package hpi:hpi cyclonedx:makeAggregateBom
 
       - name: Perform CodeQL Analysis
         if: github.event_name == 'pull_request'
