@@ -56,10 +56,7 @@ jobs:
           echo "::add-mask::$ROX_PASSWORD"
           echo "ROX_PASSWORD=$ROX_PASSWORD" >> $GITHUB_ENV
       - name: Wait for scanner to start
-        env:
-          ROX_ENDPOINT: 'https://central.stackrox:8000'
-          ROX_PASSWORD: ${{ env.ROX_PASSWORD }}
-        run: scripts/wait-for-scanner.sh
+        run: kubectl wait --for=condition=ready --timeout=360s pod -l app=scanner -n stackrox
       - name: Add stackrox certificate
         run: scripts/set-certificates.sh
       - name: Run tests
