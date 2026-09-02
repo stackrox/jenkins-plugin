@@ -8,6 +8,7 @@ import com.stackrox.api.ApiTokenServiceApi
 import com.stackrox.api.MetadataServiceApi
 import com.stackrox.api.PolicyServiceApi
 import com.stackrox.invoker.ApiClient
+import com.stackrox.model.PolicyServicePutPolicyBody
 import com.stackrox.model.StorageListPolicy
 import com.stackrox.model.StoragePolicy
 import com.stackrox.model.V1GenerateTokenRequest
@@ -60,11 +61,37 @@ class RestApiClient {
     }
 
     List<StorageListPolicy> getPolicies() {
-        return policyServiceApi.policyServiceListPolicies(null, null, null, null, null).getPolicies()
+        return policyServiceApi.policyServiceListPolicies(null, null, null, null, null, null, null).getPolicies()
     }
 
     void updatePolicy(StoragePolicy policyObj, String id) {
-        policyServiceApi.policyServicePutPolicy(id, policyObj)
+        // Convert StoragePolicy to PolicyServicePutPolicyBody for openapi-generator 7.25.0
+        PolicyServicePutPolicyBody body = new PolicyServicePutPolicyBody()
+        body.setName(policyObj.getName())
+        body.setDescription(policyObj.getDescription())
+        body.setRationale(policyObj.getRationale())
+        body.setRemediation(policyObj.getRemediation())
+        body.setDisabled(policyObj.getDisabled())
+        body.setCategories(policyObj.getCategories())
+        body.setLifecycleStages(policyObj.getLifecycleStages())
+        body.setEventSource(policyObj.getEventSource())
+        body.setExclusions(policyObj.getExclusions())
+        body.setScope(policyObj.getScope())
+        body.setSeverity(policyObj.getSeverity())
+        body.setEnforcementActions(policyObj.getEnforcementActions())
+        body.setNotifiers(policyObj.getNotifiers())
+        body.setSoRTName(policyObj.getSoRTName())
+        body.setSoRTLifecycleStage(policyObj.getSoRTLifecycleStage())
+        body.setSoRTEnforcement(policyObj.getSoRTEnforcement())
+        body.setPolicyVersion(policyObj.getPolicyVersion())
+        body.setPolicySections(policyObj.getPolicySections())
+        body.setMitreAttackVectors(policyObj.getMitreAttackVectors())
+        body.setCriteriaLocked(policyObj.getCriteriaLocked())
+        body.setMitreVectorsLocked(policyObj.getMitreVectorsLocked())
+        body.setIsDefault(policyObj.getIsDefault())
+        body.setSource(policyObj.getSource())
+
+        policyServiceApi.policyServicePutPolicy(id, body)
     }
 
     StoragePolicy getPolicy(String id) {
