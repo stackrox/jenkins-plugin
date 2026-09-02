@@ -28,14 +28,15 @@ while true; do
     attempt=$((attempt + 1))
     echo "[${elapsed}s] Attempt $attempt: Checking scanner pod status..."
 
-    # Check if scanner pods are ready
-    ready_count=$(kubectl get pods -n stackrox -l app=scanner --no-headers 2>/dev/null | grep -c "Running" || echo "0")
+    # Check if scanner pods are ready (READY column = 1/1)
+    # grep for "1/1.*Running" to ensure both container is ready AND pod is running
+    ready_count=$(kubectl get pods -n stackrox -l app=scanner --no-headers 2>/dev/null | grep -c "1/1.*Running" || echo "0")
     total_count=$(kubectl get pods -n stackrox -l app=scanner --no-headers 2>/dev/null | wc -l || echo "0")
 
-    echo "  → Scanner pods: $ready_count/$total_count running"
+    echo "  → Scanner pods: $ready_count/$total_count ready"
 
     if [ "$ready_count" -gt 0 ] && [ "$ready_count" -eq "$total_count" ]; then
-        echo "  → All scanner pods are running!"
+        echo "  → All scanner pods are ready!"
         echo ""
         echo "Scanner pods ready after ${elapsed}s"
         kubectl get pods -n stackrox -l app=scanner
