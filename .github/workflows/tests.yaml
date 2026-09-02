@@ -56,10 +56,40 @@ jobs:
           echo "::add-mask::$ROX_PASSWORD"
           echo "ROX_PASSWORD=$ROX_PASSWORD" >> $GITHUB_ENV
       - name: Wait for scanner to start
-        run: sleep 120
+        run: kubectl wait --for=condition=ready --timeout=360s pod -l app=scanner -n stackrox
       - name: Add stackrox certificate
         run: scripts/set-certificates.sh
       - name: Run tests
         env:
           ROX_ENDPOINT: 'https://central.stackrox:8000'
         run: make -C functionaltest-jenkins-plugin test
+
+      - name: Collect Kubernetes logs
+        if: always()
+        run: |
+          mkdir -p k8s-logs
+          echo "=== Collecting pod logs ==="
+          kubectl get pods -A -o wide > k8s-logs/pods.txt || true
+          kubectl get events -A --sort-by='.lastTimestamp' > k8s-logs/events.txt || true
+
+          echo "=== Collecting StackRox logs ==="
+          for pod in $(kubectl get pods -n stackrox -o name 2>/dev/null || true); do
+            name=$(echo $pod | sed 's/pod\///')
+            kubectl logs -n stackrox $pod --all-containers --timestamps > k8s-logs/${name}.log 2>&1 || true
+          done
+
+          echo "=== Collecting describe output ==="
+          kubectl describe pods -n stackrox > k8s-logs/pods-describe.txt || true
+          kubectl describe deployments -n stackrox > k8s-logs/deployments-describe.txt || true
+
+          echo "=== Collecting configmaps and secrets ==="
+          kubectl get configmaps -n stackrox -o yaml > k8s-logs/configmaps.yaml || true
+          kubectl get secrets -n stackrox -o yaml > k8s-logs/secrets.yaml || true
+
+      - name: Upload Kubernetes logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kubernetes-logs
+          path: k8s-logs/
+          retention-days: 7
