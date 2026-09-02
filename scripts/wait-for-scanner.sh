@@ -15,6 +15,15 @@ if [ -z "${ROX_PASSWORD:-}" ]; then
     exit 1
 fi
 
+# Add central.stackrox to /etc/hosts if not already present
+# (This is normally done by set-certificates.sh, but we need it earlier)
+HOST="central.stackrox"
+IP="127.0.0.1"
+if ! grep -qE "^[^#]*\b$HOST\b" /etc/hosts; then
+    echo "Adding $IP $HOST to /etc/hosts..."
+    echo "$IP $HOST" | sudo tee -a /etc/hosts >/dev/null
+fi
+
 echo "Waiting for StackRox scanner to become healthy..."
 echo "Endpoint: ${CENTRAL_ENDPOINT}"
 echo "Max wait time: ${MAX_WAIT_SECONDS}s"
