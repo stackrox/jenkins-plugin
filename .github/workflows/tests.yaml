@@ -31,7 +31,7 @@ jobs:
         run: make -C functionaltest-jenkins-plugin style
 
       - name: Build with Maven
-        run: cd stackrox-container-image-scanner && ./mvnw -B verify package hpi:hpi cyclonedx:makeAggregateBom
+        run: cd stackrox-container-image-scanner && ./mvnw -B clean verify package hpi:hpi cyclonedx:makeAggregateBom
 
       - name: Perform CodeQL Analysis
         if: github.event_name == 'pull_request'
@@ -63,3 +63,33 @@ jobs:
         env:
           ROX_ENDPOINT: 'https://central.stackrox:8000'
         run: make -C functionaltest-jenkins-plugin test
+
+      - name: Collect Kubernetes logs
+        if: always()
+        run: |
+          mkdir -p k8s-logs
+          echo "=== Collecting pod logs ==="
+          kubectl get pods -A -o wide > k8s-logs/pods.txt
+          kubectl get events -A --sort-by='.lastTimestamp' > k8s-logs/events.txt
+
+          echo "=== Collecting StackRox logs ==="
+          for pod in $(kubectl get pods -n stackrox -o name); do
+            name=$(echo $pod | sed 's/pod\///')
+            kubectl logs -n stackrox $pod --all-containers --timestamps > k8s-logs/${name}.log 2>&1 || true
+          done
+
+          echo "=== Collecting describe output ==="
+          kubectl describe pods -n stackrox > k8s-logs/pods-describe.txt
+          kubectl describe deployments -n stackrox > k8s-logs/deployments-describe.txt
+
+          echo "=== Collecting configmaps and secrets ==="
+          kubectl get configmaps -n stackrox -o yaml > k8s-logs/configmaps.yaml
+          kubectl get secrets -n stackrox -o yaml > k8s-logs/secrets.yaml
+
+      - name: Upload Kubernetes logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kubernetes-logs
+          path: k8s-logs/
+          retention-days: 7
