@@ -69,22 +69,22 @@ jobs:
         run: |
           mkdir -p k8s-logs
           echo "=== Collecting pod logs ==="
-          kubectl get pods -A -o wide > k8s-logs/pods.txt
-          kubectl get events -A --sort-by='.lastTimestamp' > k8s-logs/events.txt
+          kubectl get pods -A -o wide > k8s-logs/pods.txt || true
+          kubectl get events -A --sort-by='.lastTimestamp' > k8s-logs/events.txt || true
 
           echo "=== Collecting StackRox logs ==="
-          for pod in $(kubectl get pods -n stackrox -o name); do
+          for pod in $(kubectl get pods -n stackrox -o name 2>/dev/null || true); do
             name=$(echo $pod | sed 's/pod\///')
             kubectl logs -n stackrox $pod --all-containers --timestamps > k8s-logs/${name}.log 2>&1 || true
           done
 
           echo "=== Collecting describe output ==="
-          kubectl describe pods -n stackrox > k8s-logs/pods-describe.txt
-          kubectl describe deployments -n stackrox > k8s-logs/deployments-describe.txt
+          kubectl describe pods -n stackrox > k8s-logs/pods-describe.txt || true
+          kubectl describe deployments -n stackrox > k8s-logs/deployments-describe.txt || true
 
           echo "=== Collecting configmaps and secrets ==="
-          kubectl get configmaps -n stackrox -o yaml > k8s-logs/configmaps.yaml
-          kubectl get secrets -n stackrox -o yaml > k8s-logs/secrets.yaml
+          kubectl get configmaps -n stackrox -o yaml > k8s-logs/configmaps.yaml || true
+          kubectl get secrets -n stackrox -o yaml > k8s-logs/secrets.yaml || true
 
       - name: Upload Kubernetes logs
         if: always()
