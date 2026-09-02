@@ -110,11 +110,8 @@ class ImageScanningTest extends BaseSpecification {
         policy.with {
             setEnforcementActions(enforcements)
             setDisabled(false)
-            // Clear exclusions to avoid serialization issues with null scope values
+            // Clear exclusions and scope to avoid serialization issues with null values
             setExclusions([])
-            // Clear other array fields that may contain null complex objects
-            setPolicySections([])
-            setMitreAttackVectors([])
             setScope([])
         }
         restApiClient.updatePolicy(policy, policyId)
