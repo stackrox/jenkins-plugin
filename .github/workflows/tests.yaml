@@ -58,6 +58,7 @@ jobs:
       - name: Wait for scanner to start
         env:
           ROX_ENDPOINT: 'https://central.stackrox:8000'
+          ROX_PASSWORD: ${{ env.ROX_PASSWORD }}
         run: scripts/wait-for-scanner.sh
       - name: Add stackrox certificate
         run: scripts/set-certificates.sh

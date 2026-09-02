@@ -36,11 +36,23 @@ while true; do
     echo "[${elapsed}s] Attempt $attempt: Checking scanner health..."
 
     # Query the integration health endpoint
-    response=$(curl -k -s -u "admin:${ROX_PASSWORD}" \
-        "${CENTRAL_ENDPOINT}/v1/integrationhealth/imageintegrations" || echo "")
+    # Capture both response and curl exit code
+    http_code=$(curl -k -s -w "%{http_code}" -o /tmp/scanner_response.txt \
+        -u "admin:${ROX_PASSWORD}" \
+        "${CENTRAL_ENDPOINT}/v1/integrationhealth/imageintegrations" 2>/dev/null || echo "000")
 
-    if [ -z "$response" ]; then
-        echo "  → Failed to connect to central"
+    response=$(cat /tmp/scanner_response.txt 2>/dev/null || echo "")
+
+    if [ "$http_code" = "000" ] || [ -z "$response" ]; then
+        echo "  → Failed to connect to central (HTTP code: ${http_code})"
+        echo "  → Checking if central endpoint is reachable..."
+        if curl -k -s --connect-timeout 5 "${CENTRAL_ENDPOINT}/v1/ping" -o /dev/null 2>&1; then
+            echo "  → Central is reachable, but health endpoint failed (auth issue?)"
+        else
+            echo "  → Central endpoint not yet available (still starting up)"
+        fi
+    elif [ "$http_code" != "200" ]; then
+        echo "  → HTTP ${http_code} from central"
     else
         # Check if any image integration has HEALTHY status
         # The response contains integrationHealth array with status field
