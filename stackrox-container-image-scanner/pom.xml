@@ -226,7 +226,7 @@
                 <groupId>org.openapitools</groupId>
                 <artifactId>openapi-generator-maven-plugin</artifactId>
                 <!-- RELEASE_VERSION -->
-                <version>7.14.0</version>
+                <version>7.25.0</version>
                 <!-- /RELEASE_VERSION -->
                 <executions>
                     <execution>
@@ -249,6 +249,39 @@
                                 <sourceFolder>src/gen/java/main</sourceFolder>
                                 <enumUnknownDefaultCase>true</enumUnknownDefaultCase>
                             </configOptions>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- Fix openapi-generator v7.25.0 bugs -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <id>fix-generated-code-bugs</id>
+                        <phase>process-sources</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <echo message="Patching generated code to fix naming conflicts"/>
+                                <!-- Add import for Locale at the top of the file -->
+                                <replaceregexp
+                                    file="${project.basedir}/target/generated-sources/openapi/src/gen/java/main/com/stackrox/model/ScannerV1LanguageComponent.java"
+                                    match="(package com\.stackrox\.model;)"
+                                    replace="\1&#10;&#10;import java.util.Locale;"
+                                    byline="false"/>
+                                <!-- Fix: Field named 'java' shadows java.util package - replace with imported Locale -->
+                                <replaceregexp
+                                    file="${project.basedir}/target/generated-sources/openapi/src/gen/java/main/com/stackrox/model/ScannerV1LanguageComponent.java"
+                                    match="java\.util\.Locale\.ROOT"
+                                    replace="Locale.ROOT"
+                                    byline="true"
+                                    flags="g"/>
+                            </target>
                         </configuration>
                     </execution>
                 </executions>
