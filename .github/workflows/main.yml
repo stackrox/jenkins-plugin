@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [ master ]
+    branches: [master]
     tags:
       - "*"
 
@@ -16,27 +16,27 @@ jobs:
       contents: write
 
     steps:
-    - uses: actions/checkout@v7
-    - uses: actions/setup-java@v6
-      with:
-        distribution: 'temurin'
-        java-version: '11'
-        cache: 'maven'
-    - name: Build with Maven
-      run: cd stackrox-container-image-scanner && ./mvnw -B package hpi:hpi cyclonedx:makeAggregateBom
-    - uses: release-drafter/release-drafter@v7
-      id: release_drafter
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    - name: Upload Release Assets
-      uses: softprops/action-gh-release@v2
-      with:
-        tag_name: ${{ steps.release_drafter.outputs.tag_name }}
-        files: |
-          stackrox-container-image-scanner/target/stackrox-container-image-scanner.hpi
-          stackrox-container-image-scanner/target/bom.xml
-          stackrox-container-image-scanner/target/bom.json
-        draft: true
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # ratchet:actions/checkout@v7
+      - uses: actions/setup-java@dd06d9cba3e5552c54d9f8ea23572deb30010f7c # ratchet:actions/setup-java@v6
+        with:
+          distribution: 'temurin'
+          java-version: '11'
+          cache: 'maven'
+      - name: Build with Maven
+        run: cd stackrox-container-image-scanner && ./mvnw -B package hpi:hpi cyclonedx:makeAggregateBom
+      - uses: release-drafter/release-drafter@34d80673e067bdc0c24568d3af899c216adcfaa9 # ratchet:release-drafter/release-drafter@v7
+        id: release_drafter
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload Release Assets
+        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # ratchet:softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ steps.release_drafter.outputs.tag_name }}
+          files: |
+            stackrox-container-image-scanner/target/stackrox-container-image-scanner.hpi
+            stackrox-container-image-scanner/target/bom.xml
+            stackrox-container-image-scanner/target/bom.json
+          draft: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
