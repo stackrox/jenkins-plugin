@@ -7,10 +7,8 @@ import static com.stackrox.model.StorageLifecycleStage.DEPLOY
 import com.offbytwo.jenkins.model.BuildResult
 
 import com.stackrox.model.StorageEnforcementAction
-import com.stackrox.model.StorageImageNamePolicy
 import com.stackrox.model.StorageListPolicy
 import com.stackrox.model.StoragePolicy
-import com.stackrox.model.StoragePolicyFields
 
 import util.Config
 
@@ -24,11 +22,11 @@ class ImageScanningTest extends BaseSpecification {
     @Unroll
     def "image scanning test with toggle enforcement(#imageName, #policyName,  #enforcements, #endStatus)"() {
         given:
-        updatePolicy("Fixable CVSS >= 7", "latest", [])
-        updatePolicy("Fixable Severity at least Important", "latest", [])
+        updatePolicy("Fixable CVSS >= 7", [])
+        updatePolicy("Fixable Severity at least Important", [])
 
         when:
-        StoragePolicy enforcementPolicy = updatePolicy(policyName, "latest", enforcements)
+        StoragePolicy enforcementPolicy = updatePolicy(policyName, enforcements)
 
         then:
         assert enforcementPolicy.enforcementActions == enforcements
@@ -52,7 +50,7 @@ class ImageScanningTest extends BaseSpecification {
     def "image scanning test with images enforcement turned on (#imageName, #policyName, #tag)"() {
         when:
         def enforcements = [FAIL_BUILD_ENFORCEMENT]
-        StoragePolicy enforcementPolicy = updatePolicy(policyName, tag, enforcements)
+        StoragePolicy enforcementPolicy = updatePolicy(policyName, enforcements)
 
         then:
         assert enforcementPolicy.enforcementActions == enforcements
@@ -103,17 +101,19 @@ class ImageScanningTest extends BaseSpecification {
                 .createJobConfig()
     }
 
-    StoragePolicy updatePolicy(String policyName, String tag, List<StorageEnforcementAction> enforcements) {
+    StoragePolicy updatePolicy(String policyName, List<StorageEnforcementAction> enforcements) {
         List<StorageListPolicy> policies = restApiClient.policies
         def policyId = policies.find { it.name == policyName }?.id
         assert policyId != null
 
         def policy = restApiClient.getPolicy(policyId)
-        policy.setEnforcementActions(enforcements)
-        policy.setFields(new StoragePolicyFields().imageName(new StorageImageNamePolicy().tag(tag)))
-        policy.setDisabled(false)
-        // Clear exclusions to avoid serialization issues with null scope values
-        policy.setExclusions([])
+        policy.with {
+            setEnforcementActions(enforcements)
+            setDisabled(false)
+            // Clear exclusions and scope to avoid serialization issues with null values
+            setExclusions([])
+            setScope([])
+        }
         restApiClient.updatePolicy(policy, policyId)
         return restApiClient.getPolicy(policyId)
     }

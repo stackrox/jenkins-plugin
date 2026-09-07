@@ -226,7 +226,7 @@
                 <groupId>org.openapitools</groupId>
                 <artifactId>openapi-generator-maven-plugin</artifactId>
                 <!-- RELEASE_VERSION -->
-                <version>7.14.0</version>
+                <version>7.25.0</version>
                 <!-- /RELEASE_VERSION -->
                 <executions>
                     <execution>
@@ -249,6 +249,9 @@
                                 <sourceFolder>src/gen/java/main</sourceFolder>
                                 <enumUnknownDefaultCase>true</enumUnknownDefaultCase>
                             </configOptions>
+                            <nameMappings>
+                                <nameMapping>java=javaField</nameMapping>
+                            </nameMappings>
                         </configuration>
                     </execution>
                 </executions>
