@@ -3,6 +3,8 @@ updates:
   - package-ecosystem: 'maven'
     directory: 'stackrox-container-image-scanner/'
     open-pull-requests-limit: 1
+    labels:
+      - auto-merge
     schedule:
       interval: "daily"
     ignore:
@@ -11,11 +13,15 @@ updates:
   - package-ecosystem: 'gradle'
     directory: 'functionaltest-jenkins-plugin/'
     open-pull-requests-limit: 1
+    labels:
+      - auto-merge
     schedule:
       interval: "daily"
 
   - package-ecosystem: "github-actions"
     directory: "/"
     open-pull-requests-limit: 1
+    labels:
+      - auto-merge
     schedule:
       interval: 'daily'
