@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [ master ]
+    branches: [master]
     tags:
       - "*"
 
@@ -16,49 +16,27 @@ jobs:
       contents: write
 
     steps:
-    - uses: actions/checkout@v7
-    - uses: actions/setup-java@v6
-      with:
-        distribution: 'temurin'
-        java-version: '11'
-        cache: 'maven'
-    - name: Build with Maven
-      run: cd stackrox-container-image-scanner && ./mvnw -B package hpi:hpi cyclonedx:makeAggregateBom
-    - uses: release-drafter/release-drafter@v7
-      id: release_drafter
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    - name: Upload Release Asset Linux
-      id: upload-release-asset-linux
-      uses: gfreezy/upload-release-asset@v1.0.2
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        release_id: ${{ steps.release_drafter.outputs.id }}
-        upload_url: ${{ steps.release_drafter.outputs.upload_url }}
-        asset_path: stackrox-container-image-scanner/target/stackrox-container-image-scanner.hpi
-        asset_name: stackrox-container-image-scanner.hpi
-        asset_content_type: application/octet-stream
-    - name: Upload SBOM XML Asset Linux
-      id: upload-sbom-xml
-      uses: gfreezy/upload-release-asset@v1.0.2
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        release_id: ${{ steps.release_drafter.outputs.id }}
-        upload_url: ${{ steps.release_drafter.outputs.upload_url }}
-        asset_path: stackrox-container-image-scanner/target/bom.xml
-        asset_name: bom.xml
-        asset_content_type: text/xml
-    - name: Upload SBOM JSON Asset Linux
-      id: upload-sbom-json
-      uses: gfreezy/upload-release-asset@v1.0.2
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        release_id: ${{ steps.release_drafter.outputs.id }}
-        upload_url: ${{ steps.release_drafter.outputs.upload_url }}
-        asset_path: stackrox-container-image-scanner/target/bom.json
-        asset_name: bom.json
-        asset_content_type: application/json
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # ratchet:actions/checkout@v7
+      - uses: actions/setup-java@dd06d9cba3e5552c54d9f8ea23572deb30010f7c # ratchet:actions/setup-java@v6
+        with:
+          distribution: 'temurin'
+          java-version: '11'
+          cache: 'maven'
+      - name: Build with Maven
+        run: cd stackrox-container-image-scanner && ./mvnw -B package hpi:hpi cyclonedx:makeAggregateBom
+      - uses: release-drafter/release-drafter@34d80673e067bdc0c24568d3af899c216adcfaa9 # ratchet:release-drafter/release-drafter@v7
+        id: release_drafter
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload Release Assets
+        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # ratchet:softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ steps.release_drafter.outputs.tag_name }}
+          files: |
+            stackrox-container-image-scanner/target/stackrox-container-image-scanner.hpi
+            stackrox-container-image-scanner/target/bom.xml
+            stackrox-container-image-scanner/target/bom.json
+          draft: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
