@@ -21,6 +21,6 @@ jobs:
 
     steps:
       - name: Run auto-merge action
-        uses: stackrox/actions/automerge@8fcfacbfc4629361cca5573aba147be2155ba7e9
+        uses: stackrox/actions/automerge@6691d5c300d4af17546145bdbbb9862c53975af4
         with:
           github-token: ${{ secrets.RHACS_BOT_GITHUB_TOKEN }}
