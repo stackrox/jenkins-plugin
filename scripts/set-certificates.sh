@@ -1,12 +1,12 @@
 #!/bin/bash
 set -euo pipefail
 
-HOST="central.stackrox"
-PORT="8000"
+HOST="${ROX_INTERNAL_CENTRAL_NAME:-central.stackrox}"
+PORT="${ROX_CENTRAL_PORT:-8000}"
 TRUSTSTORE="$JAVA_HOME/lib/security/cacerts"
 TRUSTSTORE_PASS="changeit"
 KEYTOOL="${JAVA_HOME:-/usr}/bin/keytool"
-IP="127.0.0.1"
+IP="${ROX_CENTRAL_HOST:-127.0.0.1}"
 LINE="$IP $HOST"
 
 echo "🔍 Checking /etc/hosts for '$HOST'..."

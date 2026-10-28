@@ -10,6 +10,10 @@ on:
   schedule:
     - cron: '0 5 * * *'
 
+env:
+  # StackRox internal certificate for central is issued for this name.
+  ROX_INTERNAL_CENTRAL_NAME: 'central.stackrox'
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -39,29 +43,56 @@ jobs:
 
       - name: Run jenkins in background
         run: cd stackrox-container-image-scanner && ./mvnw hpi:run -Djetty.port=8080 &
+
       - name: Create k8s Kind Cluster
         uses: helm/kind-action@06c1ae10762d3b9c1644e7fe69596ae519e015a2 # ratchet:helm/kind-action@v1.15.0
+
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # ratchet:actions/checkout@v7
         with:
           repository: stackrox/stackrox
           path: stackrox
+          # We need the following for `make tag` to work. Previously it wasn't needed, because the operator bundle wasn't required/pulled.
+          # Fetching 'latest' tag for the stackrox images simply worked.
+          # For the operator bundle we need a proper image tag, i.e. a resolved version of 'latest'.
+          fetch-depth: 0
+          fetch-tags: true
+
+      # TODO(ROX-37886): Remove this and rely on stackrox/stackrox's scripts/roxie.sh instead.
+      - name: Install roxie
+        uses: stackrox/actions/roxie/install-cli@bcda9b2d6d2b644c267e699479656973e84ef7fa # ratchet:stackrox/actions@v1
+        with:
+          version: v0.4.17
+          gh-token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Install Stackrox
-        env:
-          MAIN_IMAGE_TAG: "latest"
-          SENSOR_HELM_DEPLOY: "true"
-          ROX_SCANNER_V4: "false"
         run: |
-          stackrox/deploy/k8s/deploy-local.sh
-          ROX_PASSWORD=$(cat stackrox/deploy/k8s/central-deploy/password)
-          echo "::add-mask::$ROX_PASSWORD"
-          echo "ROX_PASSWORD=$ROX_PASSWORD" >> $GITHUB_ENV
-      - name: Wait for scanner to start
-        run: kubectl wait --for=condition=ready --timeout=360s pod -l app=scanner -n stackrox
+          envrc_file="$(mktemp)"
+          cd stackrox
+          roxie deploy central \
+            --envrc "$envrc_file" \
+            --resources=tiny \
+            --set roxie.imageRegistry=quay.io/stackrox-io \
+            --set central.namespace=stackrox \
+            --set 'central.spec.customize.envVars[0].name=SCANNER_V4_MATCHER_READINESS,central.spec.customize.envVars[0].value=vulnerability' \
+            --early-readiness=false \
+            --central-wait 60m
+          source "$envrc_file"
+
+          echo "::add-mask::$ROX_ADMIN_PASSWORD"
+
+          export ROX_PASSWORD="$ROX_ADMIN_PASSWORD" # Tests expect this name.
+          # Split on last colon. ROX_ENDPOINT is expected to be of the form "<host>:<port>".
+          export ROX_CENTRAL_HOST="${ROX_ENDPOINT%:*}"
+          export ROX_CENTRAL_PORT="${ROX_ENDPOINT##*:}"
+
+          env | grep "^ROX_" >> "$GITHUB_ENV"
+
       - name: Add stackrox certificate
         run: scripts/set-certificates.sh
+
       - name: Run tests
         env:
-          ROX_ENDPOINT: 'https://central.stackrox:8000'
+          ROX_ENDPOINT: 'https://${{ env.ROX_INTERNAL_CENTRAL_NAME }}:${{ env.ROX_CENTRAL_PORT }}'
         run: make -C functionaltest-jenkins-plugin test
 
       - name: Collect Kubernetes logs
