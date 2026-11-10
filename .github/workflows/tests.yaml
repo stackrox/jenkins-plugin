@@ -13,6 +13,8 @@ on:
 env:
   # StackRox internal certificate for central is issued for this name.
   ROX_INTERNAL_CENTRAL_NAME: 'central.stackrox'
+  # Frozen test data published by https://github.com/stackrox/stackrox/pull/23544.
+  SCANNER_V4_MATCHER_VULNERABILITIES_URL: https://definitions.stackrox.io/v4/vulnerability-bundles/ci-minimal-bab3cec6e362f74bbe0c4f6a2e552ce1bac983feb836c449929f20cfd88bf4ce/vulnerabilities.zip
 
 jobs:
   build:
@@ -68,12 +70,13 @@ jobs:
         run: |
           envrc_file="$(mktemp)"
           cd stackrox
+          # Keep envVars in one --set expression; separate flags replace the list.
           roxie deploy central \
             --envrc "$envrc_file" \
             --resources=tiny \
             --set roxie.imageRegistry=quay.io/stackrox-io \
             --set central.namespace=stackrox \
-            --set 'central.spec.customize.envVars[0].name=SCANNER_V4_MATCHER_READINESS,central.spec.customize.envVars[0].value=vulnerability' \
+            --set "central.spec.customize.envVars[0].name=SCANNER_V4_MATCHER_READINESS,central.spec.customize.envVars[0].value=vulnerability,central.spec.customize.envVars[1].name=SCANNER_V4_MATCHER_VULNERABILITIES_URL,central.spec.customize.envVars[1].value=$SCANNER_V4_MATCHER_VULNERABILITIES_URL" \
             --early-readiness=false \
             --central-wait 60m
           source "$envrc_file"
