@@ -114,8 +114,20 @@ class ImageScanningTest extends BaseSpecification {
             setExclusions([])
             setScope([])
         }
+        if (policyName == "Fixable CVSS >= 7") {
+            // Keep the default lookup name, but use a test-only threshold for the minimal bundle.
+            // The image has fixable CVE-2022-2097 with CVSS 5.3.
+            def cvssGroup = policy.policySections.collectMany { it.policyGroups }.find { it.fieldName == "CVSS" }
+            assert cvssGroup != null
+            cvssGroup.values[0].value = ">= 5"
+        }
         restApiClient.updatePolicy(policy, policyId)
-        return restApiClient.getPolicy(policyId)
+        def updatedPolicy = restApiClient.getPolicy(policyId)
+        if (policyName == "Fixable CVSS >= 7") {
+            assert updatedPolicy.policySections.collectMany { it.policyGroups }
+                    .find { it.fieldName == "CVSS" }.values*.value == [">= 5"]
+        }
+        return updatedPolicy
     }
 
 }
