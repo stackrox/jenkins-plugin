@@ -9,6 +9,10 @@ import com.offbytwo.jenkins.model.BuildResult
 import com.stackrox.model.StorageEnforcementAction
 import com.stackrox.model.StorageListPolicy
 import com.stackrox.model.StoragePolicy
+import com.stackrox.model.StoragePolicyGroup
+import com.stackrox.model.StoragePolicySection
+import com.stackrox.model.StoragePolicyValue
+import com.stackrox.model.StorageSeverity
 
 import util.Config
 
@@ -22,7 +26,7 @@ class ImageScanningTest extends BaseSpecification {
     @Unroll
     def "image scanning test with toggle enforcement(#imageName, #policyName,  #enforcements, #endStatus)"() {
         given:
-        updatePolicy("Fixable CVSS >= 7", [])
+        updatePolicy("Fixable CVSS >= 5", [])
         updatePolicy("Fixable Severity at least Important", [])
 
         when:
@@ -66,7 +70,7 @@ class ImageScanningTest extends BaseSpecification {
         where:
         "data inputs are: "
         imageName             | policyName          | tag
-        "nginx-alpine:1.2.1"  | "Fixable CVSS >= 7" | "1.2.1"
+        "nginx-alpine:1.2.1"  | "Fixable CVSS >= 5" | "1.2.1"
         "nginx-alpine:latest" | "Latest tag"        | "latest"
     }
 
@@ -104,6 +108,17 @@ class ImageScanningTest extends BaseSpecification {
     StoragePolicy updatePolicy(String policyName, List<StorageEnforcementAction> enforcements) {
         List<StorageListPolicy> policies = restApiClient.policies
         def policyId = policies.find { it.name == policyName }?.id
+        if (policyId == null && policyName == "Fixable CVSS >= 5") {
+            // The minimal bundle includes fixable CVE-2022-2097 with CVSS 5.3 for the test image.
+            return restApiClient.policyServiceApi.policyServicePostPolicy(new StoragePolicy(
+                    name: policyName, policyVersion: "1.1", severity: StorageSeverity.MEDIUM_SEVERITY,
+                    categories: ["Vulnerability Management"], disabled: false,
+                    lifecycleStages: [BUILD, DEPLOY], enforcementActions: enforcements,
+                    policySections: [new StoragePolicySection(policyGroups:
+                            ["Fixed By": ".*", "CVSS": ">= 5"].collect { field, value ->
+                                new StoragePolicyGroup(fieldName: field, values: [new StoragePolicyValue(value: value)])
+                            })]), true)
+        }
         assert policyId != null
 
         def policy = restApiClient.getPolicy(policyId)
